@@ -9,10 +9,10 @@ class GeneticString:
             values: np.ndarray = np.empty,
             material_properties: list = [],
             desired_properties: list=[],
-            ga_params:  GAParams = None,
+            ga_params:  GAParams = GAParams(),
             ):
             self.dv = dv
-            self.values = values or np.array(shape=(dv,1))
+            self.values = np.array(shape=(dv,1)) if values is None else values
             self.material_properties = material_properties
             self.desired_properties = desired_properties
             self.ga_params = ga_params
@@ -24,12 +24,9 @@ class GeneticString:
         '''
 
         # Extract attributes from self
-        gamma = Lam12
-        v1 = Lam13
-        v2 = 1 - v1
-        TOL = self.ga_params.get_TOL
-        w1 = self.ga_params.get_w1
-        wj = self.ga_params.get_wj
+        TOL = self.ga_params.get_TOL()
+        w1 = self.ga_params.get_w1()
+        wj = self.ga_params.get_wj()
 
         # Extract material properties, gamma, and volume fraction from self.values
         [Lam0_mat1, Lam0_mat2, Lam1_mat1, Lam1_mat2,                                             # carrier transport
@@ -38,6 +35,10 @@ class GeneticString:
          Lam9_mat1, Lam9_mat2, Lam10_mat1, Lam10_mat2,                                           # magnetic
          Lam11_mat1, Lam11_mat2,                                                                 # piezoelectric
          Lam12, Lam13] = self.values
+        
+        gamma = Lam12
+        v1 = Lam13
+        v2 = 1 - v1
         '''
         Lam0, electrical conductivity, [S/m]
         Lam1, thermal conductivity, [W/m/K]
@@ -57,9 +58,9 @@ class GeneticString:
 
         # Initialize effective property, concentration factor, and weight arrays
         # Initialize to zero so as not to contribute to cost if unchanged
-        effective_properties = np.zeros(shape=(1,12))
-        concentration_factors = np.zeros(shape=(1, 26)) 
-        weights = np.zeros(shape=(1, 26)) 
+        effective_properties = np.zeros(12)
+        concentration_factors = np.zeros(26) 
+        weights = np.zeros(26)
         '''
         Concentration factors (26 total):
         Carrier transport (6): CJ1CE1, CJ2CE2, Ct1, Ct2, Cq1, Cq2
@@ -288,7 +289,7 @@ class GeneticString:
         # Assemble the cost function
         domains = len(self.material_properties)
         W = 1/domains
-        cost = w1/W * abs(np.divide(des_props - effective_properties), effective_properties) + np.multiply(weights, abs(np.divide(concentration_factors - TOL, TOL)))
+        cost = w1*W * np.sum(abs(np.divide(des_props - effective_properties, effective_properties))) + np.sum(np.multiply(weights, abs(np.divide(concentration_factors - TOL, TOL))))
 
         return cost
     

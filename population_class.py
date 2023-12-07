@@ -11,15 +11,16 @@ class Population:
             desired_properties: list=[],
             values: np.ndarray = np.empty,
             costs: np.ndarray = np.empty,
-            ga_params: GAParams = None,
+            ga_params: GAParams = GAParams(),
             ):
         
             self.dv = dv
             self.material_properties = material_properties
             self.desired_properties = desired_properties
-            self.values = values or np.zeros(shape=(self.ga_params.get_S(), self.dv))
-            self.costs = costs or np.zeros(shape=(self.ga_params.get_S(), self.dv))
             self.ga_params = ga_params
+            # self.values = values or np.zeros(shape=(self.ga_params.get_S(), self.dv))
+            self.values = np.zeros((self.ga_params.get_S(), dv))
+            self.costs = costs or np.zeros(shape=(self.ga_params.get_S(), self.dv))
 
     #------ Getter Methods ------#
     def get_dv(self):
@@ -55,17 +56,21 @@ class Population:
         return self  
     
     def set_initial_random(self, lower_bounds, upper_bounds):
-        Lambda = self.values
+        # Lambda = self.values
         S = self.ga_params.get_S()
+        print(f"S = {S}")
+        upper_bounds = [1e9 if np.isinf(x) else x for x in upper_bounds]
+        print(f"upper_bounds_for_loop: {upper_bounds}")
         for i in range (S):
-            Lambda[i, :] = np.random.uniform(lower_bounds, upper_bounds)
-        self.values = Lambda
+            self.values[i, :] = np.random.uniform(lower_bounds, upper_bounds)
+        # self.values = Lambda
         return self 
     
     def set_costs(self):
         Lambda = self.values
-        costs = np.zeros(shape=(1, self.dv))
-        for i in range (self.S):
+        S = self.ga_params.get_S()
+        costs = np.zeros(S)
+        for i in range (S):
             this_genetic_string = GeneticString(dv=self.dv, 
                                                 values=Lambda[i, :], 
                                                 material_properties=self.material_properties, 

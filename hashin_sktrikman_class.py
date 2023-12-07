@@ -41,8 +41,8 @@ _MAPI_SETTINGS = MAPIClientSettings()
 # HashinShtrikman class defaults
 DEFAULT_API_KEY       = environ.get("MP_API_KEY", None)
 DEFAULT_ENDPOINT      = environ.get("MP_API_ENDPOINT", "https://api.materialsproject.org/")
-DEFAULT_LOWER_BOUNDS  = [0] * 12
-DEFAULT_UPPER_BOUNDS  = [np.inf] * 12
+DEFAULT_LOWER_BOUNDS  = [0] * 26
+DEFAULT_UPPER_BOUNDS  = [np.inf] * 24 + [1] * 2
 DEFAULT_PROPERTY_DOCS = ["carrier-transport", "dielectric", "elastic", "magnetic", "piezoelectric"]
 DEFAULT_DESIRED_PROPS = [0] * 12
 DEFAULT_HAS_PROPS     = [HasProps.dielectric, HasProps.elasticity]
@@ -58,12 +58,12 @@ class HashinShtrikman:
             lower_bounds:         list = DEFAULT_LOWER_BOUNDS,
             upper_bounds:         list = DEFAULT_UPPER_BOUNDS, 
             property_docs:        list = DEFAULT_PROPERTY_DOCS,
-            desired_props:        list = None,
+            desired_props:        list = DEFAULT_DESIRED_PROPS,
             has_props:            list = DEFAULT_HAS_PROPS,
             fields:               list = DEFAULT_FIELDS,
-            dv:                   int  = 2,
-            ga_params:            GAParams = None,
-            final_population:     Population = None,
+            dv:                   int  = 26,
+            ga_params:            GAParams = GAParams(),
+            final_population:     Population = Population(),
             cost_history:         np.ndarray = np.empty,            
             lowest_costs:         np.ndarray = np.empty, 
             parent_average_costs: np.ndarray = np.empty, 
@@ -77,7 +77,7 @@ class HashinShtrikman:
             self.desired_props        = desired_props 
             self.has_props            = has_props
             self.fields               = fields
-            self.dv                   = dv   # dimension of a gentic strng, initialize with 2 to account for g and v1
+            self.dv                   = dv   # dimension of a gentic strng, initialize with 14 to account for g and v1
             self.ga_params            = ga_params 
             self.final_population     = final_population
             self.cost_history         = cost_history            
@@ -98,16 +98,16 @@ class HashinShtrikman:
                 self.contribs = None
                 warnings.warn(f"Problem loading MPContribs client: {error}")
 
-            # Check if emmet version of server os compatible
-            emmet_version = version.parse(self.get_emmet_version())
+            # # Check if emmet version of server os compatible
+            # emmet_version = version.parse(self.get_emmet_version())
 
-            if version.parse(emmet_version.base_version) < version.parse(
-                _MAPI_SETTINGS.MIN_EMMET_VERSION
-            ):
-                warnings.warn(
-                    "The installed version of the mp-api client may not be compatible with the API server. "
-                    "Please install a previous version if any problems occur."
-                )
+            # if version.parse(emmet_version.base_version) < version.parse(
+            #     _MAPI_SETTINGS.MIN_EMMET_VERSION
+            # ):
+            #     warnings.warn(
+            #         "The installed version of the mp-api client may not be compatible with the API server. "
+            #         "Please install a previous version if any problems occur."
+            #     )
 
             if not self.endpoint.endswith("/"):
                 self.endpoint += "/"
@@ -159,11 +159,18 @@ class HashinShtrikman:
     
     def get_unique_designs(self):
         # Costs are often equal to >10 decimal points, truncate to obtain a richer set of suggestions
-        rounded_costs = np.round(self.lowest_costs, decimals=3)
+        self.final_population.set_costs()
+        final_costs = self.final_population.get_costs()
+        # print(f"shape of final_costs: {final_costs.shape}")
+        rounded_costs = np.round(final_costs, decimals=3)
+        print(f"shape of rounded_costs: {rounded_costs.shape}")
+        print(f"rounded_costs: {rounded_costs}")
     
         # Obtain Unique Strings and Costs
         [unique_costs, iuniq] = np.unique(rounded_costs, return_index=True)
-        unique_strings = self.final_population[iuniq]
+        print(iuniq)
+        print(f"shape of final_population: {self.final_population.values.shape}")
+        unique_strings = self.final_population.values[iuniq]
 
         return [unique_strings, unique_costs] 
 
@@ -181,7 +188,7 @@ class HashinShtrikman:
                       "mp-ids-contrib": [], 
                       "formula": [],
                       "metal": [],
-                      "elec_cond_300K_low_doping": []
+                      "elec_cond_300K_low_doping": [],
                       "therm_cond_300K_low_doping": [],
                       "e_total": [],
                       "e_ionic": [],
@@ -308,10 +315,10 @@ class HashinShtrikman:
         '''
 
         # Unpack necessary attributes from self
-        P = self.ga_params.get_P
-        K = self.ga_params.get_K
-        G = self.ga_params.get_G
-        S = self.ga_params.get_S
+        P = self.ga_params.get_P()
+        K = self.ga_params.get_K()
+        G = self.ga_params.get_G()
+        S = self.ga_params.get_S()
         lower_bounds = self.lower_bounds
         upper_bounds = self.upper_bounds
         
@@ -331,6 +338,8 @@ class HashinShtrikman:
 
         # Randomly populate first generation  
         Lambda = Population(dv=self.dv, material_properties=self.property_docs, desired_properties=self.desired_props, ga_params=self.ga_params)
+        print(f"lower bounds: {lower_bounds}")
+        print(f"upper bounds: {upper_bounds}")
         Lambda.set_initial_random(lower_bounds, upper_bounds)
 
         # Calculate the costs of the first generation
@@ -371,6 +380,7 @@ class HashinShtrikman:
                         
             # Randomly generate new design strings to fill the rest of the population
             for i in range(S-P-K):
+                upper_bounds = [1e9 if np.isinf(x) else x for x in upper_bounds]
                 Lambda.values[P+K+i, :] = np.random.uniform(lower_bounds, upper_bounds)
 
             # Calculate the costs of the gth generation
@@ -393,8 +403,12 @@ class HashinShtrikman:
         # Update self attributes following optimization
         self.final_population = Lambda
         self.cost_history = PI
+        print(f"g = {g}")
+        print(f"G = {G}")
         self.lowest_costs = Pi_min
+        print(f"Pi_min: {Pi_min}")
         self.parent_average_costs = Pi_par_avg     
+        print(f"Pi_par_avg: {Pi_par_avg}")
         
         return self         
 
