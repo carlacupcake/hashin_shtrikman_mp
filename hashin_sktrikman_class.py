@@ -64,8 +64,8 @@ class HashinShtrikman:
             dv:                   int  = 26,
             ga_params:            GAParams = GAParams(),
             final_population:     Population = Population(),
-            cost_history:         np.ndarray = np.empty,            
-            lowest_costs:         np.ndarray = np.empty, 
+            cost_history:         np.ndarray = np.empty,   
+            lowest_costs:         np.ndarray = np.empty,          
             parent_average_costs: np.ndarray = np.empty, 
         ):
             
@@ -163,13 +163,13 @@ class HashinShtrikman:
         final_costs = self.final_population.get_costs()
         # print(f"shape of final_costs: {final_costs.shape}")
         rounded_costs = np.round(final_costs, decimals=3)
-        print(f"shape of rounded_costs: {rounded_costs.shape}")
-        print(f"rounded_costs: {rounded_costs}")
+        # print(f"shape of rounded_costs: {rounded_costs.shape}")
+        # print(f"rounded_costs: {rounded_costs}")
     
         # Obtain Unique Strings and Costs
         [unique_costs, iuniq] = np.unique(rounded_costs, return_index=True)
-        print(iuniq)
-        print(f"shape of final_population: {self.final_population.values.shape}")
+        # print(iuniq)
+        # print(f"shape of final_population: {self.final_population.values.shape}")
         unique_strings = self.final_population.values[iuniq]
 
         return [unique_strings, unique_costs] 
@@ -586,10 +586,27 @@ class HashinShtrikman:
         with MPRester(self.api_key) as mpr:
             
             docs = mpr.materials.summary.search(fields=self.fields)
+            from mpi4py import MPI
 
-            for i, doc in enumerate(docs):
+            comm = MPI.COMM_WORLD
+            rank = comm.Get_rank()
+            size = comm.Get_size()
 
-                print(f"{i} of {len(docs)}")
+            # Calculate the size of each chunk
+            chunk_size = len(docs) // size
+
+            # Calculate the start and end indices for this process's chunk
+            start = rank * chunk_size
+            end = start + chunk_size if rank != size - 1 else len(docs)  # The last process gets the remainder
+
+            # Each process gets a different chunk
+            chunk = docs[start:end]
+
+            # for i, doc in enumerate(docs):
+            for i, doc in enumerate(chunk):
+
+                # print(f"{i} of {len(docs)}")
+                print(f"Process {rank}: {i} of {len(chunk)}")
 
                 try:
 
@@ -651,10 +668,33 @@ class HashinShtrikman:
                 except:
                     TypeError
 
-        now = datetime.now()
-        my_file_name = "final_dict_" + now.strftime("%m/%d/%Y, %H:%M:%S")
-        with open(my_file_name, "w") as my_file:
-            json.dump(final_dict, my_file)
+        
+        # After the for loop
+        final_dicts = comm.gather(final_dict, root=0)
+
+        # On process 0, consolidate the results
+        if rank == 0:
+            consolidated_dict = {
+                "mp-ids-contrib": [],
+                "therm_cond_300K_low_doping": [],
+                "elec_cond_300K_low_doping": [],
+                # Add other keys as needed
+            }
+
+            for final_dict in final_dicts:
+                for key in consolidated_dict:
+                    consolidated_dict[key].extend(final_dict[key])
+
+            # Save the consolidated results to a JSON file
+            now = datetime.now()
+            my_file_name = "final_dict_" + now.strftime("%m/%d/%Y, %H:%M:%S")
+            with open(my_file_name, "w") as my_file:
+                json.dump(consolidated_dict, my_file)
+
+        # now = datetime.now()
+        # my_file_name = "final_dict_" + now.strftime("%m/%d/%Y, %H:%M:%S")
+        # with open(my_file_name, "w") as my_file:
+        #     json.dump(final_dict, my_file)
 
         return
         
