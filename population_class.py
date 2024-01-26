@@ -1,7 +1,7 @@
 import numpy as np
 from genetic_string_class import GeneticString
 from ga_params_class import GAParams
-
+from hs_logger import logger
 class Population:
 
     def __init__(

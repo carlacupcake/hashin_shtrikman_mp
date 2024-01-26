@@ -1,5 +1,6 @@
 import numpy as np
 from ga_params_class import GAParams
+from hs_logger import logger
 
 class GeneticString:
 
@@ -216,8 +217,8 @@ class GeneticString:
             # TODO check concentration factor formulas
             A_eff = gamma * effective_A_max + (1 - gamma) * effective_A_min
             effective_properties[8] = A_eff
-            CA1 = A1/epsn_eff * (1/v1 * (A2 - A_eff)/(A2 - A1))**2 
-            CA2 = A2/epsn_eff * (1/v2 * (A1 - A_eff)/(A1 - A2))**2
+            CA1 = A1/A_eff * (1/v1 * (A2 - A_eff)/(A2 - A1))**2 
+            CA2 = A2/A_eff * (1/v2 * (A1 - A_eff)/(A1 - A2))**2
             concentration_factors[18] = CA1
             concentration_factors[19] = CA2
 
@@ -290,6 +291,6 @@ class GeneticString:
         domains = len(self.material_properties)
         W = 1/domains
         cost = w1*W * np.sum(abs(np.divide(des_props - effective_properties, effective_properties))) + np.sum(np.multiply(weights, abs(np.divide(concentration_factors - TOL, TOL))))
-
+        logger.info(f"checkpoint cost: {cost}")
         return cost
     

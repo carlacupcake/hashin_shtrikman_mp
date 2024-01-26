@@ -38,8 +38,12 @@ DEFAULT_DESIRED_PROPS = [2.0e7, 5, 2, 2, 2, 2, 135, 40, 2, 2, 2, 2]
 
 HS = HashinShtrikman(upper_bounds=DEFAULT_UPPER_BOUNDS,
                      desired_props=DEFAULT_DESIRED_PROPS,
-                     property_docs=["carrier-transport", "elastic"])
+                     property_docs=["carrier-transport", "elastic"],
+                     api_key="uJpFxJJGKCSp9s1shwg9HmDuNjCDfWbM",
+                     mp_contribs_project="carrier_transport",)
 
-HS.generate_final_dict(api_key="uJpFxJJGKCSp9s1shwg9HmDuNjCDfWbM",
-                       mp_contribs_project="carrier_transport",
-                       total_docs=100)
+# HS.generate_final_dict(total_docs=50)
+
+HS.set_HS_optim_params()
+HS.print_table_of_best_designs()
+HS.plot_optimization_results()
