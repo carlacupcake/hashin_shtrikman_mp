@@ -1,10 +1,11 @@
 # From MPRester
 import itertools
+import re
 import warnings
 from functools import lru_cache
 from json import loads
 from os import environ
-from typing import Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from emmet.core.mpid import MPID
 from emmet.core.settings import EmmetSettings
@@ -24,10 +25,12 @@ from population_class import Population
 import numpy as np
 import matplotlib.pyplot as plt
 import json
-import datetime
+from datetime import datetime
 from mp_api.client import MPRester
 from mpcontribs.client import Client
 from tabulate import tabulate
+from hs_logger import logger
+
 
 _DEPRECATION_WARNING = (
     "MPRester is being modernized. Please use the new method suggested and "
@@ -46,7 +49,11 @@ DEFAULT_UPPER_BOUNDS  = [np.inf] * 24 + [1] * 2
 DEFAULT_PROPERTY_DOCS = ["carrier-transport", "dielectric", "elastic", "magnetic", "piezoelectric"]
 DEFAULT_DESIRED_PROPS = [0] * 12
 DEFAULT_HAS_PROPS     = [HasProps.dielectric, HasProps.elasticity]
-DEFAULT_FIELDS        = ["material_id", "is_stable", "band_gap", "is_metal"]
+DEFAULT_FIELDS        : Dict[str, List] = {"material_id": [], 
+                         "is_stable": [], 
+                         "band_gap": [], 
+                         "is_metal": [],
+                         "formula": [],}
 
 class HashinShtrikman:
 
@@ -60,7 +67,7 @@ class HashinShtrikman:
             property_docs:        list = DEFAULT_PROPERTY_DOCS,
             desired_props:        list = DEFAULT_DESIRED_PROPS,
             has_props:            list = DEFAULT_HAS_PROPS,
-            fields:               list = DEFAULT_FIELDS,
+            fields:               Dict[str, List] = DEFAULT_FIELDS,
             dv:                   int  = 26,
             ga_params:            GAParams = GAParams(),
             final_population:     Population = Population(),
@@ -629,130 +636,53 @@ class HashinShtrikman:
         plt.legend(fontsize = 14)
         plt.show()   
 
-    def generate_final_dict(self):
+    def generate_final_dict(self, 
+                            api_key: str, 
+                            mp_contribs_project: str,
+                            total_docs = None):
 
         '''
         MAIN FUNCTION USED TO GENERATE MATERIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
         '''
 
-        # Initialize local variables
-        get_band_gap = True
-
-        get_elec_cond      = False
-        get_therm_cond     = False
-        get_mp_ids_contrib = False
-
-        get_e_electronic = True
-        get_e_ionic      = True
-        get_e_total      = True
-        get_n            = True
-        
-        get_bulk_modulus         = True
-        get_shear_modulus        = True 
-        get_universal_anisotropy = True
-
-        get_total_magnetization                = False
-        get_total_magnetization_normalized_vol = False
-        
-        get_e_ij_max = True
-
         if "carrier-transport" in self.property_docs:
-            get_elec_cond      = True
-            get_therm_cond     = True
-            get_mp_ids_contrib = True
+            client = Client(apikey=api_key, project=mp_contribs_project)
         else:
-            get_elec_cond      = False
-            get_therm_cond     = False
-            get_mp_ids_contrib = False
-
-        if "dielectric" in self.property_docs:
-            get_e_electronic = True
-            get_e_ionic      = True
-            get_e_total      = True
-            get_n            = True
-        else:
-            get_e_electronic = False
-            get_e_ionic      = False
-            get_e_total      = False
-            get_n            = False
-
-        if "elastic" in self.property_docs:
-            get_bulk_modulus         = True
-            get_shear_modulus        = True 
-            get_universal_anisotropy = True
-        else:
-            get_bulk_modulus         = False
-            get_shear_modulus        = False
-            get_universal_anisotropy = False
-
-        if "magnetic" in self.property_docs:
-            get_total_magnetization                = True
-            get_total_magnetization_normalized_vol = True
-        else:
-            get_total_magnetization                = False
-            get_total_magnetization_normalized_vol = False
-
-        if "piezoelectric" in self.property_docs:
-            get_e_ij_max = True
-        else:
-            get_e_ij_max = False
-
-
-        if get_mp_ids_contrib:
-            client = Client(apikey="uJpFxJJGKCSp9s1shwg9HmDuNjCDfWbM", project="carrier_transport")
-        else:
-            client = Client(apikey="uJpFxJJGKCSp9s1shwg9HmDuNjCDfWbM")
-
-        # Assemble dictionary of values needed for Hashin-Shtrikman analysis
-        final_dict = {"mp-ids": [],
-                      "mp-ids-contrib": [], 
-                      "formula": [],
-                      "metal": [],
-                      "bulk_modulus": [],
-                      "shear_modulus": [],
-                      "universal_anisotropy": [],
-                      "e_total": [],
-                      "e_ionic": [],
-                      "e_electronic": [],
-                      "n": [],
-                      "e_ij_max": [],
-                      "therm_cond_300K_low_doping": [],
-                      "elec_cond_300K_low_doping": []}
-    
-        new_fields = self.fields
-        if get_band_gap not in self.fields:
-            new_fields.append("band_gap")
+            client = Client(apikey=api_key)
         
+        new_fields = self.fields
+
+        # MP-contribs data
+        if "carrier-transport" in self.property_docs:
+           new_fields["mp-ids-contrib"] = []
+           new_fields["elec_cond_300K_low_doping"] = []
+           new_fields["therm_cond_300K_low_doping"] = []
+
         # Dielectric
-        if get_e_electronic not in self.fields:
-            new_fields.append("e_electronic")        
-        if get_e_ionic not in self.fields:
-            new_fields.append("e_ionic")
-        if get_e_total not in self.fields:
-            new_fields.append("e_total")
-        if get_n not in self.fields:
-            new_fields.append("n")
+        if "dielectric" in self.property_docs:
+            new_fields["e_electronic"] = []
+            new_fields["e_ionic"] = []
+            new_fields["e_total"] = []
+            new_fields["n"] = []
 
         # Elastic
-        if get_bulk_modulus not in self.fields:
-            new_fields.append("bulk_modulus")
-        if get_shear_modulus not in self.fields:
-            new_fields.append("shear_modulus")
-        if get_universal_anisotropy not in self.fields:
-            new_fields.append("universal_anisotropy")
+        if "elastic" in self.property_docs:
+            new_fields["bulk_modulus"] = []
+            new_fields["shear_modulus"] = []
+            new_fields["universal_anisotropy"] = []
         
         # Magnetic
-        if get_total_magnetization not in self.fields:
-            new_fields.append("total_magnetization")
-        if get_total_magnetization_normalized_vol not in self.fields:
-            new_fields.append("total_magnetization_normalized_vol")
+        if "magnetic" in self.property_docs:
+            new_fields["total_magnetization"] = []
+            new_fields["total_magnetization_normalized_vol"] = []
 
         # Piezoelectric
-        if get_e_ij_max not in self.fields:
-            new_fields.append("e_ij_max")
+        if "piezoelectric" in self.property_docs:
+            new_fields["e_ij_max"] = []
 
         self.set_fields(new_fields)
 
+        logger.info(f"self.fields: {self.fields}")
 
         with MPRester(self.api_key) as mpr:
             
@@ -764,110 +694,150 @@ class HashinShtrikman:
             size = comm.Get_size()
 
             # Calculate the size of each chunk
-            chunk_size = len(docs) // size
+            if total_docs is None:
+                total_docs = len(docs)
+                chunk_size = len(docs) // size
+            elif isinstance(total_docs, int):
+                chunk_size = total_docs // size
 
             # Calculate the start and end indices for this process's chunk
             start = rank * chunk_size
-            end = start + chunk_size if rank != size - 1 else len(docs)  # The last process gets the remainder
+            end = start + chunk_size if rank != size - 1 else total_docs  # The last process gets the remainder
 
             # Each process gets a different chunk
             chunk = docs[start:end]
 
             # for i, doc in enumerate(docs):
-            for i, doc in enumerate(chunk):
+            for i, doc in enumerate(chunk[0:total_docs]):
 
-                # print(f"{i} of {len(docs)}")
-                print(f"Process {rank}: {i} of {len(chunk)}")
+                logger.info(f"Process {rank}: {i} of {len(chunk[0:total_docs])}")
 
-                try:
+                required_fields = [doc.material_id, doc.is_stable, doc.is_metal]
 
-                    mp_id = doc.material_id                           
-                    query = {"identifier": mp_id}
-                    my_dict = client.download_contributions(query=query, include=["tables"])[0]
-                    final_dict["mp-ids"].append(mp_id)    
-                    final_dict["formula"].append(my_dict["formula"])
-                    final_dict["metal"].append(my_dict["data"]["metal"])                  
-                    final_dict["is_stable"].append(doc.is_stable)
-                    final_dict["is_metal"].append(doc.is_metal) 
+                if "dielectric" in self.property_docs:
+                    required_fields.append(doc.e_electronic)
+                    required_fields.append(doc.e_ionic)
+                    required_fields.append(doc.e_total)
+                    required_fields.append(doc.n)
+                if "magnetic" in self.property_docs:
+                    required_fields.append(doc.total_magnetization)
+                    required_fields.append(doc.total_magnetization_normalized_vol)
+                if "piezoelectric" in self.property_docs:
+                    required_fields.append(doc.e_ij_max)
+                if "elastic" in self.property_docs:
+                    required_fields.append(doc.bulk_modulus)
+                    required_fields.append(doc.shear_modulus)
+                    required_fields.append(doc.universal_anisotropy)
+            
+                if "carrier-transport" in self.property_docs:
+                    try:
+                        mp_id = doc.material_id                           
+                        query = {"identifier": mp_id}
+                        my_dict = client.download_contributions(query=query, include=["tables"])[0]
+                        required_fields.append(my_dict["identifier"])
+                    except IndexError:
+                        continue
 
-                    if get_band_gap:
-                        final_dict["band_gap"].append(doc.band_gap)
-
-                    # Dielectric
-                    if get_e_electronic:
-                        final_dict["e_electronic"].append(doc.e_electronic)
-                    if get_e_ionic:
-                        final_dict["e_ionic"].append(doc.e_ionic)
-                    if get_e_total:
-                        final_dict["e_total"].append(doc.e_total)
-                    if get_n:
-                        final_dict["n"].append(doc.n)
-
-                    # Elastic
-                    if get_bulk_modulus:
-                        bulk_modulus_voigt = doc.bulk_modulus["voigt"]
-                        final_dict["bulk_modulus"].append(bulk_modulus_voigt)
-                    if get_shear_modulus:
-                        shear_modulus_voigt = doc.shear_modulus["voigt"]
-                        final_dict["shear_modulus"].append(shear_modulus_voigt)
-                    if get_universal_anisotropy:
-                        final_dict["universal_anisotropy"].append(doc.universal_anisotropy)                   
-
-                    # Magnetic
-                    if get_total_magnetization:
-                        final_dict["total_magnetization"].append(doc.total_magnetization)
-                    if get_total_magnetization_normalized_vol:
-                        final_dict["total_magnetization_normalized_vol"].append(doc.total_magnetization_normalized_vol)
-
-                    # Piezoelectric
-                    if get_e_ij_max:
-                        final_dict["e_ij_max"].append(doc.e_ij_max)
+                if all(field is not None for field in required_fields):
+                    self.fields["material_id"].append(mp_id)
+                    self.fields["formula"].append(my_dict["formula"])
+                    self.fields["is_stable"].append(doc.is_stable)
+                    self.fields["is_metal"].append(doc.is_metal)
+                    self.fields["band_gap"].append(doc.band_gap)
                     
                     # Carrier transport
-                    if get_mp_ids_contrib:
+                    if "carrier-transport" in self.property_docs:
+                        self.fields["mp-ids-contrib"].append(my_dict["identifier"])
+                        thermal_cond_str = my_dict["tables"][7].iloc[2, 0].replace(',', '')
 
-                        try:
-                            final_dict["mp-ids-contrib"].append(my_dict["identifier"])
-                            thermal_cond = my_dict["tables"][7].iloc[2, 1] * 1e-14  # multply by relaxation time, 10 fs
-                            elec_cond = my_dict["tables"][5].iloc[2, 1] * 1e-14 # multply by relaxation time, 10 fs   
-                            final_dict["therm_cond_300K_low_doping"].append(thermal_cond)
-                            final_dict["elec_cond_300K_low_doping"].append(elec_cond)              
+                        if '×10' in thermal_cond_str:
+                            # Extract the numeric part before the '±' symbol and the exponent
+                            match = re.search(r'\((.*?) ±.*?\)×10(.*)', thermal_cond_str)
+                            if match is not None:
+                                thermal_cond_str, thermal_cond_exponent_str = match.groups()
+                                # Convert the exponent part to a format that Python can understand
+                                thermal_cond_exponent = self.superscript_to_int(thermal_cond_exponent_str.strip())
+                                # Combine the numeric part and the exponent part, and convert the result to a float
+                                thermal_cond = float(f'{thermal_cond_str}e{thermal_cond_exponent}') * 1e-14  # multply by relaxation time, 10 fs
+                                logger.info(f'thermal_cond_if_statement = {thermal_cond}')
+                        else:
+                            thermal_cond = float(thermal_cond_str) * 1e-14  # multply by relaxation time, 10 fs
+                            logger.info(f'thermal_cond_else_statement = {thermal_cond}')
 
-                        except:
-                            IndexError
+                        elec_cond_str = my_dict["tables"][5].iloc[2, 0].replace(',', '')
 
-                except:
-                    TypeError
+                        if '×10' in elec_cond_str:
+                            # Extract the numeric part before the '±' symbol and the exponent
+                            match = re.search(r'\((.*?) ±.*?\)×10(.*)', elec_cond_str)
+                            if match is not None:
+                                elec_cond_str, elec_cond_exponent_str = match.groups()
+                                # Convert the exponent part to a format that Python can understand
+                                elec_cond_exponent = self.superscript_to_int(elec_cond_exponent_str.strip())
+                                # Combine the numeric part and the exponent part, and convert the result to a float
+                                elec_cond = float(f'{elec_cond_str}e{elec_cond_exponent}') * 1e-14  # multply by relaxation time, 10 fs
+                                logger.info(f'elec_cond_if_statement = {elec_cond}')
+                        else:
+                            elec_cond = float(elec_cond_str) * 1e-14  # multply by relaxation time, 10 fs
+                            logger.info(f'elec_cond_else_statement = {elec_cond}')
+
+
+                        self.fields["therm_cond_300K_low_doping"].append(thermal_cond)
+                        self.fields["elec_cond_300K_low_doping"].append(elec_cond)   
+                    
+                    # Dielectric
+                    if "dielectric" in self.property_docs:
+                        self.fields["e_electronic"].append(doc.e_electronic)
+                        self.fields["e_ionic"].append(doc.e_ionic)
+                        self.fields["e_total"].append(doc.e_total)
+                        self.fields["n"].append(doc.n)
+                    
+                    # Elastic
+                    if "elastic" in self.property_docs:
+                        self.fields["bulk_modulus"].append(doc.bulk_modulus["voigt"])
+                        self.fields["shear_modulus"].append(doc.shear_modulus["voigt"])
+                        self.fields["universal_anisotropy"].append(doc.universal_anisotropy)
+                        logger.info(f'bulk_modulus = {doc.bulk_modulus["voigt"]}')
+                
+                    # Magnetic
+                    if "magnetic" in self.property_docs:
+                        self.fields["total_magnetization"].append(doc.total_magnetization)
+                        self.fields["total_magnetization_normalized_vol"].append(doc.total_magnetization_normalized_vol)
+                    
+                    # Piezoelectric
+                    if "piezoelectric" in self.property_docs:
+                        self.fields["e_ij_max"].append(doc.e_ij_max)
 
         
-        # After the for loop
-        final_dicts = comm.gather(final_dict, root=0)
+            # comm.gather the self.fields data after the for loop
+            gathered_fields = comm.gather(self.fields, root=0)
 
-        # On process 0, consolidate the results
-        if rank == 0:
-            consolidated_dict = {
-                "mp-ids-contrib": [],
-                "therm_cond_300K_low_doping": [],
-                "elec_cond_300K_low_doping": [],
-                # Add other keys as needed
-            }
+            # On process 0, consolidate self.fields data into a single dictionary -- consolidated_dict
+            if rank == 0:
+                consolidated_dict: Dict[str, List[Any]] = {}
+                if gathered_fields is not None:
+                    for fields in gathered_fields:
+                        for key, value in fields.items():
+                            if key in consolidated_dict:
+                                consolidated_dict[key].extend(value)
+                            else:
+                                consolidated_dict[key] = value
 
-            for final_dict in final_dicts:
-                for key in consolidated_dict:
-                    consolidated_dict[key].extend(final_dict[key])
+                # Save the consolidated results to a JSON file
+                now = datetime.now()
+                my_file_name = "final_dict_test_" + now.strftime("%m_%d_%Y_%H_%M_%S")
+                with open(my_file_name, "w") as my_file:
+                    json.dump(consolidated_dict, my_file)
 
-            # Save the consolidated results to a JSON file
-            now = datetime.now()
-            my_file_name = "final_dict_" + now.strftime("%m/%d/%Y, %H:%M:%S")
-            with open(my_file_name, "w") as my_file:
-                json.dump(consolidated_dict, my_file)
+    def superscript_to_int(self, superscript_str):
+    
+        return
+        superscript_to_normal = {
+            '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
+            '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9'
+        }
+        normal_str = ''.join(superscript_to_normal.get(char, char) for char in superscript_str)
+        return int(normal_str)
 
-        # now = datetime.now()
-        # my_file_name = "final_dict_" + now.strftime("%m/%d/%Y, %H:%M:%S")
-        # with open(my_file_name, "w") as my_file:
-        #     json.dump(final_dict, my_file)
-
-        return final_dicts
         
     
 
