@@ -291,6 +291,6 @@ class GeneticString:
         domains = len(self.material_properties)
         W = 1/domains
         cost = w1*W * np.sum(abs(np.divide(des_props - effective_properties, effective_properties))) + np.sum(np.multiply(weights, abs(np.divide(concentration_factors - TOL, TOL))))
-        logger.info(f"checkpoint cost: {cost}")
+        #logger.info(f"checkpoint cost: {cost}")
         return cost
     

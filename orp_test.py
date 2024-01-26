@@ -33,17 +33,14 @@ headers = ['(Phase 1) Electrical conductivity, [S/m]',
 
 # DEFAULT_UPPER_BOUNDS = [1000] * 24 + [1] * 2 
 # DEFAULT_LOWER_BOUNDS = [1.1e6, 1.1e6, 0.1, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 100, 110, 10, 10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-DEFAULT_UPPER_BOUNDS = [2.2e7, 2.2e7, 10, 10, 100, 100, 100, 100, 100, 100, 100, 100, 150, 160, 60, 60, 100, 100, 100, 100, 100, 100, 100, 100, 1, 1]
-DEFAULT_DESIRED_PROPS = [2.0e7, 5, 2, 2, 2, 2, 135, 40, 2, 2, 2, 2]
+#DEFAULT_UPPER_BOUNDS = [2.2e7, 2.2e7, 10, 10, 100, 100, 100, 100, 100, 100, 100, 100, 150, 160, 60, 60, 100, 100, 100, 100, 100, 100, 100, 100, 1, 1]
+#DEFAULT_DESIRED_PROPS = [2.0e7, 5, 2, 2, 2, 2, 135, 40, 2, 2, 2, 2]
 
-HS = HashinShtrikman(upper_bounds=DEFAULT_UPPER_BOUNDS,
-                     desired_props=DEFAULT_DESIRED_PROPS,
-                     property_docs=["carrier-transport", "elastic"],
+HS = HashinShtrikman(property_docs=["carrier-transport", "elastic"],
                      api_key="uJpFxJJGKCSp9s1shwg9HmDuNjCDfWbM",
                      mp_contribs_project="carrier_transport",)
 
-# HS.generate_final_dict(total_docs=50)
-
+HS.generate_final_dict(total_docs=50)
 HS.set_HS_optim_params()
-HS.print_table_of_best_designs()
 HS.plot_optimization_results()
+HS.print_table_of_best_designs()
