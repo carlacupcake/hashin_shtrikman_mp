@@ -31,10 +31,8 @@ headers = ['(Phase 1) Electrical conductivity, [S/m]',
                    '(Phase 1) Volume fraction, [] ',
                    'Cost']
 
-# DEFAULT_UPPER_BOUNDS = [1000] * 24 + [1] * 2 
-# DEFAULT_LOWER_BOUNDS = [1.1e6, 1.1e6, 0.1, 0.5, 1, 1, 1, 1, 1, 1, 1, 1, 100, 110, 10, 10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-#DEFAULT_UPPER_BOUNDS = [2.2e7, 2.2e7, 10, 10, 100, 100, 100, 100, 100, 100, 100, 100, 150, 160, 60, 60, 100, 100, 100, 100, 100, 100, 100, 100, 1, 1]
-#DEFAULT_DESIRED_PROPS = [2.0e7, 5, 2, 2, 2, 2, 135, 40, 2, 2, 2, 2]
+lower_bounds = [0] * 5
+upper_bounds = [1e9] * 5
 
 HS = HashinShtrikman(property_docs=["carrier-transport", "elastic"],
                      api_key="uJpFxJJGKCSp9s1shwg9HmDuNjCDfWbM",

@@ -20,6 +20,7 @@ from mp_api.client.core.utils import validate_ids
 from ga_params_class import GAParams
 from genetic_string_class import GeneticString
 from population_class import Population
+from user_input_class import UserInput
 
 # Other
 import numpy as np
@@ -44,16 +45,22 @@ _MAPI_SETTINGS = MAPIClientSettings()
 # HashinShtrikman class defaults
 DEFAULT_API_KEY       = environ.get("MP_API_KEY", None)
 DEFAULT_ENDPOINT      = environ.get("MP_API_ENDPOINT", "https://api.materialsproject.org/")
-DEFAULT_LOWER_BOUNDS  = [0] * 26
-DEFAULT_UPPER_BOUNDS  = [np.inf] * 24 + [1] * 2
 DEFAULT_PROPERTY_DOCS = ["carrier-transport", "dielectric", "elastic", "magnetic", "piezoelectric"]
-DEFAULT_DESIRED_PROPS = [0] * 12
+DEFAULT_DESIRED_PROPS = {"carrier-transport": [],
+                         "dielectric": [],
+                         "elastic": [],
+                         "magnetic": [],
+                         "piezoelectric": []}
 DEFAULT_HAS_PROPS     = [HasProps.dielectric, HasProps.elasticity]
-DEFAULT_FIELDS        : Dict[str, List] = {"material_id": [], 
+DEFAULT_FIELDS        = {"material_id": [], 
                          "is_stable": [], 
                          "band_gap": [], 
                          "is_metal": [],
                          "formula": [],}
+DEFAULT_LOWER_BOUNDS  = {"mat1": DEFAULT_DESIRED_PROPS,
+                         "mat2": DEFAULT_DESIRED_PROPS}
+DEFAULT_UPPER_BOUNDS  = {"mat1": DEFAULT_DESIRED_PROPS,
+                         "mat2": DEFAULT_DESIRED_PROPS} # could generalize to more materials later
 
 class HashinShtrikman:
 
@@ -63,13 +70,13 @@ class HashinShtrikman:
             api_key:              Optional[str] = None,
             mp_contribs_project:  Optional[str] = None,
             endpoint:             str  = DEFAULT_ENDPOINT,
-            lower_bounds:         list = DEFAULT_LOWER_BOUNDS,
-            upper_bounds:         list = DEFAULT_UPPER_BOUNDS, 
             property_docs:        list = DEFAULT_PROPERTY_DOCS,
-            desired_props:        list = DEFAULT_DESIRED_PROPS,
+            desired_props:        dict = DEFAULT_DESIRED_PROPS,
             has_props:            list = DEFAULT_HAS_PROPS,
-            fields:               Dict[str, List] = DEFAULT_FIELDS,
-            dv:                   int  = 26,
+            fields:               dict = DEFAULT_FIELDS,
+            dv:                   int  = 0,
+            lower_bounds:         dict = DEFAULT_LOWER_BOUNDS,
+            upper_bounds:         dict = DEFAULT_UPPER_BOUNDS, 
             ga_params:            GAParams = GAParams(),
             final_population:     Population = Population(),
             cost_history:         np.ndarray = np.empty,   
@@ -80,18 +87,21 @@ class HashinShtrikman:
             self.api_key              = api_key 
             self.mp_contribs_project  = mp_contribs_project
             self.endpoint             = endpoint
-            self.lower_bounds         = lower_bounds 
-            self.upper_bounds         = upper_bounds
             self.property_docs        = property_docs
             self.desired_props        = desired_props 
             self.has_props            = has_props
             self.fields               = fields
-            self.dv                   = dv   # dimension of a gentic strng, initialize with 14 to account for g and v1
+            self.dv                   = dv  
+            self.lower_bounds         = lower_bounds 
+            self.upper_bounds         = upper_bounds
             self.ga_params            = ga_params 
             self.final_population     = final_population
             self.cost_history         = cost_history            
             self.lowest_costs         = lowest_costs
             self.parent_average_costs = parent_average_costs
+
+            # Update from default based on self.property_docs
+            self.set_dv()
 
             try:
                 from mpcontribs.client import Client
@@ -106,17 +116,6 @@ class HashinShtrikman:
             except Exception as error:
                 self.contribs = None
                 warnings.warn(f"Problem loading MPContribs client: {error}")
-
-            # # Check if emmet version of server os compatible
-            # emmet_version = version.parse(self.get_emmet_version())
-
-            # if version.parse(emmet_version.base_version) < version.parse(
-            #     _MAPI_SETTINGS.MIN_EMMET_VERSION
-            # ):
-            #     warnings.warn(
-            #         "The installed version of the mp-api client may not be compatible with the API server. "
-            #         "Please install a previous version if any problems occur."
-            #     )
 
             if not self.endpoint.endswith("/"):
                 self.endpoint += "/"
@@ -170,333 +169,441 @@ class HashinShtrikman:
         # Costs are often equal to >10 decimal points, truncate to obtain a richer set of suggestions
         self.final_population.set_costs()
         final_costs = self.final_population.get_costs()
-        # print(f"shape of final_costs: {final_costs.shape}")
         rounded_costs = np.round(final_costs, decimals=3)
-        # print(f"shape of rounded_costs: {rounded_costs.shape}")
-        # print(f"rounded_costs: {rounded_costs}")
     
         # Obtain Unique Strings and Costs
         [unique_costs, iuniq] = np.unique(rounded_costs, return_index=True)
-        # print(iuniq)
-        # print(f"shape of final_population: {self.final_population.values.shape}")
         unique_strings = self.final_population.values[iuniq]
 
         return [unique_strings, unique_costs] 
 
     def get_table_of_best_designs(self):
         [unique_strings, unique_costs] = self.get_unique_designs()     
-        table_data = np.hstack((unique_strings[0:20,:], unique_costs[0:20].reshape(-1,1)))
-        return table_data         
+        table_data = np.hstack((unique_strings[0:20,:], unique_costs[0:20].reshape(-1,1))) # only 20 rows in output table, hardcoded
+        return table_data
+
+    def get_dict_of_best_designs(self):
+
+        # Initialize a general dictionary for each material
+        material_property_dict = {}
+        if "carrier-transport" in self.property_docs:
+            material_property_dict["carrier-transport"]["elec_cond_300K_low_doping"] = []
+            material_property_dict["carrier-transport"]["therm_cond_300K_low_doping"] = []
+        if "dielectric" in self.property_docs:
+            material_property_dict["dielectric"]["e_total"] = []
+            material_property_dict["dielectric"]["e_ionic"] = []
+            material_property_dict["dielectric"]["e_electronic"] = []
+            material_property_dict["dielectric"]["n"] = []
+        if "elastic" in self.property_docs:
+            material_property_dict["elastic"]["bulk_modulus"] = []
+            material_property_dict["elastic"]["shear_modulus"] = []
+            material_property_dict["elastic"]["universal_anisotropy"] = []
+        if "magnetic" in self.property_docs:
+            material_property_dict["magnetic"]["total_magnetization"] = []
+            material_property_dict["magnetic"]["total_magnetization_normalized_volume"] = []
+        if "piezoelectric" in self.property_docs:
+            material_property_dict["piezoelectric"]["e_ij"] = []
+
+        # Use the general material dictionary to create a nested dictionary
+        best_designs_dict = {"mat1": material_property_dict,
+                             "mat2": material_property_dict} # could generalize to more materials later 
+
+        [unique_strings, unique_costs] = self.get_unique_designs()   
+        
+        for i in range(len(unique_costs)):
+            idx = 0
+            if "carrier-transport" in self.property_docs:
+                best_designs_dict["mat1"]["carrier-transport"]["elec_cond_300K_low_doping"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["carrier-transport"]["elec_cond_300K_low_doping"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat1"]["carrier-transport"]["therm_cond_300K_low_doping"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["carrier-transport"]["therm_cond_300K_low_doping"].append(unique_strings[i, idx])
+            if "dielectric" in self.property_docs:
+                best_designs_dict["mat1"]["dielectric"]["e_total"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["dielectric"]["e_total"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat1"]["dielectric"]["e_ionic"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["dielectric"]["e_ionic"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat1"]["dielectric"]["e_electronic"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["dielectric"]["e_electronic"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat1"]["dielectric"]["n"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["dielectric"]["n"].append(unique_strings[i, idx])
+                idx += 1
+            if "elastic" in self.property_docs:
+                best_designs_dict["mat1"]["elastic"]["bulk_modulus"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["elastic"]["bulk_modulus"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat1"]["elastic"]["shear_modulus"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["elastic"]["shear_modulus"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat1"]["elastic"]["universal_anisotropy"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["elastic"]["universal_anisotropy"].append(unique_strings[i, idx])
+                idx += 1
+            if "magnetic" in self.property_docs:
+                best_designs_dict["mat1"]["magnetic"]["total_magnetization"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["magnetic"]["total_magnetization"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat1"]["magnetic"]["total_magnetization_normalized_volume"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat2"]["magnetic"]["total_magnetization_normalized_volume"].append(unique_strings[i, idx])
+                idx += 1
+            if "piezoelectric" in self.property_docs:
+                best_designs_dict["mat1"]["piezoelectric"]["e_ij"].append(unique_strings[i, idx])
+                idx += 1
+                best_designs_dict["mat1"]["piezoelectric"]["e_ij"].append(unique_strings[i, idx])
+                idx += 1
+
+        return best_designs_dict        
     
     def get_material_matches(self): 
 
-        table_data = self.get_table_of_best_designs()
+        best_designs_dict = self.get_dict_of_best_designs()
         consolidated_dict = self.generate_final_dict()
+        mat_1_dict = self.generate_material_property_dict()
+        mat_2_dict = self.generate_material_property_dict()
+        mat1_matches = set()
+        mat2_matches = set()
 
-        # (Material 1) Filter the dictionary extracted from MP-API based on GA results
-        mat_1_dict = {"mp-ids": [],
-                      "mp-ids-contrib": [], 
-                      "formula": [],
-                      "metal": [],
-                      "elec_cond_300K_low_doping": [],
-                      "therm_cond_300K_low_doping": [],
-                      "e_total": [],
-                      "e_ionic": [],
-                      "e_electronic": [],
-                      "n": [],
-                      "bulk_modulus": [],
-                      "shear_modulus": [],
-                      "universal_anisotropy": [],
-                      "total_magnetization": [],
-                      "total_magnetization_normalized_volume": [],
-                      "e_ij": [],
-                      }
-
-        # (Material 2) Filter the dictionary extracted from MP-API based on GA results
-        mat_2_dict = {"mp-ids": [],
-                      "mp-ids-contrib": [], 
-                      "formula": [],
-                      "metal": [],
-                      "elec_cond_300K_low_doping": [],
-                      "therm_cond_300K_low_doping": [],
-                      "e_total": [],
-                      "e_ionic": [],
-                      "e_electronic": [],
-                      "n": [],
-                      "bulk_modulus": [],
-                      "shear_modulus": [],
-                      "universal_anisotropy": [],
-                      "total_magnetization": [],
-                      "total_magnetization_normalized_volume": [],
-                      "e_ij": [],
-                      }
-
-        # All indices below based on genetic string class
         # Carrier transport extrema
-        mat_1_elec_cond_lower_bound  = min(table_data[:,0])
-        mat_1_elec_cond_upper_bound  = max(table_data[:,0])
-        mat_2_elec_cond_lower_bound  = min(table_data[:,12])
-        mat_2_elec_cond_upper_bound  = max(table_data[:,12])
+        mat_1_elec_cond_lower_bound  = min(best_designs_dict["mat1"]["carrier-transport"]["elec_cond_300K_low_doping"])
+        mat_1_elec_cond_upper_bound  = max(best_designs_dict["mat1"]["carrier-transport"]["elec_cond_300K_low_doping"])
+        mat_2_elec_cond_lower_bound  = min(best_designs_dict["mat2"]["carrier-transport"]["elec_cond_300K_low_doping"])
+        mat_2_elec_cond_upper_bound  = max(best_designs_dict["mat2"]["carrier-transport"]["elec_cond_300K_low_doping"])
 
-        mat_1_therm_cond_lower_bound = min(table_data[:,1])
-        mat_1_therm_cond_upper_bound = max(table_data[:,1])
-        mat_2_therm_cond_lower_bound = min(table_data[:,13])
-        mat_2_therm_cond_upper_bound = max(table_data[:,13])
+        mat_1_therm_cond_lower_bound  = min(best_designs_dict["mat1"]["carrier-transport"]["therm_cond_300K_low_doping"])
+        mat_1_therm_cond_upper_bound  = max(best_designs_dict["mat1"]["carrier-transport"]["therm_cond_300K_low_doping"])
+        mat_2_therm_cond_lower_bound  = min(best_designs_dict["mat2"]["carrier-transport"]["therm_cond_300K_low_doping"])
+        mat_2_therm_cond_upper_bound  = max(best_designs_dict["mat2"]["carrier-transport"]["therm_cond_300K_low_doping"])
 
         # Dielectric extrema
-        mat_1_e_total_lower_bound = min(table_data[:,2])
-        mat_1_e_total_upper_bound = max(table_data[:,2])
-        mat_2_e_total_lower_bound = min(table_data[:,14])
-        mat_2_e_total_upper_bound = max(table_data[:,14])
+        mat_1_e_total_lower_bound = min(best_designs_dict["mat1"]["carrier-transport"]["e_total"])
+        mat_1_e_total_upper_bound = max(best_designs_dict["mat1"]["carrier-transport"]["e_total"])
+        mat_2_e_total_lower_bound = min(best_designs_dict["mat2"]["carrier-transport"]["e_total"])
+        mat_2_e_total_upper_bound = max(best_designs_dict["mat2"]["carrier-transport"]["e_total"])
 
-        mat_1_e_ionic_lower_bound = min(table_data[:,3])
-        mat_1_e_ionic_upper_bound = max(table_data[:,3])
-        mat_2_e_ionic_lower_bound = min(table_data[:,15])
-        mat_2_e_ionic_upper_bound = max(table_data[:,15])
+        mat_1_e_ionic_lower_bound = min(best_designs_dict["mat1"]["carrier-transport"]["e_ionic"])
+        mat_1_e_ionic_upper_bound = max(best_designs_dict["mat1"]["carrier-transport"]["e_ionic"])
+        mat_2_e_ionic_lower_bound = min(best_designs_dict["mat2"]["carrier-transport"]["e_ionic"])
+        mat_2_e_ionic_upper_bound = max(best_designs_dict["mat2"]["carrier-transport"]["e_ionic"])
 
-        mat_1_e_elec_lower_bound  = min(table_data[:,4])
-        mat_1_e_elec_upper_bound  = max(table_data[:,4])
-        mat_2_e_elec_lower_bound  = min(table_data[:,16])
-        mat_2_e_elec_upper_bound  = max(table_data[:,16])
+        mat_1_e_elec_lower_bound  = min(best_designs_dict["mat1"]["carrier-transport"]["e_electronic"])
+        mat_1_e_elec_upper_bound  = max(best_designs_dict["mat1"]["carrier-transport"]["e_electronic"])
+        mat_2_e_elec_lower_bound  = min(best_designs_dict["mat2"]["carrier-transport"]["e_electronic"])
+        mat_2_e_elec_upper_bound  = max(best_designs_dict["mat2"]["carrier-transport"]["e_electronic"])
 
-        mat_1_n_lower_bound       = min(table_data[:,5])
-        mat_1_n_upper_bound       = max(table_data[:,5])
-        mat_2_n_lower_bound       = min(table_data[:,17])
-        mat_2_n_upper_bound       = max(table_data[:,17])
+        mat_1_n_lower_bound       = min(best_designs_dict["mat1"]["carrier-transport"]["n"])
+        mat_1_n_upper_bound       = max(best_designs_dict["mat1"]["carrier-transport"]["n"])
+        mat_2_n_lower_bound       = min(best_designs_dict["mat2"]["carrier-transport"]["n"])
+        mat_2_n_upper_bound       = max(best_designs_dict["mat2"]["carrier-transport"]["n"])
 
         # Elastic extrema
-        mat_1_bulk_mod_lower_bound   = min(table_data[:,6])
-        mat_1_bulk_mod_upper_bound   = max(table_data[:,6])
-        mat_2_bulk_mod_lower_bound   = min(table_data[:,18])
-        mat_2_bulk_mod_upper_bound   = max(table_data[:,18])
+        mat_1_bulk_mod_lower_bound   = min(best_designs_dict["mat1"]["carrier-transport"]["bulk_modulus"])
+        mat_1_bulk_mod_upper_bound   = max(best_designs_dict["mat1"]["carrier-transport"]["bulk_modulus"])
+        mat_2_bulk_mod_lower_bound   = min(best_designs_dict["mat2"]["carrier-transport"]["bulk_modulus"])
+        mat_2_bulk_mod_upper_bound   = max(best_designs_dict["mat2"]["carrier-transport"]["bulk_modulus"])
 
-        mat_1_shear_mod_lower_bound  = min(table_data[:,7])
-        mat_1_shear_mod_upper_bound  = max(table_data[:,7])
-        mat_2_shear_mod_lower_bound  = min(table_data[:,19])
-        mat_2_shear_mod_upper_bound  = max(table_data[:,19])
+        mat_1_shear_mod_lower_bound  = min(best_designs_dict["mat1"]["carrier-transport"]["shear_modulus"])
+        mat_1_shear_mod_upper_bound  = max(best_designs_dict["mat1"]["carrier-transport"]["shear_modulus"])
+        mat_2_shear_mod_lower_bound  = min(best_designs_dict["mat2"]["carrier-transport"]["shear_modulus"])
+        mat_2_shear_mod_upper_bound  = max(best_designs_dict["mat2"]["carrier-transport"]["shear_modulus"])
 
-        mat_1_univ_aniso_lower_bound = min(table_data[:,8])
-        mat_1_univ_aniso_upper_bound = max(table_data[:,8])
-        mat_2_univ_aniso_lower_bound = min(table_data[:,20])
-        mat_2_univ_aniso_upper_bound = max(table_data[:,20])
+        mat_1_univ_aniso_lower_bound = min(best_designs_dict["mat1"]["carrier-transport"]["universal_anisotropy"])
+        mat_1_univ_aniso_upper_bound = max(best_designs_dict["mat1"]["carrier-transport"]["universal_anisotropy"])
+        mat_2_univ_aniso_lower_bound = min(best_designs_dict["mat2"]["carrier-transport"]["universal_anisotropy"])
+        mat_2_univ_aniso_upper_bound = max(best_designs_dict["mat2"]["carrier-transport"]["universal_anisotropy"])
 
         # Magnetic extrema
-        mat_1_tot_mag_lower_bound      = min(table_data[:,9])
-        mat_1_tot_mag_upper_bound      = max(table_data[:,9])
-        mat_2_tot_mag_lower_bound      = min(table_data[:,21])
-        mat_2_tot_mag_upper_bound      = max(table_data[:,21])
+        mat_1_tot_mag_lower_bound      = min(best_designs_dict["mat1"]["carrier-transport"]["total_magnetization"])
+        mat_1_tot_mag_upper_bound      = max(best_designs_dict["mat1"]["carrier-transport"]["total_magnetization"])
+        mat_2_tot_mag_lower_bound      = min(best_designs_dict["mat2"]["carrier-transport"]["total_magnetization"])
+        mat_2_tot_mag_upper_bound      = max(best_designs_dict["mat2"]["carrier-transport"]["total_magnetization"])
 
-        mat_1_tot_mag_norm_lower_bound = min(table_data[:,10])
-        mat_1_tot_mag_norm_upper_bound = max(table_data[:,10])
-        mat_2_tot_mag_norm_lower_bound = min(table_data[:,22])
-        mat_2_tot_mag_norm_upper_bound = max(table_data[:,22])
+        mat_1_tot_mag_norm_lower_bound = min(best_designs_dict["mat1"]["carrier-transport"]["total_magnetization_normalized_volume"])
+        mat_1_tot_mag_norm_upper_bound = max(best_designs_dict["mat1"]["carrier-transport"]["total_magnetization_normalized_volume"])
+        mat_2_tot_mag_norm_lower_bound = min(best_designs_dict["mat2"]["carrier-transport"]["total_magnetization_normalized_volume"])
+        mat_2_tot_mag_norm_upper_bound = max(best_designs_dict["mat2"]["carrier-transport"]["total_magnetization_normalized_volume"])
 
         # Piezoelectric extrema
-        mat_1_e_ij_lower_bound = min(table_data[:,11])
-        mat_1_e_ij_upper_bound = max(table_data[:,11])
-        mat_2_e_ij_lower_bound = min(table_data[:,23])
-        mat_2_e_ij_upper_bound = max(table_data[:,23])        
+        mat_1_e_ij_lower_bound = min(best_designs_dict["mat1"]["carrier-transport"]["e_ij"])
+        mat_1_e_ij_upper_bound = max(best_designs_dict["mat1"]["carrier-transport"]["e_ij"])
+        mat_2_e_ij_lower_bound = min(best_designs_dict["mat2"]["carrier-transport"]["e_ij"])
+        mat_2_e_ij_upper_bound = max(best_designs_dict["mat2"]["carrier-transport"]["e_ij"])        
 
         # Get materials that fall within the above extrema
-
+        # Get intersections of material matches for each property to populate overall matches
         # Check for materials that meet carrier transport criteria
         mat_1_elec_idx = []
         mat_2_elec_idx = []
-        for i, elec_cond in enumerate(consolidated_dict["elec_cond_300K_low_doping"]):
-            if (elec_cond >= mat_1_elec_cond_lower_bound) and (elec_cond <= mat_1_elec_cond_upper_bound):  
-                mat_1_elec_idx.append(i)
-            if (elec_cond >= mat_2_elec_cond_lower_bound) and (elec_cond <= mat_2_elec_cond_upper_bound):  
-                mat_2_elec_idx.append(i)
 
         mat_1_therm_idx = [] 
         mat_2_therm_idx = [] 
-        for i, therm_cond in enumerate(consolidated_dict["therm_cond_300K_low_doping"]):
-            if (therm_cond >= mat_1_therm_cond_lower_bound) and (therm_cond <= mat_1_therm_cond_upper_bound):  
-                mat_1_therm_idx.append(i)
-            if (therm_cond >= mat_2_therm_cond_lower_bound) and (therm_cond <= mat_2_therm_cond_upper_bound):  
-                mat_2_therm_idx.append(i)
+
+        if "carrier-transport" in self.property_docs:
+            for i, elec_cond in enumerate(consolidated_dict["elec_cond_300K_low_doping"]):
+                if (elec_cond >= mat_1_elec_cond_lower_bound) and (elec_cond <= mat_1_elec_cond_upper_bound):  
+                    mat_1_elec_idx.append(i)
+                if (elec_cond >= mat_2_elec_cond_lower_bound) and (elec_cond <= mat_2_elec_cond_upper_bound):  
+                    mat_2_elec_idx.append(i)  
+
+            for i, therm_cond in enumerate(consolidated_dict["therm_cond_300K_low_doping"]):
+                if (therm_cond >= mat_1_therm_cond_lower_bound) and (therm_cond <= mat_1_therm_cond_upper_bound):  
+                    mat_1_therm_idx.append(i)
+                if (therm_cond >= mat_2_therm_cond_lower_bound) and (therm_cond <= mat_2_therm_cond_upper_bound):  
+                    mat_2_therm_idx.append(i)
+
+            if mat1_matches == set(): # populate matches before taking intersections
+                mat1_matches = set(mat_1_elec_idx) & set(mat_1_therm_idx)
+            else:
+                mat1_matches = mat1_matches & set(mat_1_elec_idx) & set(mat_1_therm_idx)
+
+            if mat2_matches == set():
+                mat2_matches = set(mat_2_elec_idx) & set(mat_2_therm_idx)
+            else:
+                mat2_matches = mat2_matches & set(mat_2_elec_idx) & set(mat_2_therm_idx)
 
         # Check for materials that meet dielectric criteria
         mat_1_e_total_idx = []
         mat_2_e_total_idx = []
-        for i, e_total in enumerate(consolidated_dict["e_total"]):
-            if (e_total >= mat_1_e_total_lower_bound) and (e_total <= mat_1_e_total_upper_bound):       
-                mat_1_e_total_idx.append(i)
-            if (e_total >= mat_2_e_total_lower_bound) and (e_total <= mat_2_e_total_upper_bound):       
-                mat_2_e_total_idx.append(i)
 
         mat_1_e_ionic_idx = []
         mat_2_e_ionic_idx = []
-        for i, e_ionic in enumerate(consolidated_dict["e_ionic"]):
-            if (e_ionic >= mat_1_e_ionic_lower_bound) and (e_ionic <= mat_1_e_ionic_upper_bound):       
-                mat_1_e_ionic_idx.append(i)
-            if (e_ionic >= mat_2_e_ionic_lower_bound) and (e_ionic <= mat_2_e_ionic_upper_bound):       
-                mat_2_e_ionic_idx.append(i)
 
         mat_1_e_elec_idx = []
         mat_2_e_elec_idx = []
-        for i, e_elec in enumerate(consolidated_dict["e_elec"]):
-            if (e_elec >= mat_1_e_elec_lower_bound) and (e_ionic <= mat_1_e_elec_upper_bound):       
-                mat_1_e_elec_idx.append(i)
-            if (e_elec >= mat_2_e_elec_lower_bound) and (e_ionic <= mat_2_e_elec_upper_bound):       
-                mat_2_e_elec_idx.append(i)
 
         mat_1_n_idx = []
         mat_2_n_idx = []
-        for i, n in enumerate(consolidated_dict["n"]):
-            if (n >= mat_1_n_lower_bound) and (n <= mat_1_n_upper_bound):       
-                mat_1_n_idx.append(i)
-            if (n >= mat_2_n_lower_bound) and (n <= mat_2_n_upper_bound):       
-                mat_2_n_idx.append(i)
+
+        if "dielectric" in self.property_docs:
+            for i, e_total in enumerate(consolidated_dict["e_total"]):
+                if (e_total >= mat_1_e_total_lower_bound) and (e_total <= mat_1_e_total_upper_bound):       
+                    mat_1_e_total_idx.append(i)
+                if (e_total >= mat_2_e_total_lower_bound) and (e_total <= mat_2_e_total_upper_bound):       
+                    mat_2_e_total_idx.append(i)
+
+            
+            for i, e_ionic in enumerate(consolidated_dict["e_ionic"]):
+                if (e_ionic >= mat_1_e_ionic_lower_bound) and (e_ionic <= mat_1_e_ionic_upper_bound):       
+                    mat_1_e_ionic_idx.append(i)
+                if (e_ionic >= mat_2_e_ionic_lower_bound) and (e_ionic <= mat_2_e_ionic_upper_bound):       
+                    mat_2_e_ionic_idx.append(i)
+
+            
+            for i, e_elec in enumerate(consolidated_dict["e_elec"]):
+                if (e_elec >= mat_1_e_elec_lower_bound) and (e_ionic <= mat_1_e_elec_upper_bound):       
+                    mat_1_e_elec_idx.append(i)
+                if (e_elec >= mat_2_e_elec_lower_bound) and (e_ionic <= mat_2_e_elec_upper_bound):       
+                    mat_2_e_elec_idx.append(i)
+
+            
+            for i, n in enumerate(consolidated_dict["n"]):
+                if (n >= mat_1_n_lower_bound) and (n <= mat_1_n_upper_bound):       
+                    mat_1_n_idx.append(i)
+                if (n >= mat_2_n_lower_bound) and (n <= mat_2_n_upper_bound):       
+                    mat_2_n_idx.append(i)
+
+            if mat1_matches == set(): # populate matches before taking intersections
+                mat1_matches = set(mat_1_e_total_idx) & set(mat_1_e_ionic_idx) & set(mat_1_e_elec_idx) & set(mat_1_n_idx)
+            else:
+                mat1_matches = mat1_matches & set(mat_1_e_total_idx) & set(mat_1_e_ionic_idx) & set(mat_1_e_elec_idx) & set(mat_1_n_idx)
+
+            if mat2_matches == set(): 
+                mat2_matches = set(mat_2_e_total_idx) & set(mat_2_e_ionic_idx) & set(mat_2_e_elec_idx) & set(mat_2_n_idx)
+            else:
+                mat2_matches = mat2_matches & set(mat_2_e_total_idx) & set(mat_2_e_ionic_idx) & set(mat_2_e_elec_idx) & set(mat_2_n_idx)
 
         # Check for materials that meet elastic criteria
         mat_1_bulk_idx = []
         mat_2_bulk_idx = []
-        for i, bulk_mod in enumerate(consolidated_dict["bulk_modulus"]):
-            if (bulk_mod >= mat_1_bulk_mod_lower_bound) and (bulk_mod <= mat_1_bulk_mod_upper_bound):       
-                mat_1_bulk_idx.append(i)
-            if (bulk_mod >= mat_2_bulk_mod_lower_bound) and (bulk_mod <= mat_2_bulk_mod_upper_bound):       
-                mat_2_bulk_idx.append(i)
 
         mat_1_shear_idx = []
         mat_2_shear_idx = []
-        for i, shear_mod in enumerate(consolidated_dict["shear_modulus"]):
-            if (shear_mod >= mat_1_shear_mod_lower_bound) and (shear_mod <= mat_1_shear_mod_upper_bound): 
-                mat_1_shear_idx.append(i)
-            if (shear_mod >= mat_2_shear_mod_lower_bound) and (shear_mod <= mat_2_shear_mod_upper_bound): 
-                mat_2_shear_idx.append(i) 
 
         mat_1_univ_aniso_idx = []
         mat_2_univ_aniso_idx = []
-        for i, univ_aniso in enumerate(consolidated_dict["universal_anisotropy"]):
-            if (univ_aniso >= mat_1_univ_aniso_lower_bound) and (univ_aniso <= mat_1_univ_aniso_upper_bound): 
-                mat_1_univ_aniso_idx.append(i)
-            if (univ_aniso >= mat_2_univ_aniso_lower_bound) and (univ_aniso <= mat_2_univ_aniso_upper_bound): 
-                mat_2_univ_aniso_idx.append(i) 
+
+        if "elastic" in self.property_docs:
+        
+            for i, bulk_mod in enumerate(consolidated_dict["bulk_modulus"]):
+                if (bulk_mod >= mat_1_bulk_mod_lower_bound) and (bulk_mod <= mat_1_bulk_mod_upper_bound):       
+                    mat_1_bulk_idx.append(i)
+                if (bulk_mod >= mat_2_bulk_mod_lower_bound) and (bulk_mod <= mat_2_bulk_mod_upper_bound):       
+                    mat_2_bulk_idx.append(i)
+                matches = matches & set(mat_1_bulk_idx) & set(mat_2_bulk_idx)
+
+            
+            for i, shear_mod in enumerate(consolidated_dict["shear_modulus"]):
+                if (shear_mod >= mat_1_shear_mod_lower_bound) and (shear_mod <= mat_1_shear_mod_upper_bound): 
+                    mat_1_shear_idx.append(i)
+                if (shear_mod >= mat_2_shear_mod_lower_bound) and (shear_mod <= mat_2_shear_mod_upper_bound): 
+                    mat_2_shear_idx.append(i) 
+                matches = matches & set(mat_1_shear_idx) & set(mat_2_shear_idx)
+
+            
+            for i, univ_aniso in enumerate(consolidated_dict["universal_anisotropy"]):
+                if (univ_aniso >= mat_1_univ_aniso_lower_bound) and (univ_aniso <= mat_1_univ_aniso_upper_bound): 
+                    mat_1_univ_aniso_idx.append(i)
+                if (univ_aniso >= mat_2_univ_aniso_lower_bound) and (univ_aniso <= mat_2_univ_aniso_upper_bound): 
+                    mat_2_univ_aniso_idx.append(i) 
+                matches = matches & set(mat_1_univ_aniso_idx) & set(mat_2_univ_aniso_idx)
+
+            if mat1_matches == set(): # populate matches before taking intersections
+                mat1_matches = set(mat_1_bulk_idx) & set(mat_1_shear_idx) & set(mat_1_univ_aniso_idx) 
+            else:
+                mat1_matches = mat1_matches & set(mat_1_bulk_idx) & set(mat_1_shear_idx) & set(mat_1_univ_aniso_idx)
+
+            if mat2_matches == set(): 
+                mat2_matches = set(mat_2_bulk_idx) & set(mat_2_shear_idx) & set(mat_2_univ_aniso_idx) 
+            else:
+                mat2_matches = mat2_matches & set(mat_2_bulk_idx) & set(mat_2_shear_idx) & set(mat_2_univ_aniso_idx)
 
         # Check for materials that meet magnetic criteria
         mat_1_tot_mag_idx = []
         mat_2_tot_mag_idx = []
-        for i, tot_mag in enumerate(consolidated_dict["total_magnetization"]):
-            if (tot_mag >= mat_1_tot_mag_lower_bound) and (tot_mag <= mat_1_tot_mag_upper_bound):       
-                mat_1_tot_mag_idx.append(i)
-            if (tot_mag >= mat_2_tot_mag_lower_bound) and (tot_mag <= mat_2_tot_mag_upper_bound):       
-                mat_2_tot_mag_idx.append(i)
 
         mat_1_tot_mag_norm_idx = []
         mat_2_tot_mag_norm_idx = []
-        for i, tot_mag_norm in enumerate(consolidated_dict["total_magnetization_normalized_volume"]):
-            if (tot_mag_norm >= mat_1_tot_mag_norm_lower_bound) and (tot_mag_norm <= mat_1_tot_mag_norm_upper_bound):       
-                mat_1_tot_mag_norm_idx.append(i)
-            if (tot_mag_norm >= mat_2_tot_mag_norm_lower_bound) and (tot_mag_norm <= mat_2_tot_mag_norm_upper_bound):       
-                mat_2_tot_mag_norm_idx.append(i)
+
+        if "magnetic" in self.property_docs:
+            for i, tot_mag in enumerate(consolidated_dict["total_magnetization"]):
+                if (tot_mag >= mat_1_tot_mag_lower_bound) and (tot_mag <= mat_1_tot_mag_upper_bound):       
+                    mat_1_tot_mag_idx.append(i)
+                if (tot_mag >= mat_2_tot_mag_lower_bound) and (tot_mag <= mat_2_tot_mag_upper_bound):       
+                    mat_2_tot_mag_idx.append(i)
+
+            
+            for i, tot_mag_norm in enumerate(consolidated_dict["total_magnetization_normalized_volume"]):
+                if (tot_mag_norm >= mat_1_tot_mag_norm_lower_bound) and (tot_mag_norm <= mat_1_tot_mag_norm_upper_bound):       
+                    mat_1_tot_mag_norm_idx.append(i)
+                if (tot_mag_norm >= mat_2_tot_mag_norm_lower_bound) and (tot_mag_norm <= mat_2_tot_mag_norm_upper_bound):       
+                    mat_2_tot_mag_norm_idx.append(i)
+
+            if mat1_matches == set(): # populate matches before taking intersections
+                mat1_matches = set(mat_1_tot_mag_idx) & set(mat_1_tot_mag_norm_idx) 
+            else:
+                mat1_matches = mat1_matches & set(mat_1_tot_mag_idx) & set(mat_1_tot_mag_norm_idx)
+
+            if mat2_matches == set(): 
+                mat2_matches = set(mat_2_tot_mag_idx) & set(mat_2_tot_mag_norm_idx) 
+            else:
+                mat2_matches = mat2_matches & set(mat_2_tot_mag_idx) & set(mat_2_tot_mag_norm_idx)
 
         # Check for materials that meet piezoelectric criteria
         mat_1_e_ij_idx = []
         mat_2_e_ij_idx = []
-        for i, e_ij in enumerate(consolidated_dict["total_magnetization"]):
-            if (e_ij >= mat_1_e_ij_lower_bound) and (e_ij <= mat_1_e_ij_upper_bound):       
-                mat_1_e_ij_idx.append(i)
-            if (e_ij >= mat_2_e_ij_lower_bound) and (e_ij <= mat_2_e_ij_upper_bound):       
-                mat_2_e_ij_idx.append(i)
 
-        # Find intersection
-        mat_1_indices = list(set(mat_1_elec_idx)         &\
-                             set(mat_1_therm_idx)        &\
-                             set(mat_1_e_total_idx)      &\
-                             set(mat_1_e_ionic_idx)      &\
-                             set(mat_1_e_elec_idx)       &\
-                             set(mat_1_bulk_idx)         &\
-                             set(mat_1_shear_idx)        &\
-                             set(mat_1_univ_aniso_idx)   &\
-                             set(mat_1_tot_mag_idx)      &\
-                             set(mat_1_tot_mag_norm_idx) &\
-                             set(mat_1_e_ij_idx))
+        if "piezoelectric" in self.property_docs:
+            for i, e_ij in enumerate(consolidated_dict["total_magnetization"]):
+                if (e_ij >= mat_1_e_ij_lower_bound) and (e_ij <= mat_1_e_ij_upper_bound):       
+                    mat_1_e_ij_idx.append(i)
+                if (e_ij >= mat_2_e_ij_lower_bound) and (e_ij <= mat_2_e_ij_upper_bound):       
+                    mat_2_e_ij_idx.append(i)
 
-        mat_2_indices = list(set(mat_2_elec_idx)         &\
-                             set(mat_2_therm_idx)        &\
-                             set(mat_2_e_total_idx)      &\
-                             set(mat_2_e_ionic_idx)      &\
-                             set(mat_2_e_elec_idx)       &\
-                             set(mat_2_bulk_idx)         &\
-                             set(mat_2_shear_idx)        &\
-                             set(mat_2_univ_aniso_idx)   &\
-                             set(mat_2_tot_mag_idx)      &\
-                             set(mat_2_tot_mag_norm_idx) &\
-                             set(mat_2_e_ij_idx))
+            if mat1_matches == set(): # populate matches before taking intersections
+                mat1_matches = set(mat_1_e_ij_idx)
+            else:
+                mat1_matches = mat1_matches & set(mat_1_e_ij_idx)
+
+            if mat2_matches == set(): 
+                mat2_matches = set(mat_2_e_ij_idx)
+            else:
+                mat2_matches = mat2_matches & set(mat_2_e_ij_idx)
 
         # Extract mp-ids
-        mat_1_ids = [mat_1_dict["mp-ids"][i] for i in mat_1_indices]
-        mat_2_ids = [mat_2_dict["mp-ids"][i] for i in mat_2_indices]
+        mat_1_ids = [mat_1_dict["mp-ids"][i] for i in list(mat1_matches)]
+        mat_2_ids = [mat_2_dict["mp-ids"][i] for i in list(mat2_matches)]
 
         return mat_1_ids, mat_2_ids 
     
     #------ Setter Methods ------#
 
-    def set_lower_bounds(self, new_lower_bounds):
-        self.lower_bounds = new_lower_bounds
+    def set_lower_bounds(self, lower_bounds):
+        self.lower_bounds = lower_bounds
         return self
     
-    def set_upper_bounds(self, new_upper_bounds):
-        self.upper_bounds = new_upper_bounds
+    def set_upper_bounds(self, upper_bounds):
+        self.lower_bounds = upper_bounds
         return self
     
-    def set_retain_parents(self, new_retain_parents):
-        self.retain_parents = new_retain_parents
+    def set_retain_parents(self, retain_parents):
+        self.retain_parents = retain_parents
         return self
     
-    def set_allow_mutations(self, new_allow_mutations):
-        self.allow_mutations = new_allow_mutations
+    def set_allow_mutations(self, allow_mutations):
+        self.allow_mutations = allow_mutations
         return self
 
-    def set_property_docs(self, new_property_docs):
-        self.property_docs = new_property_docs
+    def set_property_docs(self, property_docs):
+        self.property_docs = property_docs
         return self
     
-    def set_desired_props(self, new_desired_props):
-        self.desired_props = new_desired_props
+    def set_desired_props(self, desired_props):
+        self.desired_props = desired_props
         return self
     
-    def set_has_props(self, new_has_props):
-        self.has_props = new_has_props
+    def set_has_props(self, has_props):
+        self.has_props = has_props
         return self
     
-    def set_fields(self, new_fields):
-        self.fields = new_fields
+    def set_fields(self, fields):
+        self.fields = fields
         return self
     
-    def set_dv(self, new_dv):
-        self.dv = new_dv
+    def set_dv(self):
+        
+        # Add variables to genetic strings for each property doc
+        dv = len(self.desired_props["carrier-transport"]) +\
+             len(self.desired_props["dielectric"]) +\
+             len(self.desired_props["elastic"]) +\
+             len(self.desired_props["magnetic"]) +\
+             len(self.desired_props["piezoelectric"])
+        
+        # Make sure each material in the composite has variables for each property doc
+        # (Multiply by the number of materials in the composite)
+        num_materials = len(self.lower_bounds)
+        dv = dv * num_materials
+
+        # Add variables for mixing parameter and volume fraction
+        dv = dv + 2
+
+        self.dv = dv
         return self
     
-    def set_ga_params(self, new_ga_params):
-        self.ga_params = new_ga_params
+    def set_ga_params(self, ga_params):
+        self.ga_params = ga_params
         return self
     
-    def set_final_population(self, new_final_pop):
-        self.final_population = new_final_pop
+    def set_final_population(self, final_pop):
+        self.final_population = final_pop
         return self
     
-    def set_cost_history(self, new_cost_history):
-        self.cost_history = new_cost_history
+    def set_cost_history(self, cost_history):
+        self.cost_history = cost_history
         return self
     
-    def set_lowest_costs(self, new_lowest_costs):
-        self.lowest_costs = new_lowest_costs
+    def set_lowest_costs(self, lowest_costs):
+        self.lowest_costs = lowest_costs
         return self           
 
-    def set_parent_average_costs(self, new_par_avg_costs):
-        self.parent_average_costs = new_par_avg_costs
+    def set_parent_average_costs(self, par_avg_costs):
+        self.parent_average_costs = par_avg_costs
         return self
-        
-    def set_material_matches():
-        return
     
     def set_HS_optim_params(self):
-
-        '''
-        MAIN OPTIMIZATION FUNCTION
-        '''
+        
+        # MAIN OPTIMIZATION FUNCTION
 
         # Unpack necessary attributes from self
         P = self.ga_params.get_P()
@@ -508,7 +615,6 @@ class HashinShtrikman:
         
         # Initialize arrays to store the cost and original indices of each generation
         PI = np.ones((G, S))
-        Orig = np.ones((G, S))
         
         # Initialize arrays to store best performer and parent avg 
         Pi_min = np.zeros(G)     # best cost
@@ -522,8 +628,6 @@ class HashinShtrikman:
 
         # Randomly populate first generation  
         Lambda = Population(dv=self.dv, material_properties=self.property_docs, desired_properties=self.desired_props, ga_params=self.ga_params)
-        print(f"lower bounds: {lower_bounds}")
-        print(f"upper bounds: {upper_bounds}")
         
         Lambda.set_initial_random(lower_bounds, upper_bounds)
         
@@ -541,7 +645,9 @@ class HashinShtrikman:
         
         # Perform all later generations    
         while g < G:
-            print(g)
+            
+            print(str(g) + " of " + str(G))
+
             costs[0:P] = sorted_costs[0:P] # retain the parents from the previous generation
             
             # Select top parents P from Lambda to be breeders
@@ -585,22 +691,16 @@ class HashinShtrikman:
         # Update self attributes following optimization
         self.final_population = Lambda
         self.cost_history = PI
-        print(f"g = {g}")
-        print(f"G = {G}")
         self.lowest_costs = Pi_min
-        print(f"Pi_min: {Pi_min}")
         self.parent_average_costs = Pi_par_avg     
-        print(f"Pi_par_avg: {Pi_par_avg}")
         
         return self         
 
     #------ Other Methods ------#
 
     def print_table_of_best_designs(self):
-        [unique_strings, unique_costs] = self.get_unique_designs()
-        headers = ['Gamma, the avergaing parameter, []',
-                   '(Phase 1) Volume fraction, [] ',
-                   'Cost']
+
+        headers = []
         if "carrier_transport" in self.property_docs:
             headers.append('(Phase 1) Electrical conductivity, [S/m]')
             headers.append('(Phase 2) Electrical conductivity, [S/m]')
@@ -630,6 +730,10 @@ class HashinShtrikman:
         if "piezoelectric" in self.property_docs:
             headers.append('(Phase 1) Piezoelectric constant, [C/N or m/V]')
             headers.append('(Phase 2) Piezoelectric constant, [C/N or m/V]')
+
+        headers.extend(['Gamma, the avergaing parameter, []',
+                        '(Phase 1) Volume fraction, [] ',
+                        'Cost'])
      
         table_data = self.get_table_of_best_designs()
         print('\nHASHIN-SHTRIKMAN + GENETIC ALGORITHM RECOMMENDED MATERIAL PROPERTIES')
@@ -643,13 +747,237 @@ class HashinShtrikman:
         plt.ylabel('Cost', fontsize=20)
         plt.title('Genetic Algorithm Results, Case A', fontsize = 24)
         plt.legend(fontsize = 14)
-        plt.show()   
+        plt.show()  
 
+    def generate_material_property_dict(self):
+
+        material_property_dict = {"mp-ids": [],
+                                  "mp-ids-contrib": [], 
+                                  "formula": [],
+                                  "metal": []} 
+
+        if "carrier-transport" in self.property_docs:
+            material_property_dict["elec_cond_300K_low_doping"] = []
+            material_property_dict["therm_cond_300K_low_doping"] = []
+        if "dielectric" in self.property_docs:
+            material_property_dict["e_total"] = []
+            material_property_dict["e_ionic"] = []
+            material_property_dict["e_electronic"] = []
+            material_property_dict["n"] = []
+        if "elastic" in self.property_docs:
+            material_property_dict["bulk_modulus"] = []
+            material_property_dict["shear_modulus"] = []
+            material_property_dict["universal_anisotropy"] = []
+        if "magnetic" in self.property_docs:
+            material_property_dict["total_magnetization"] = []
+            material_property_dict["total_magnetization_normalized_volume"] = []
+        if "piezoelectric" in self.property_docs:
+            material_property_dict["e_ij"] = []
+
+        return material_property_dict
+    
+    def generate_consolidated_dict(self):
+
+        # MAIN FUNCTION USED TO GENERATE MATERIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
+
+        # Initialize local variables
+        get_band_gap = True
+
+        get_elec_cond      = False
+        get_therm_cond     = False
+        get_mp_ids_contrib = False
+
+        get_e_electronic = True
+        get_e_ionic      = True
+        get_e_total      = True
+        get_n            = True
+        
+        get_bulk_modulus         = True
+        get_shear_modulus        = True 
+        get_universal_anisotropy = True
+
+        get_total_magnetization                = False
+        get_total_magnetization_normalized_vol = False
+        
+        get_e_ij_max = True
+
+        if "carrier-transport" in self.property_docs:
+            get_elec_cond      = True
+            get_therm_cond     = True
+            get_mp_ids_contrib = True
+        else:
+            get_elec_cond      = False
+            get_therm_cond     = False
+            get_mp_ids_contrib = False
+
+        if "dielectric" in self.property_docs:
+            get_e_electronic = True
+            get_e_ionic      = True
+            get_e_total      = True
+            get_n            = True
+        else:
+            get_e_electronic = False
+            get_e_ionic      = False
+            get_e_total      = False
+            get_n            = False
+
+        if "elastic" in self.property_docs:
+            get_bulk_modulus         = True
+            get_shear_modulus        = True 
+            get_universal_anisotropy = True
+        else:
+            get_bulk_modulus         = False
+            get_shear_modulus        = False
+            get_universal_anisotropy = False
+
+        if "magnetic" in self.property_docs:
+            get_total_magnetization                = True
+            get_total_magnetization_normalized_vol = True
+        else:
+            get_total_magnetization                = False
+            get_total_magnetization_normalized_vol = False
+
+        if "piezoelectric" in self.property_docs:
+            get_e_ij_max = True
+        else:
+            get_e_ij_max = False
+
+
+        if get_mp_ids_contrib:
+            client = Client(apikey="uJpFxJJGKCSp9s1shwg9HmDuNjCDfWbM", project="carrier_transport")
+        else:
+            client = Client(apikey="uJpFxJJGKCSp9s1shwg9HmDuNjCDfWbM")
+
+        # Assemble dictionary of values needed for Hashin-Shtrikman analysis
+        consolidated_dict = {"mp-ids": [],
+                             "mp-ids-contrib": [], 
+                             "formula": [],
+                             "metal": [],
+                             "therm_cond_300K_low_doping": [],
+                             "elec_cond_300K_low_doping": [],
+                             "e_total": [],
+                             "e_ionic": [],
+                             "e_electronic": [],
+                             "n": [],
+                             "bulk_modulus": [],
+                             "shear_modulus": [],
+                             "universal_anisotropy": [],
+                             "total_magnetization": [],
+                             "total_magntization_normalized_vol": [],
+                             "e_ij_max": []}                      
+    
+        new_fields = self.fields
+        if get_band_gap not in self.fields:
+            new_fields["band_gap"] = []
+
+        # Carrier transport
+        if "carrier-transport" in self.property_docs:
+            self.fields["mp-ids-contrib"] = []
+            self.fields["elec_cond_300K_low_doping"] = []
+            self.fields["therm_cond_300K_low_doping"] = []
+
+        # Dielectric
+        if "dielectric" in self.property_docs:
+            self.fields["e_electronic"] = []
+            self.fields["e_ionic"] = []
+            self.fields["e_total"] = []
+            self.fields["n"] = []
+
+        # Elastic
+        if "elastic" in self.property_docs:
+            self.fields["bulk_modulus"] = []
+            self.fields["shear_modulus"] = []
+            self.fields["universal_anisotropy"] = []
+        
+        # Magnetic
+        if "magnetic" in self.property_docs:
+            self.fields["total_magnetization"] = []
+            self.fields["total_magnetization_normalized_vol"] = []
+
+        # Piezoelectric
+        if "piezoelectric" in self.property_docs:
+            self.fields["e_ij_max"] = []
+
+        with MPRester(self.api_key) as mpr:
+            
+            docs = mpr.materials.search(fields=self.fields)
+            #docs = mpr.materials.summary.search(fields=self.fields)
+
+            for i, doc in enumerate(docs):
+
+                print(f"{i} of {len(docs)}")
+
+                try:
+
+                    mp_id = doc.material_id                           
+                    query = {"identifier": mp_id}
+                    my_dict = client.download_contributions(query=query, include=["tables"])[0]
+                    consolidated_dict["mp-ids"].append(mp_id)    
+                    consolidated_dict["formula"].append(my_dict["formula"])
+                    consolidated_dict["metal"].append(my_dict["data"]["metal"])                  
+                    consolidated_dict["is_stable"].append(doc.is_stable)
+                    consolidated_dict["is_metal"].append(doc.is_metal) 
+
+                    if get_band_gap:
+                        consolidated_dict["band_gap"].append(doc.band_gap)
+
+                    # Carrier transport
+                    if get_mp_ids_contrib:
+
+                        try:
+                            consolidated_dict["mp-ids-contrib"].append(my_dict["identifier"])
+                            thermal_cond = my_dict["tables"][7].iloc[2, 1] * 1e-14  # multply by relaxation time, 10 fs
+                            elec_cond = my_dict["tables"][5].iloc[2, 1] * 1e-14 # multply by relaxation time, 10 fs   
+                            consolidated_dict["therm_cond_300K_low_doping"].append(thermal_cond)
+                            consolidated_dict["elec_cond_300K_low_doping"].append(elec_cond)              
+
+                        except:
+                            IndexError
+
+                    # Dielectric
+                    if get_e_electronic:
+                        consolidated_dict["e_electronic"].append(doc.e_electronic)
+                    if get_e_ionic:
+                        consolidated_dict["e_ionic"].append(doc.e_ionic)
+                    if get_e_total:
+                        consolidated_dict["e_total"].append(doc.e_total)
+                    if get_n:
+                        consolidated_dict["n"].append(doc.n)
+
+                    # Elastic
+                    if get_bulk_modulus:
+                        bulk_modulus_voigt = doc.bulk_modulus["voigt"]
+                        consolidated_dict["bulk_modulus"].append(bulk_modulus_voigt)
+                    if get_shear_modulus:
+                        shear_modulus_voigt = doc.shear_modulus["voigt"]
+                        consolidated_dict["shear_modulus"].append(shear_modulus_voigt)
+                    if get_universal_anisotropy:
+                        consolidated_dict["universal_anisotropy"].append(doc.universal_anisotropy)                   
+
+                    # Magnetic
+                    if get_total_magnetization:
+                        consolidated_dict["total_magnetization"].append(doc.total_magnetization)
+                    if get_total_magnetization_normalized_vol:
+                        consolidated_dict["total_magnetization_normalized_vol"].append(doc.total_magnetization_normalized_vol)
+
+                    # Piezoelectric
+                    if get_e_ij_max:
+                        consolidated_dict["e_ij_max"].append(doc.e_ij_max)                   
+
+                except:
+                    TypeError
+
+        now = datetime.now()
+        my_file_name = "consolidated_dict_" + now.strftime("%m/%d/%Y, %H:%M:%S")
+        with open(my_file_name, "w") as my_file:
+            json.dump(consolidated_dict, my_file)
+
+        return consolidated_dict
+
+    '''
     def generate_final_dict(self, total_docs = None):
 
-        '''
-        MAIN FUNCTION USED TO GENERATE MATRIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
-        '''
+        # MAIN FUNCTION USED TO GENERATE MATRIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
 
         if "carrier-transport" in self.property_docs:
             client = Client(apikey=self.api_key, project=self.mp_contribs_project)
@@ -840,6 +1168,8 @@ class HashinShtrikman:
         }
         normal_str = ''.join(superscript_to_normal.get(char, char) for char in superscript_str)
         return int(normal_str)
+    
+    '''
 
         
     
