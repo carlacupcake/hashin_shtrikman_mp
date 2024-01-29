@@ -974,7 +974,7 @@ class HashinShtrikman:
 
         return consolidated_dict
 
-    '''
+    
     def generate_final_dict(self, total_docs = None):
 
         # MAIN FUNCTION USED TO GENERATE MATRIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
@@ -1169,7 +1169,7 @@ class HashinShtrikman:
         normal_str = ''.join(superscript_to_normal.get(char, char) for char in superscript_str)
         return int(normal_str)
     
-    '''
+    
 
         
     
