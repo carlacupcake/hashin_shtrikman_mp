@@ -4,7 +4,7 @@ class GAParams:
             self,
             P: int = 10,
             K: int = 10,
-            G: int = 900, # Change it back to 5000 later
+            G: int = 5000, 
             S: int = 200,
             TOL: float = 0.5,
             w1: float = 1.0,

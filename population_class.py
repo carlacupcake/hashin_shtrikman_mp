@@ -28,8 +28,8 @@ class Population:
             self.ga_params = ga_params
 
             # Update from default based on self.property_docs
-            self.values = values or np.zeros((self.ga_params.get_S(), self.dv))
-            self.costs  = costs  or np.zeros((self.ga_params.get_S(), self.dv))
+            self.values = np.zeros((self.ga_params.get_S(), self.dv)) if values == np.empty else values
+            self.costs  = np.zeros((self.ga_params.get_S(), self.dv)) if costs  == np.empty else costs
 
     #------ Getter Methods ------#
     def get_dv(self):
@@ -67,40 +67,103 @@ class Population:
     def set_initial_random(self, lower_bounds, upper_bounds):
 
         S = self.ga_params.get_S()
-        num_materials = len(lower_bounds)
 
         # Initialize bounds lists
         lower_bounds_list = []
         upper_bounds_list = []
 
         # Unpack bounds from dictionaries, include bounds for all materials
+        # Could extend to more materials later
         if "carrier-transport" in self.property_docs:
-            lower_bounds_list.extend(lower_bounds["carrier-transport"]*num_materials) 
-            upper_bounds_list.extend(upper_bounds["carrier-transport"]*num_materials) 
+            lower_bounds_list.extend(lower_bounds["mat1"]["carrier-transport"]) 
+            lower_bounds_list.extend(lower_bounds["mat2"]["carrier-transport"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["carrier-transport"])
+            upper_bounds_list.extend(upper_bounds["mat2"]["carrier-transport"]) 
         if "dielectric" in self.property_docs:
-            lower_bounds_list.extend(lower_bounds["dielectric"]*num_materials) 
-            upper_bounds_list.extend(upper_bounds["dielectric"]*num_materials) 
+            lower_bounds_list.extend(lower_bounds["mat1"]["dielectric"])
+            lower_bounds_list.extend(lower_bounds["mat2"]["dielectric"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["dielectric"]) 
+            upper_bounds_list.extend(upper_bounds["mat2"]["dielectric"]) 
         if "elastic" in self.property_docs:
-            lower_bounds_list.extend(lower_bounds["elastic"]*num_materials) 
-            upper_bounds_list.extend(upper_bounds["elastic"]*num_materials) 
+            lower_bounds_list.extend(lower_bounds["mat1"]["elastic"]) 
+            lower_bounds_list.extend(lower_bounds["mat2"]["elastic"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["elastic"]) 
+            upper_bounds_list.extend(upper_bounds["mat2"]["elastic"]) 
         if "magnetic" in self.property_docs:
-            lower_bounds_list.extend(lower_bounds["magnetic"]*num_materials) 
-            upper_bounds_list.extend(upper_bounds["magnetic"]*num_materials) 
+            lower_bounds_list.extend(lower_bounds["mat1"]["magnetic"])
+            lower_bounds_list.extend(lower_bounds["mat2"]["magnetic"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["magnetic"]) 
+            upper_bounds_list.extend(upper_bounds["mat2"]["magnetic"]) 
         if "piezoelectric" in self.property_docs:
-            lower_bounds_list.extend(lower_bounds["piezoelectric"]*num_materials) 
-            upper_bounds_list.extend(upper_bounds["piezoelectric"]*num_materials) 
+            lower_bounds_list.extend(lower_bounds["mat1"]["piezoelectric"]) 
+            lower_bounds_list.extend(lower_bounds["mat2"]["piezoelectric"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["piezoelectric"]) 
+            upper_bounds_list.extend(upper_bounds["mat2"]["piezoelectric"]) 
 
         # Include for mixing parameter and volume fraction
-        lower_bounds_list.extend(0) # mixing parameter gamma in [0,1]
-        upper_bounds_list.extend(1)
-        lower_bounds_list.extend(0) # volume fraction in [0,1]
-        upper_bounds_list.extend(1)
+        lower_bounds_list.append(0) # mixing parameter gamma in [0,1]
+        upper_bounds_list.append(1)
+        lower_bounds_list.append(0) # volume fraction in [0,1]
+        upper_bounds_list.append(1)
 
-        upper_bounds_list = [1e9 if np.isinf(x) else x for x in upper_bounds]
+        # Cast lists to ndarrays
+        lower_bounds_array = np.array(lower_bounds_list)
+        upper_bounds_array = np.array(upper_bounds_list)
         for i in range (S):
-            self.values[i, :] = np.random.uniform(lower_bounds_list, upper_bounds_list)
+            self.values[i, :] = np.random.uniform(lower_bounds_array, upper_bounds_array)
 
         return self 
+    
+    def set_new_random(self, SPK, lower_bounds, upper_bounds):
+
+        S = self.ga_params.get_S()
+        PK = S - SPK # the number of parents plus the number of kids
+
+        # Initialize bounds lists
+        lower_bounds_list = []
+        upper_bounds_list = []
+
+        # Unpack bounds from dictionaries, include bounds for all materials
+        # Could extend to more materials later
+        if "carrier-transport" in self.property_docs:
+            lower_bounds_list.extend(lower_bounds["mat1"]["carrier-transport"]) 
+            lower_bounds_list.extend(lower_bounds["mat2"]["carrier-transport"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["carrier-transport"])
+            upper_bounds_list.extend(upper_bounds["mat2"]["carrier-transport"]) 
+        if "dielectric" in self.property_docs:
+            lower_bounds_list.extend(lower_bounds["mat1"]["dielectric"])
+            lower_bounds_list.extend(lower_bounds["mat2"]["dielectric"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["dielectric"]) 
+            upper_bounds_list.extend(upper_bounds["mat2"]["dielectric"]) 
+        if "elastic" in self.property_docs:
+            lower_bounds_list.extend(lower_bounds["mat1"]["elastic"]) 
+            lower_bounds_list.extend(lower_bounds["mat2"]["elastic"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["elastic"]) 
+            upper_bounds_list.extend(upper_bounds["mat2"]["elastic"]) 
+        if "magnetic" in self.property_docs:
+            lower_bounds_list.extend(lower_bounds["mat1"]["magnetic"])
+            lower_bounds_list.extend(lower_bounds["mat2"]["magnetic"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["magnetic"]) 
+            upper_bounds_list.extend(upper_bounds["mat2"]["magnetic"]) 
+        if "piezoelectric" in self.property_docs:
+            lower_bounds_list.extend(lower_bounds["mat1"]["piezoelectric"]) 
+            lower_bounds_list.extend(lower_bounds["mat2"]["piezoelectric"]) 
+            upper_bounds_list.extend(upper_bounds["mat1"]["piezoelectric"]) 
+            upper_bounds_list.extend(upper_bounds["mat2"]["piezoelectric"]) 
+
+        # Include for mixing parameter and volume fraction
+        lower_bounds_list.append(0) # mixing parameter gamma in [0,1]
+        upper_bounds_list.append(1)
+        lower_bounds_list.append(0) # volume fraction in [0,1]
+        upper_bounds_list.append(1)
+
+        # Cast lists to ndarrays
+        lower_bounds_array = np.array(lower_bounds_list)
+        upper_bounds_array = np.array(upper_bounds_list)
+        for i in range (SPK):
+            self.values[PK+i, :] = np.random.uniform(lower_bounds_array, upper_bounds_array)
+
+        return self
     
     def set_costs(self):
         Lambda = self.values
