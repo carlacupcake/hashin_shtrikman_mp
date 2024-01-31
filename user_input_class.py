@@ -135,7 +135,7 @@ class UserInput:
         self.mat2_upper_e_ij                                  = mat2_upper_e_ij     
 
     
-DEFAULT_USER_INPUT = UserInput(include_carrier_transport                         = True,
+TEST_USER_INPUT = UserInput(include_carrier_transport                         = True,
                                 include_dielectric                               = True,
                                 include_elastic                                  = True,
                                 include_magnetic                                 = True,

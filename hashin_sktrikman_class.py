@@ -19,9 +19,9 @@ from mp_api.client.core.utils import validate_ids
 
 # Custom Classes
 from ga_params_class import GAParams
-from genetic_string_class import GeneticString
+from member_class import Member
 from population_class import Population
-from user_input_class import UserInput, DEFAULT_USER_INPUT
+from user_input_class import UserInput, TEST_USER_INPUT
 
 # Other
 import numpy as np
@@ -71,19 +71,19 @@ class HashinShtrikman:
             api_key:              Optional[str] = None,
             mp_contribs_project:  Optional[str] = None,
             endpoint:             str  = DEFAULT_ENDPOINT,
-            user_input:           UserInput = DEFAULT_USER_INPUT,
+            user_input:           UserInput = TEST_USER_INPUT,
             property_docs:        list = DEFAULT_PROPERTY_DOCS,
             desired_props:        dict = DEFAULT_DESIRED_PROPS,
             has_props:            list = DEFAULT_HAS_PROPS,
             fields:               dict = DEFAULT_FIELDS,
-            dv:                   int  = 0,
+            num_properties:       int  = 0,
             lower_bounds:         dict = DEFAULT_LOWER_BOUNDS,
             upper_bounds:         dict = DEFAULT_UPPER_BOUNDS, 
             ga_params:            GAParams = GAParams(),
             final_population:     Population = Population(),
             cost_history:         np.ndarray = np.empty,   
             lowest_costs:         np.ndarray = np.empty,          
-            parent_average_costs: np.ndarray = np.empty, 
+            avg_parent_costs:     np.ndarray = np.empty, 
         ):
             
             self.api_key              = api_key 
@@ -94,18 +94,18 @@ class HashinShtrikman:
             self.desired_props        = desired_props 
             self.has_props            = has_props
             self.fields               = fields
-            self.dv                   = dv  
+            self.num_properties       = num_properties  
             self.lower_bounds         = lower_bounds 
             self.upper_bounds         = upper_bounds
             self.ga_params            = ga_params 
             self.final_population     = final_population
             self.cost_history         = cost_history            
             self.lowest_costs         = lowest_costs
-            self.parent_average_costs = parent_average_costs
+            self.avg_parent_costs     = avg_parent_costs
 
             # Update from default based on self.user_input
             self.set_desired_props_from_user_input()
-            self.set_dv_from_desired_props()
+            self.set_num_properties_from_desired_props()
             self.set_lower_bounds_from_user_input()
             self.set_upper_bounds_from_user_input()          
 
@@ -153,8 +153,8 @@ class HashinShtrikman:
     def get_fields(self):
         return self.fields
     
-    def get_dv(self):
-        return self.dv
+    def get_num_properties(self):
+        return self.num_properties
     
     def get_ga_params(self):
         return self.ga_params
@@ -168,8 +168,8 @@ class HashinShtrikman:
     def get_lowest_costs(self):
         return self.lowest_costs           
 
-    def get_parent_average_costs(self):
-        return self.parent_average_costs
+    def get_avg_parent_costs(self):
+        return self.avg_parent_costs
     
     def get_unique_designs(self):
         # Costs are often equal to >10 decimal points, truncate to obtain a richer set of suggestions
@@ -177,15 +177,15 @@ class HashinShtrikman:
         final_costs = self.final_population.get_costs()
         rounded_costs = np.round(final_costs, decimals=3)
     
-        # Obtain Unique Strings and Costs
-        [unique_costs, iuniq] = np.unique(rounded_costs, return_index=True)
-        unique_strings = self.final_population.values[iuniq]
+        # Obtain unique members and costs
+        [unique_costs, unique_indices] = np.unique(rounded_costs, return_index=True)
+        unique_members = self.final_population.values[unique_indices]
 
-        return [unique_strings, unique_costs] 
+        return [unique_members, unique_costs] 
 
     def get_table_of_best_designs(self):
-        [unique_strings, unique_costs] = self.get_unique_designs()     
-        table_data = np.hstack((unique_strings[0:20,:], unique_costs[0:20].reshape(-1,1))) # only 20 rows in output table, hardcoded
+        [unique_members, unique_costs] = self.get_unique_designs()     
+        table_data = np.hstack((unique_members[0:20,:], unique_costs[0:20].reshape(-1, 1))) # only 20 rows in output table, hardcoded
         return table_data
 
     def get_dict_of_best_designs(self):
@@ -219,61 +219,61 @@ class HashinShtrikman:
         best_designs_dict = {"mat1": material_property_dict,
                              "mat2": material_property_dict} # could generalize to more materials later 
 
-        [unique_strings, unique_costs] = self.get_unique_designs()   
+        [unique_members, unique_costs] = self.get_unique_designs()   
         
         for i in range(len(unique_costs)):
             idx = 0
             if "carrier-transport" in self.property_docs:
-                best_designs_dict["mat1"]["carrier-transport"]["elec_cond_300K_low_doping"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["carrier-transport"]["elec_cond_300K_low_doping"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["carrier-transport"]["elec_cond_300K_low_doping"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["carrier-transport"]["elec_cond_300K_low_doping"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat1"]["carrier-transport"]["therm_cond_300K_low_doping"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["carrier-transport"]["therm_cond_300K_low_doping"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["carrier-transport"]["therm_cond_300K_low_doping"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["carrier-transport"]["therm_cond_300K_low_doping"].append(unique_members[i, idx])
             if "dielectric" in self.property_docs:
-                best_designs_dict["mat1"]["dielectric"]["e_total"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["dielectric"]["e_total"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["dielectric"]["e_total"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["dielectric"]["e_total"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat1"]["dielectric"]["e_ionic"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["dielectric"]["e_ionic"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["dielectric"]["e_ionic"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["dielectric"]["e_ionic"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat1"]["dielectric"]["e_electronic"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["dielectric"]["e_electronic"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["dielectric"]["e_electronic"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["dielectric"]["e_electronic"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat1"]["dielectric"]["n"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["dielectric"]["n"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["dielectric"]["n"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["dielectric"]["n"].append(unique_members[i, idx])
                 idx += 1
             if "elastic" in self.property_docs:
-                best_designs_dict["mat1"]["elastic"]["bulk_modulus"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["elastic"]["bulk_modulus"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["elastic"]["bulk_modulus"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["elastic"]["bulk_modulus"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat1"]["elastic"]["shear_modulus"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["elastic"]["shear_modulus"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["elastic"]["shear_modulus"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["elastic"]["shear_modulus"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat1"]["elastic"]["universal_anisotropy"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["elastic"]["universal_anisotropy"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["elastic"]["universal_anisotropy"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["elastic"]["universal_anisotropy"].append(unique_members[i, idx])
                 idx += 1
             if "magnetic" in self.property_docs:
-                best_designs_dict["mat1"]["magnetic"]["total_magnetization"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["magnetic"]["total_magnetization"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["magnetic"]["total_magnetization"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["magnetic"]["total_magnetization"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat1"]["magnetic"]["total_magnetization_normalized_volume"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["magnetic"]["total_magnetization_normalized_volume"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat2"]["magnetic"]["total_magnetization_normalized_volume"].append(unique_strings[i, idx])
+                best_designs_dict["mat2"]["magnetic"]["total_magnetization_normalized_volume"].append(unique_members[i, idx])
                 idx += 1
             if "piezoelectric" in self.property_docs:
-                best_designs_dict["mat1"]["piezoelectric"]["e_ij"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["piezoelectric"]["e_ij"].append(unique_members[i, idx])
                 idx += 1
-                best_designs_dict["mat1"]["piezoelectric"]["e_ij"].append(unique_strings[i, idx])
+                best_designs_dict["mat1"]["piezoelectric"]["e_ij"].append(unique_members[i, idx])
                 idx += 1
 
         return best_designs_dict        
@@ -282,6 +282,7 @@ class HashinShtrikman:
 
         best_designs_dict = self.get_dict_of_best_designs()
         
+        # TODO get from latest final_dict file
         consolidated_dict = {}
         with open("test_final_dict") as f:
             consolidated_dict = json.load(f)
@@ -721,35 +722,35 @@ class HashinShtrikman:
         self.fields = fields
         return self
     
-    def set_dv(self, dv):
-        self.dv = dv
-        return dv
+    def set_num_properties(self, num_properties):
+        self.num_properties = num_properties
+        return num_properties
     
-    def set_dv_from_desired_props(self):
+    def set_num_properties_from_desired_props(self):
 
-        dv = 0
+        num_properties = 0
         
-        # Add variables to genetic strings for each property doc
+        # Add variables to members for each property doc
         if "carrier-transport" in self.property_docs:
-            dv = dv + len(self.desired_props["carrier-transport"])
+            num_properties += len(self.desired_props["carrier-transport"])
         if "dielectric" in self.property_docs:
-            dv = dv + len(self.desired_props["dielectric"])
+            num_properties += len(self.desired_props["dielectric"])
         if "elastic" in self.property_docs:
-            dv = dv + len(self.desired_props["elastic"])
+            num_properties += len(self.desired_props["elastic"])
         if "magnetic" in self.property_docs:
-            dv = dv + len(self.desired_props["magnetic"])
+            num_properties += len(self.desired_props["magnetic"])
         if "piezoelectric" in self.property_docs:
-            dv = dv + len(self.desired_props["piezoelectric"])
+            num_properties += len(self.desired_props["piezoelectric"])
         
         # Make sure each material in the composite has variables for each property doc
         # (Multiply by the number of materials in the composite)
         num_materials = len(self.lower_bounds)
-        dv = dv * num_materials
+        num_properties = num_properties * num_materials
 
         # Add variables for mixing parameter and volume fraction
-        dv = dv + 2
+        num_properties += 2
 
-        self.dv = dv
+        self.num_properties = num_properties
         return self
     
     def set_ga_params(self, ga_params):
@@ -768,8 +769,8 @@ class HashinShtrikman:
         self.lowest_costs = lowest_costs
         return self           
 
-    def set_parent_average_costs(self, par_avg_costs):
-        self.parent_average_costs = par_avg_costs
+    def set_avg_parent_costs(self, avg_parent_costs):
+        self.avg_parent_costs = avg_parent_costs
         return self
     
     def set_HS_optim_params(self):
@@ -777,89 +778,88 @@ class HashinShtrikman:
         # MAIN OPTIMIZATION FUNCTION
 
         # Unpack necessary attributes from self
-        P = self.ga_params.get_P()
-        K = self.ga_params.get_K()
-        G = self.ga_params.get_G()
-        S = self.ga_params.get_S()
-        lower_bounds = self.lower_bounds
-        upper_bounds = self.upper_bounds
+        num_parents = self.ga_params.get_num_parents()
+        num_kids = self.ga_params.get_num_kids()
+        num_generations = self.ga_params.get_num_generations()
+        num_members = self.ga_params.get_num_members()
         
         # Initialize arrays to store the cost and original indices of each generation
-        PI = np.ones((G, S))
+        all_costs = np.ones((num_generations, num_members))
         
         # Initialize arrays to store best performer and parent avg 
-        Pi_min = np.zeros(G)     # best cost
-        Pi_par_avg = np.zeros(G) # avg cost of parents
+        lowest_costs = np.zeros(num_generations)     # best cost
+        avg_parent_costs = np.zeros(num_generations) # avg cost of parents
         
         # Generation counter
         g = 0
 
         # Initialize array to store costs for current generation
-        costs = np.zeros(S)
+        costs = np.zeros(num_members)
 
         # Randomly populate first generation  
-        Lambda = Population(dv=self.dv, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
-        Lambda.set_initial_random(lower_bounds, upper_bounds)    
+        population = Population(num_properties=self.num_properties, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
+        population.set_initial_random(self.lower_bounds, self.upper_bounds)    
 
         # Calculate the costs of the first generation
-        Lambda.set_costs()    
+        population.set_costs()    
         # Sort the costs of the first generation
-        [sorted_costs, ind] = Lambda.sort_costs()  
-        PI[g, :] = sorted_costs.reshape(1,S) 
+        [sorted_costs, ind] = population.sort_costs()  
+        all_costs[g, :] = sorted_costs.reshape(1, num_members) 
         # Store the cost of the best performer and average cost of the parents 
-        Pi_min[g] = np.min(sorted_costs)
-        Pi_par_avg[g] = np.mean(sorted_costs[0:P])
+        lowest_costs[g] = np.min(sorted_costs)
+        avg_parent_costs[g] = np.mean(sorted_costs[0:num_parents])
         
-        # Update Lambda based on sorted indices
-        Lambda.set_order_by_costs(ind)
+        # Update population based on sorted indices
+        population.set_order_by_costs(ind)
         
         # Perform all later generations    
-        while g < G:
+        while g < num_generations:
 
-            print(f"Generation {g} of {G}")
-            costs[0:P] = sorted_costs[0:P] # retain the parents from the previous generation
+            print(f"Generation {g} of {num_generations}")
+            costs[0:num_parents] = sorted_costs[0:num_parents] # retain the parents from the previous generation
             
-            # Select top parents P from Lambda to be breeders
-            for p in range(0, P, 2):
+            # Select top parents from population to be breeders
+            for p in range(0, num_parents, 2):
                 phi1, phi2 = np.random.rand(2)
-                kid1 = phi1*Lambda.values[p, :] + (1-phi1)*Lambda.values[p+1, :]
-                kid2 = phi2*Lambda.values[p, :] + (1-phi2)*Lambda.values[p+1, :]
+                kid1 = phi1 * population.values[p, :] + (1-phi1) * population.values[p+1, :]
+                kid2 = phi2 * population.values[p, :] + (1-phi2) * population.values[p+1, :]
                 
-                # Append offspring to Lambda, overwriting old population members 
-                Lambda.values[P+p,   :] = kid1
-                Lambda.values[P+p+1, :] = kid2
+                # Append offspring to population, overwriting old population members 
+                population.values[num_parents+p,   :] = kid1
+                population.values[num_parents+p+1, :] = kid2
             
-                # Cast offspring to genetic strings and evaluate costs
-                kid1 = GeneticString(dv=self.dv, values=kid1, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
-                kid2 = GeneticString(dv=self.dv, values=kid2, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
-                costs[P+p]   = kid1.get_cost()
-                costs[P+p+1] = kid2.get_cost()
+                # Cast offspring to members and evaluate costs
+                kid1 = Member(num_properties=self.num_properties, values=kid1, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
+                kid2 = Member(num_properties=self.num_properties, values=kid2, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
+                costs[num_parents+p]   = kid1.get_cost()
+                costs[num_parents+p+1] = kid2.get_cost()
                         
-            # Randomly generate new design strings to fill the rest of the population
-            Lambda.set_new_random(S-P-K, lower_bounds, upper_bounds)
+            # Randomly generate new members to fill the rest of the population
+            members_minus_parents_minus_kids = num_members - num_parents - num_kids
+            population.set_new_random(members_minus_parents_minus_kids, self.lower_bounds, self.upper_bounds)
 
             # Calculate the costs of the gth generation
-            Lambda.set_costs()
+            population.set_costs()
 
             # Sort the costs for the gth generation
-            [sorted_costs, ind] = Lambda.sort_costs()  
-            PI[g, :] = sorted_costs.reshape(1,S) 
+            [sorted_costs, sorted_indices] = population.sort_costs()  
+            all_costs[g, :] = sorted_costs.reshape(1, num_members) 
         
             # Store the cost of the best performer and average cost of the parents 
-            Pi_min[g] = np.min(sorted_costs)
-            Pi_par_avg[g] = np.mean(sorted_costs[0:P])
+            lowest_costs[g] = np.min(sorted_costs)
+            avg_parent_costs[g] = np.mean(sorted_costs[0:num_parents])
         
-            # Update Lambda based on sorted indices
-            Lambda.set_order_by_costs(ind)
+            # Update population based on sorted indices
+            population.set_order_by_costs(sorted_indices)
 
             # Update the generation counter
             g = g + 1 
 
         # Update self attributes following optimization
-        self.final_population = Lambda
-        self.cost_history = PI
-        self.lowest_costs = Pi_min
-        self.parent_average_costs = Pi_par_avg     
+        self.final_population = population
+        self.cost_history = all_costs
+        self.lowest_costs = lowest_costs
+        self.avg_parent_costs = avg_parent_costs     
         
         return self         
 
@@ -908,11 +908,11 @@ class HashinShtrikman:
     
     def plot_optimization_results(self):
         fig, ax = plt.subplots(figsize=(10,6))
-        ax.plot(range(self.ga_params.get_G()), self.parent_average_costs, label='Avg. of top 10 performers')
-        ax.plot(range(self.ga_params.get_G()), self.lowest_costs, label="Best costs")
+        ax.plot(range(self.ga_params.get_num_generations()), self.avg_parent_costs, label='Avg. of top 10 performers')
+        ax.plot(range(self.ga_params.get_num_generations()), self.lowest_costs, label="Best costs")
         plt.xlabel('Generation', fontsize= 20)
         plt.ylabel('Cost', fontsize=20)
-        plt.title('Genetic Algorithm Results, Case A', fontsize = 24)
+        plt.title('Genetic Algorithm Results', fontsize = 24)
         plt.legend(fontsize = 14)
         plt.show()  
 

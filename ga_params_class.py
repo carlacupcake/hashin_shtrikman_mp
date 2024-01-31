@@ -2,73 +2,72 @@ class GAParams:
 
     def __init__(
             self,
-            P: int = 10,
-            K: int = 10,
-            G: int = 5000, 
-            S: int = 200,
-            TOL: float = 0.5,
-            w1: float = 1.0,
-            wj: float = 0.5, 
+            num_parents:        int = 10,
+            num_kids:           int = 10,
+            num_generations:    int = 900, 
+            num_members:        int = 200,
+            tolerance:          float = 0.5,
+            weight_eff_prop:    float = 1.0,
+            weight_conc_factor: float = 0.5, 
     ):
        
-        self.P = P     # number of design strings to breed
-        self.K = K     # number of offspring design strings 
-        self.G = G     # maximum number of generations
-        self.S = S     # total number of design strings per generation
-        self.TOL = TOL # property tolerance for convergence
-        self.w1 = w1   # material property individual weight
-        self.wj = wj   # concentration tensor weight
-
+        self.num_parents        = num_parents     
+        self.num_kids           = num_kids      
+        self.num_generations    = num_generations     
+        self.num_members        = num_members     
+        self.tolerance          = tolerance 
+        self.weight_eff_prop    = weight_eff_prop       
+        self.weight_conc_factor = weight_conc_factor  
 
     #------ Getter Methods ------#
-    def get_P(self):
-        return self.P
+    def get_num_parents(self):
+        return self.num_parents
     
-    def get_K(self):
-        return self.K
+    def get_num_kids(self):
+        return self.num_kids
     
-    def get_G(self):
-        return self.G
+    def get_num_generations(self):
+        return self.num_generations
     
-    def get_S(self):
-        return self.S
+    def get_num_members(self):
+        return self.num_members
     
-    def get_TOL(self):
-        return self.TOL
+    def get_tolerance(self):
+        return self.tolerance
     
-    def get_w1(self):
-        return self.w1
+    def get_weight_eff_prop(self):
+        return self.weight_eff_prop
     
-    def get_wj(self):
-        return self.wj
+    def get_weight_conc_factor(self):
+        return self.weight_conc_factor
     
     #------ Setter Methods ------#
-    def set_P(self, new_P):
-        self.P = new_P
+    def set_num_parents(self, num_parents):
+        self.num_parents = num_parents
         return self
     
-    def set_K(self, new_K):
-        self.K = new_K
+    def set_num_kids(self, num_kids):
+        self.num_kids = num_kids
         return self
     
-    def set_G(self, new_G):
-        self.G = new_G
+    def set_num_generations(self, num_generations):
+        self.num_generations = num_generations
         return self
     
-    def set_S(self, new_S):
-        self.S = new_S
+    def set_num_members(self, num_members):
+        self.num_members = num_members
         return self
     
-    def set_TOL(self, new_TOL):
-        self.TOL = new_TOL
+    def set_tolerance(self, tolerance):
+        self.tolerance = tolerance
         return self
     
-    def set_w1(self, new_w1):
-        self.w1 = new_w1
+    def set_weight_eff_prop(self, weight_eff_prop):
+        self.weight_eff_prop = weight_eff_prop
         return self
     
-    def set_wj(self, new_wj):
-        self.wj = new_wj
+    def set_weight_conc_factor(self, weight_conc_factor):
+        self.weight_conc_factor = weight_conc_factor
         return self
 
     

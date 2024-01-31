@@ -1,7 +1,7 @@
 from ga_params_class import GAParams
 from hashin_sktrikman_class import HashinShtrikman
 from population_class import Population
-from genetic_string_class import GeneticString
+from member_class import GeneticString
 
 headers = ['(Phase 1) Electrical conductivity, [S/m]',
                    '(Phase 2) Electrical conductivity, [S/m]',

@@ -1,5 +1,5 @@
 import numpy as np
-from genetic_string_class import GeneticString
+from member_class import Member
 from ga_params_class import GAParams
 from hs_logger import logger
 
@@ -14,26 +14,26 @@ class Population:
 
     def __init__(
             self,
-            dv: int = 0,
-            property_docs: list = DEFAULT_PROPERTY_DOCS,
-            desired_props: dict = DEFAULT_DESIRED_PROPS,
-            values: np.ndarray = np.empty,
-            costs: np.ndarray = np.empty,
-            ga_params: GAParams = GAParams(),
+            num_properties: int = 0,
+            property_docs:  list = DEFAULT_PROPERTY_DOCS,
+            desired_props:  dict = DEFAULT_DESIRED_PROPS,
+            values:         np.ndarray = np.empty,
+            costs:          np.ndarray = np.empty,
+            ga_params:      GAParams = GAParams(),
             ):
         
-            self.dv = dv
-            self.property_docs = property_docs
-            self.desired_props = desired_props
-            self.ga_params = ga_params
+            self.num_properties = num_properties
+            self.property_docs  = property_docs
+            self.desired_props  = desired_props
+            self.ga_params      = ga_params
 
             # Update from default based on self.property_docs
-            self.values = np.zeros((self.ga_params.get_S(), self.dv)) if values == np.empty else values
-            self.costs  = np.zeros((self.ga_params.get_S(), self.dv)) if costs  == np.empty else costs
+            self.values = np.zeros((self.ga_params.get_num_members(), self.num_properties)) if values == np.empty else values
+            self.costs  = np.zeros((self.ga_params.get_num_members(), self.num_properties)) if costs  == np.empty else costs
 
     #------ Getter Methods ------#
-    def get_dv(self):
-        return self.dv
+    def get_num_properties(self):
+        return self.num_properties
     
     def get_property_docs(self):
         return self.property_docs
@@ -48,8 +48,8 @@ class Population:
         return self.ga_params
     
     #------ Setter Methods ------#
-    def set_dv(self, dv):
-        self.dv = dv
+    def set_num_properties(self, num_properties):
+        self.num_properties = num_properties
         return self 
 
     def set_property_docs(self, property_docs):
@@ -66,7 +66,7 @@ class Population:
     
     def set_initial_random(self, lower_bounds, upper_bounds):
 
-        S = self.ga_params.get_S()
+        num_members = self.ga_params.get_num_members()
 
         # Initialize bounds lists
         lower_bounds_list = []
@@ -109,15 +109,15 @@ class Population:
         # Cast lists to ndarrays
         lower_bounds_array = np.array(lower_bounds_list)
         upper_bounds_array = np.array(upper_bounds_list)
-        for i in range (S):
+        for i in range(num_members):
             self.values[i, :] = np.random.uniform(lower_bounds_array, upper_bounds_array)
 
         return self 
     
-    def set_new_random(self, SPK, lower_bounds, upper_bounds):
+    def set_new_random(self, members_minus_parents_minus_kids, lower_bounds, upper_bounds):
 
-        S = self.ga_params.get_S()
-        PK = S - SPK # the number of parents plus the number of kids
+        num_members = self.ga_params.get_num_members()
+        parents_and_kids = num_members - members_minus_parents_minus_kids # P + K = M - (M - P - K)
 
         # Initialize bounds lists
         lower_bounds_list = []
@@ -160,32 +160,32 @@ class Population:
         # Cast lists to ndarrays
         lower_bounds_array = np.array(lower_bounds_list)
         upper_bounds_array = np.array(upper_bounds_list)
-        for i in range (SPK):
-            self.values[PK+i, :] = np.random.uniform(lower_bounds_array, upper_bounds_array)
+        for i in range (members_minus_parents_minus_kids):
+            self.values[parents_and_kids+i, :] = np.random.uniform(lower_bounds_array, upper_bounds_array)
 
         return self
     
     def set_costs(self):
-        Lambda = self.values
-        S = self.ga_params.get_S()
-        costs = np.zeros(S)
-        for i in range (S):
-            this_genetic_string = GeneticString(dv=self.dv, 
-                                                values=Lambda[i, :], 
-                                                property_docs=self.property_docs, 
-                                                desired_props=self.desired_props, 
-                                                ga_params=self.ga_params)
-            costs[i] = this_genetic_string.get_cost()
+        population_values = self.values
+        num_members = self.ga_params.get_num_members()
+        costs = np.zeros(num_members)
+        for i in range(num_members):
+            this_member = Member(num_properties=self.num_properties, 
+                                 values=population_values[i, :], 
+                                 property_docs=self.property_docs, 
+                                 desired_props=self.desired_props, 
+                                 ga_params=self.ga_params)
+            costs[i] = this_member.get_cost()
 
         self.costs = costs
         return self
     
-    def set_order_by_costs(self, ind):
-        S = self.ga_params.get_S()
-        dv = self.dv
-        temporary = np.zeros((S,dv))
-        for i in range(0, len(ind)):
-            temporary[i,:] = self.values[int(ind[i]),:]
+    def set_order_by_costs(self, sorted_indices):
+        num_members = self.ga_params.get_num_members()
+        num_properties = self.num_properties
+        temporary = np.zeros((num_members, num_properties))
+        for i in range(0, len(sorted_indices)):
+            temporary[i,:] = self.values[int(sorted_indices[i]),:]
         self.values = temporary
         return self
 
@@ -193,24 +193,18 @@ class Population:
 
     def sort_costs(self):
         sorted_costs = np.sort(self.costs, axis=0)
-        ind = np.argsort(self.costs, axis=0)
-        return [sorted_costs, ind]                         
-    
-    def reorder(self):
-        return
-    
-    def get_unique_designs(self):
-        return
+        sorted_indices = np.argsort(self.costs, axis=0)
+        return [sorted_costs, sorted_indices]                         
 
-    def get_unique_designs(Lambda, costs):
+    def get_unique_designs(population, costs):
 
         # Costs are often equal to >10 decimal points
         # Truncate to obtain a richer set of suggestions
         new_costs = np.round(costs, decimals=3)
         
-        # Obtain Unique Strings and Costs
-        [unique_costs, iuniq] = np.unique(new_costs, return_index=True)
-        unique_strings = Lambda[iuniq]
+        # Obtain unique members and costs
+        [unique_costs, unique_indices] = np.unique(new_costs, return_index=True)
+        unique_members = population[unique_indices]
 
-        return [unique_strings, unique_costs] 
+        return [unique_members, unique_costs] 
     
