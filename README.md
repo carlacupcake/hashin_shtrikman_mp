@@ -1,4 +1,6 @@
-# hashin_shtrikman_mp
+# Integration of Hashin-Shtrikman bounds using Genetic algorithm w/ Materials Project database
+
+
 
 mpi4py support is added to append final_dict
 
