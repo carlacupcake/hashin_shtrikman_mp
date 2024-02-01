@@ -12,6 +12,7 @@ class Member:
             desired_props:  dict={},
             ga_params:      GAParams = GAParams(),
             ):
+            
             self.num_properties = num_properties
             self.values         = np.zeros(shape=(num_properties, 1)) if values is np.empty else values
             self.property_docs  = property_docs

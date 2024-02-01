@@ -70,20 +70,20 @@ class HashinShtrikman:
             self,
             api_key:              Optional[str] = None,
             mp_contribs_project:  Optional[str] = None,
-            endpoint:             str  = DEFAULT_ENDPOINT,
-            user_input:           UserInput = UserInput(),
-            property_docs:        list = DEFAULT_PROPERTY_DOCS,
-            desired_props:        dict = DEFAULT_DESIRED_PROPS,
-            has_props:            list = DEFAULT_HAS_PROPS,
-            fields:               dict = DEFAULT_FIELDS,
-            num_properties:       int  = 0,
-            lower_bounds:         dict = DEFAULT_LOWER_BOUNDS,
-            upper_bounds:         dict = DEFAULT_UPPER_BOUNDS, 
-            ga_params:            GAParams = GAParams(),
-            final_population:     Population = Population(),
-            cost_history:         np.ndarray = np.empty,   
-            lowest_costs:         np.ndarray = np.empty,          
-            avg_parent_costs:     np.ndarray = np.empty, 
+            endpoint:             str           = DEFAULT_ENDPOINT,
+            user_input:           UserInput     = UserInput(),
+            property_docs:        list          = DEFAULT_PROPERTY_DOCS,
+            desired_props:        dict          = DEFAULT_DESIRED_PROPS,
+            has_props:            list          = DEFAULT_HAS_PROPS,
+            fields:               dict          = DEFAULT_FIELDS,
+            num_properties:       int           = 0,
+            lower_bounds:         dict          = DEFAULT_LOWER_BOUNDS,
+            upper_bounds:         dict          = DEFAULT_UPPER_BOUNDS, 
+            ga_params:            GAParams      = GAParams(),
+            final_population:     Population    = Population(),
+            cost_history:         np.ndarray    = np.empty,   
+            lowest_costs:         np.ndarray    = np.empty,          
+            avg_parent_costs:     np.ndarray    = np.empty, 
         ):
             
             self.api_key              = api_key 
@@ -107,7 +107,8 @@ class HashinShtrikman:
             self.set_desired_props_from_user_input()
             self.set_num_properties_from_desired_props()
             self.set_lower_bounds_from_user_input()
-            self.set_upper_bounds_from_user_input()          
+            self.set_upper_bounds_from_user_input() 
+
             try:
                 from mpcontribs.client import Client
                 self.contribs = Client(api_key, project="carrier_transport")
@@ -170,9 +171,12 @@ class HashinShtrikman:
     def get_avg_parent_costs(self):
         return self.avg_parent_costs
     
-    def get_headers(self):
+    def get_headers(self, include_mpids=False):
 
         headers = []
+        if include_mpids:
+            headers.append("Material 1 MP-ID")
+            headers.append("Material 2 MP-ID")
         if "carrier-transport" in self.property_docs:
             headers.append("(Phase 1) Electrical conductivity, [S/m]")
             headers.append("(Phase 1) Thermal conductivity, [W/m/K]")
@@ -210,6 +214,7 @@ class HashinShtrikman:
         return headers
     
     def get_unique_designs(self):
+
         # Costs are often equal to >10 decimal points, truncate to obtain a richer set of suggestions
         self.final_population.set_costs()
         final_costs = self.final_population.get_costs()
@@ -222,9 +227,10 @@ class HashinShtrikman:
         return [unique_members, unique_costs] 
 
     def get_table_of_best_designs(self):
+
         [unique_members, unique_costs] = self.get_unique_designs()     
-        # table_data = np.hstack((unique_members[0:20,:], unique_costs[0:20].reshape(-1, 1))) # only 20 rows in output table, hardcoded
-        table_data = np.hstack((unique_members[:,:], unique_costs[:].reshape(-1, 1))) # only 20 rows in output table, hardcoded
+        table_data = np.hstack((unique_members[0:self.user_input.num_results, :], unique_costs[0:self.user_input.num_results].reshape(-1, 1))) 
+
         return table_data
 
     def get_dict_of_best_designs(self):
@@ -262,6 +268,7 @@ class HashinShtrikman:
         
         for i in range(len(unique_costs)):
             idx = 0
+
             if "carrier-transport" in self.property_docs:
                 best_designs_dict["mat1"]["carrier-transport"]["elec_cond_300K_low_doping"].append(unique_members[i, idx])
                 idx += 1
@@ -271,6 +278,7 @@ class HashinShtrikman:
                 idx += 1
                 best_designs_dict["mat2"]["carrier-transport"]["therm_cond_300K_low_doping"].append(unique_members[i, idx])
                 idx += 1
+
             if "dielectric" in self.property_docs:
                 best_designs_dict["mat1"]["dielectric"]["e_total"].append(unique_members[i, idx])
                 idx += 1
@@ -302,6 +310,7 @@ class HashinShtrikman:
                 idx += 1
                 best_designs_dict["mat2"]["elastic"]["universal_anisotropy"].append(unique_members[i, idx])
                 idx += 1
+
             if "magnetic" in self.property_docs:
                 best_designs_dict["mat1"]["magnetic"]["total_magnetization"].append(unique_members[i, idx])
                 idx += 1  
@@ -311,6 +320,7 @@ class HashinShtrikman:
                 idx += 1
                 best_designs_dict["mat2"]["magnetic"]["total_magnetization_normalized_volume"].append(unique_members[i, idx])
                 idx += 1
+
             if "piezoelectric" in self.property_docs:
                 best_designs_dict["mat1"]["piezoelectric"]["e_ij"].append(unique_members[i, idx])
                 idx += 1
@@ -322,17 +332,13 @@ class HashinShtrikman:
     def get_material_matches(self, consolidated_dict: dict = {}): 
 
         best_designs_dict = self.get_dict_of_best_designs()
+        mat1_matches: set = set()
+        mat2_matches: set = set()
         
         # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
         if consolidated_dict == {}:
             with open("test_final_dict") as f:
                 consolidated_dict = json.load(f)
-
-        #consolidated_dict = self.generate_final_dict()
-        mat_1_dict = self.generate_material_property_dict()
-        mat_2_dict = self.generate_material_property_dict()
-        mat1_matches: set = set()
-        mat2_matches: set = set()
 
         # Carrier transport extrema
         if "carrier-transport" in self.property_docs:
@@ -545,7 +551,7 @@ class HashinShtrikman:
             mat2_matches = mat2_matches & set(mat_2_e_ij_idx)
 
         # Extract mp-ids
-        # mat1_matches is a set of indices, and we want to extract the corresponding mp-ids
+        # mat_1_matches is a set of indices, extract the corresponding mp-ids
         
         mat_1_ids = [consolidated_dict["material_id"][i] for i in mat1_matches]
         mat_2_ids = [consolidated_dict["material_id"][i] for i in mat2_matches]
@@ -555,7 +561,7 @@ class HashinShtrikman:
     def get_material_match_costs(self, mat_1_ids, mat_2_ids, consolidated_dict: dict = {}):
 
         if consolidated_dict == {}:
-            with open("test_final_dict") as f:
+            with open("test_final_dict") as f: # TODO change to get most recent consolidated dict
                 consolidated_dict = json.load(f)
 
         for m1 in mat_1_ids:
@@ -611,12 +617,14 @@ class HashinShtrikman:
                 population.set_costs()
                 [sorted_costs, sorted_indices] = population.sort_costs()
                 population.set_order_by_costs(sorted_indices)
+                sorted_costs = np.reshape(sorted_costs, (len(sorted_costs), 1))
 
+                # Assemble a table for printing
                 mat1_id = np.reshape([m1]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1))
                 mat2_id = np.reshape([m2]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1))
-                table_data = np.c_[mat1_id, mat2_id, population.values] 
+                table_data = np.c_[mat1_id, mat2_id, population.values, sorted_costs] 
                 print("\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION")
-                print(tabulate(table_data[0:5, :], headers=self.get_headers())) # hardcoded to be 5 rows, could change
+                print(tabulate(table_data[0:5, :], headers=self.get_headers(include_mpids=True))) # hardcoded to be 5 rows, could change
     
     #------ Setter Methods ------#
 
@@ -877,11 +885,14 @@ class HashinShtrikman:
         # Randomly populate first generation  
         population = Population(num_properties=self.num_properties, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
         population.set_initial_random(self.lower_bounds, self.upper_bounds)
+
         # Calculate the costs of the first generation
         population.set_costs()    
+
         # Sort the costs of the first generation
         [sorted_costs, sorted_indices] = population.sort_costs()  
         all_costs[g, :] = sorted_costs.reshape(1, num_members) 
+
         # Store the cost of the best performer and average cost of the parents 
         lowest_costs[g] = np.min(sorted_costs)
         avg_parent_costs[g] = np.mean(sorted_costs[0:num_parents])
@@ -968,18 +979,22 @@ class HashinShtrikman:
         if "carrier-transport" in self.property_docs:
             material_property_dict["elec_cond_300K_low_doping"] = []
             material_property_dict["therm_cond_300K_low_doping"] = []
+
         if "dielectric" in self.property_docs:
             material_property_dict["e_total"] = []
             material_property_dict["e_ionic"] = []
             material_property_dict["e_electronic"] = []
             material_property_dict["n"] = []
+
         if "elastic" in self.property_docs:
             material_property_dict["bulk_modulus"] = []
             material_property_dict["shear_modulus"] = []
             material_property_dict["universal_anisotropy"] = []
+
         if "magnetic" in self.property_docs:
             material_property_dict["total_magnetization"] = []
             material_property_dict["total_magnetization_normalized_volume"] = []
+            
         if "piezoelectric" in self.property_docs:
             material_property_dict["e_ij"] = []
 

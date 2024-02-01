@@ -2,6 +2,7 @@ class UserInput:
 
     def __init__(
         self,
+        num_results:                                      int = 20,
         include_carrier_transport:                        bool  = True,
         include_dielectric:                               bool  = True,
         include_elastic:                                  bool  = True,
@@ -68,6 +69,8 @@ class UserInput:
         mat2_upper_total_magnetization_normalized_volume: float = 1e9,
         mat2_upper_e_ij:                                  float = 1e9
         ):
+
+        self.num_results                                      = num_results
         self.include_carrier_transport                        = include_carrier_transport
         self.include_dielectric                               = include_dielectric       
         self.include_elastic                                  = include_elastic

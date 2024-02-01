@@ -79,21 +79,25 @@ class Population:
             lower_bounds_list.extend(lower_bounds["mat2"]["carrier-transport"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["carrier-transport"])
             upper_bounds_list.extend(upper_bounds["mat2"]["carrier-transport"]) 
+
         if "dielectric" in self.property_docs:
             lower_bounds_list.extend(lower_bounds["mat1"]["dielectric"])
             lower_bounds_list.extend(lower_bounds["mat2"]["dielectric"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["dielectric"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["dielectric"]) 
+
         if "elastic" in self.property_docs:
             lower_bounds_list.extend(lower_bounds["mat1"]["elastic"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["elastic"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["elastic"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["elastic"]) 
+
         if "magnetic" in self.property_docs:
             lower_bounds_list.extend(lower_bounds["mat1"]["magnetic"])
             lower_bounds_list.extend(lower_bounds["mat2"]["magnetic"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["magnetic"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["magnetic"]) 
+
         if "piezoelectric" in self.property_docs:
             lower_bounds_list.extend(lower_bounds["mat1"]["piezoelectric"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["piezoelectric"]) 
@@ -130,21 +134,25 @@ class Population:
             lower_bounds_list.extend(lower_bounds["mat2"]["carrier-transport"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["carrier-transport"])
             upper_bounds_list.extend(upper_bounds["mat2"]["carrier-transport"]) 
+
         if "dielectric" in self.property_docs:
             lower_bounds_list.extend(lower_bounds["mat1"]["dielectric"])
             lower_bounds_list.extend(lower_bounds["mat2"]["dielectric"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["dielectric"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["dielectric"]) 
+
         if "elastic" in self.property_docs:
             lower_bounds_list.extend(lower_bounds["mat1"]["elastic"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["elastic"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["elastic"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["elastic"]) 
+
         if "magnetic" in self.property_docs:
             lower_bounds_list.extend(lower_bounds["mat1"]["magnetic"])
             lower_bounds_list.extend(lower_bounds["mat2"]["magnetic"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["magnetic"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["magnetic"]) 
+            
         if "piezoelectric" in self.property_docs:
             lower_bounds_list.extend(lower_bounds["mat1"]["piezoelectric"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["piezoelectric"]) 
