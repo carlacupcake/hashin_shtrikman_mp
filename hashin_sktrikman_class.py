@@ -170,6 +170,45 @@ class HashinShtrikman:
     def get_avg_parent_costs(self):
         return self.avg_parent_costs
     
+    def get_headers(self):
+
+        headers = []
+        if "carrier-transport" in self.property_docs:
+            headers.append('(Phase 1) Electrical conductivity, [S/m]')
+            headers.append('(Phase 1) Thermal conductivity, [W/m/K]')
+            headers.append('(Phase 2) Electrical conductivity, [S/m]')
+            headers.append('(Phase 2) Thermal conductivity, [W/m/K]')
+        if "dielectric" in self.property_docs:
+            headers.append('(Phase 1) Total dielectric constant, [F/m]')
+            headers.append('(Phase 1) Ionic contrib dielectric constant, [F/m]')
+            headers.append('(Phase 1) Electronic contrib dielectric constant, [F/m]')
+            headers.append('(Phase 1) Dielectric n, [F/m]')
+            headers.append('(Phase 2) Total dielectric constant, [F/m]')
+            headers.append('(Phase 2) Ionic contrib dielectric constant, [F/m]')
+            headers.append('(Phase 2) Electronic contrib dielectric constant, [F/m]')
+            headers.append('(Phase 2) Dielectric n, [F/m]')
+        if "elastic" in self.property_docs:
+            headers.append('(Phase 1) Bulk modulus, [GPa]')
+            headers.append('(Phase 1) Shear modulus, [GPa]')
+            headers.append('(Phase 1) Universal anisotropy, []')
+            headers.append('(Phase 2) Bulk modulus, [GPa]')
+            headers.append('(Phase 2) Shear modulus, [GPa]')
+            headers.append('(Phase 2) Universal anisotropy, []')
+        if "magnetic" in self.property_docs:
+            headers.append('(Phase 1) Total magnetization, []')
+            headers.append('(Phase 1) Total magnetization normalized volume, []')
+            headers.append('(Phase 2) Total magnetization, []')
+            headers.append('(Phase 2) Total magnetization normalized volume, []')
+        if "piezoelectric" in self.property_docs:
+            headers.append('(Phase 1) Piezoelectric constant, [C/N or m/V]')
+            headers.append('(Phase 2) Piezoelectric constant, [C/N or m/V]')
+
+        headers.extend(['Mixing paramter, []',
+                        '(Phase 1) Volume fraction, [] ',
+                        'Cost, []'])
+        
+        return headers
+    
     def get_unique_designs(self):
         # Costs are often equal to >10 decimal points, truncate to obtain a richer set of suggestions
         self.final_population.set_costs()
@@ -513,6 +552,57 @@ class HashinShtrikman:
 
         return mat_1_ids, mat_2_ids 
     
+    def get_material_match_costs(self, mat_1_ids, mat_2_ids, consolidated_dict: dict = {}):
+
+        if consolidated_dict == {}:
+            with open("test_final_dict") as f:
+                consolidated_dict = json.load(f)
+
+        for m1 in mat_1_ids:
+            for m2 in mat_2_ids:
+                
+                material_values = []
+                if "carrier-transport" in self.property_docs:
+                    material_values.append(consolidated_dict["elec_cond_300K_low_doping"])
+                    material_values.append(consolidated_dict["therm_cond_300K_low_doping"])
+                if "dielectric" in self.property_docs:
+                    material_values.append(consolidated_dict["e_total"])
+                    material_values.append(consolidated_dict["e_ionic"])
+                    material_values.append(consolidated_dict["e_electronic"])
+                    material_values.append(consolidated_dict["n"])
+                if "elastic" in self.property_docs:
+                    material_values.append(consolidated_dict["bulk_modulus"])
+                    material_values.append(consolidated_dict["shear_modulus"])
+                    material_values.append(consolidated_dict["universal_anisotropy"])
+                if "magnetic" in self.property_docs:
+                    material_values.append(consolidated_dict["total_magnetization"])
+                    material_values.append(consolidated_dict["total_magnetization_normalized_volume"])
+                if "piezoelectric" in self.property_docs:
+                    material_values.append(consolidated_dict["e_ij"])
+
+                # Create population of same properties for all members based on material match pair
+                values = material_values * self.ga_params.get_num_members()
+                population = np.reshape(values, (self.ga_params.get_num_members(), len(values)))
+
+                # Only the vary the mixing parameter and volume fraction across the population
+                mixing_param = np.random.rand(self.ga_params.get_num_members(), 1)
+                phase1_vol_frac = np.random.rand(self.ga_params.get_num_members(), 1)
+
+                # Include the random mixing parameters and volume fractions in the population
+                values = np.c_[population, mixing_param, phase1_vol_frac]                
+
+                # Instantiate the population and find the best performers
+                population = Population(num_properties=self.num_properties, values=values, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
+                population.set_costs()
+
+                [sorted_costs, sorted_indices] = population.sort_costs()  
+                population.set_order_by_costs(sorted_indices)
+                mat1_id = np.reshape([m1]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1))
+                mat2_id = np.reshape([m2]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1))
+                table_data = np.c_[mat1_id, mat2_id, population.values] 
+                print('\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION')
+                print(tabulate(table_data[0:5, :], headers=self.get_headers())) # hardcoded to be 5 rows, could change
+    
     #------ Setter Methods ------#
 
     def set_lower_bounds(self, lower_bounds):
@@ -775,14 +865,14 @@ class HashinShtrikman:
         # Calculate the costs of the first generation
         population.set_costs()    
         # Sort the costs of the first generation
-        [sorted_costs, ind] = population.sort_costs()  
+        [sorted_costs, sorted_indices] = population.sort_costs()  
         all_costs[g, :] = sorted_costs.reshape(1, num_members) 
         # Store the cost of the best performer and average cost of the parents 
         lowest_costs[g] = np.min(sorted_costs)
         avg_parent_costs[g] = np.mean(sorted_costs[0:num_parents])
         
         # Update population based on sorted indices
-        population.set_order_by_costs(ind)
+        population.set_order_by_costs(sorted_indices)
         
         # Perform all later generations    
         while g < num_generations:
@@ -839,44 +929,9 @@ class HashinShtrikman:
 
     def print_table_of_best_designs(self):
 
-        headers = []
-        if "carrier-transport" in self.property_docs:
-            headers.append('(Phase 1) Electrical conductivity, [S/m]')
-            headers.append('(Phase 1) Thermal conductivity, [W/m/K]')
-            headers.append('(Phase 2) Electrical conductivity, [S/m]')
-            headers.append('(Phase 2) Thermal conductivity, [W/m/K]')
-        if "dielectric" in self.property_docs:
-            headers.append('(Phase 1) Total dielectric constant, [F/m]')
-            headers.append('(Phase 1) Ionic contrib dielectric constant, [F/m]')
-            headers.append('(Phase 1) Electronic contrib dielectric constant, [F/m]')
-            headers.append('(Phase 1) Dielectric n, [F/m]')
-            headers.append('(Phase 2) Total dielectric constant, [F/m]')
-            headers.append('(Phase 2) Ionic contrib dielectric constant, [F/m]')
-            headers.append('(Phase 2) Electronic contrib dielectric constant, [F/m]')
-            headers.append('(Phase 2) Dielectric n, [F/m]')
-        if "elastic" in self.property_docs:
-            headers.append('(Phase 1) Bulk modulus, [GPa]')
-            headers.append('(Phase 1) Shear modulus, [GPa]')
-            headers.append('(Phase 1) Universal anisotropy, []')
-            headers.append('(Phase 2) Bulk modulus, [GPa]')
-            headers.append('(Phase 2) Shear modulus, [GPa]')
-            headers.append('(Phase 2) Universal anisotropy, []')
-        if "magnetic" in self.property_docs:
-            headers.append('(Phase 1) Total magnetization, []')
-            headers.append('(Phase 1) Total magnetization normalized volume, []')
-            headers.append('(Phase 2) Total magnetization, []')
-            headers.append('(Phase 2) Total magnetization normalized volume, []')
-        if "piezoelectric" in self.property_docs:
-            headers.append('(Phase 1) Piezoelectric constant, [C/N or m/V]')
-            headers.append('(Phase 2) Piezoelectric constant, [C/N or m/V]')
-
-        headers.extend(['Mixing paramter, []',
-                        '(Phase 1) Volume fraction, [] ',
-                        'Cost, []'])
-     
         table_data = self.get_table_of_best_designs()
         print('\nHASHIN-SHTRIKMAN + GENETIC ALGORITHM RECOMMENDED MATERIAL PROPERTIES')
-        print(tabulate(table_data, headers=headers))
+        print(tabulate(table_data, headers=self.get_headers()))
     
     def plot_optimization_results(self):
         fig, ax = plt.subplots(figsize=(10,6))
