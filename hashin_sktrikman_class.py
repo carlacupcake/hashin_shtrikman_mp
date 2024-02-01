@@ -108,7 +108,6 @@ class HashinShtrikman:
             self.set_num_properties_from_desired_props()
             self.set_lower_bounds_from_user_input()
             self.set_upper_bounds_from_user_input()          
-
             try:
                 from mpcontribs.client import Client
                 self.contribs = Client(api_key, project="carrier_transport")
@@ -374,13 +373,17 @@ class HashinShtrikman:
 
         mat_1_therm_idx = [] 
         mat_2_therm_idx = [] 
+        
+        # I want to convert length of list to a new list of indices starting from 0 to len(list) 
+        mat1_matches = set(range(len(consolidated_dict["material_id"])))
+        mat2_matches = set(range(len(consolidated_dict["material_id"])))
 
         if "carrier-transport" in self.property_docs:
             for i, elec_cond in enumerate(consolidated_dict["elec_cond_300K_low_doping"]):
                 if (elec_cond >= mat_1_elec_cond_lower_bound) and (elec_cond <= mat_1_elec_cond_upper_bound):  
                     mat_1_elec_idx.append(i)
                 if (elec_cond >= mat_2_elec_cond_lower_bound) and (elec_cond <= mat_2_elec_cond_upper_bound):  
-                    mat_2_elec_idx.append(i)  
+                    mat_2_elec_idx.append(i) 
 
             for i, therm_cond in enumerate(consolidated_dict["therm_cond_300K_low_doping"]):
                 if (therm_cond >= mat_1_therm_cond_lower_bound) and (therm_cond <= mat_1_therm_cond_upper_bound):  
@@ -388,15 +391,8 @@ class HashinShtrikman:
                 if (therm_cond >= mat_2_therm_cond_lower_bound) and (therm_cond <= mat_2_therm_cond_upper_bound):  
                     mat_2_therm_idx.append(i)
 
-            if mat1_matches == set(): # populate matches before taking intersections
-                mat1_matches = set(mat_1_elec_idx) & set(mat_1_therm_idx)
-            else:
-                mat1_matches = mat1_matches & set(mat_1_elec_idx) & set(mat_1_therm_idx)
-
-            if mat2_matches == set():
-                mat2_matches = set(mat_2_elec_idx) & set(mat_2_therm_idx)
-            else:
-                mat2_matches = mat2_matches & set(mat_2_elec_idx) & set(mat_2_therm_idx)
+            mat1_matches = mat1_matches & set(mat_1_elec_idx) & set(mat_1_therm_idx)
+            mat2_matches = mat2_matches & set(mat_2_elec_idx) & set(mat_2_therm_idx)
 
         # Check for materials that meet dielectric criteria
         mat_1_e_total_idx = []
@@ -435,16 +431,9 @@ class HashinShtrikman:
                     mat_1_n_idx.append(i)
                 if (n >= mat_2_n_lower_bound) and (n <= mat_2_n_upper_bound):       
                     mat_2_n_idx.append(i)
-
-            if mat1_matches == set(): # populate matches before taking intersections
-                mat1_matches = set(mat_1_e_total_idx) & set(mat_1_e_ionic_idx) & set(mat_1_e_elec_idx) & set(mat_1_n_idx)
-            else:
-                mat1_matches = mat1_matches & set(mat_1_e_total_idx) & set(mat_1_e_ionic_idx) & set(mat_1_e_elec_idx) & set(mat_1_n_idx)
-
-            if mat2_matches == set(): 
-                mat2_matches = set(mat_2_e_total_idx) & set(mat_2_e_ionic_idx) & set(mat_2_e_elec_idx) & set(mat_2_n_idx)
-            else:
-                mat2_matches = mat2_matches & set(mat_2_e_total_idx) & set(mat_2_e_ionic_idx) & set(mat_2_e_elec_idx) & set(mat_2_n_idx)
+            
+            mat1_matches = mat1_matches & set(mat_1_e_total_idx) & set(mat_1_e_ionic_idx) & set(mat_1_e_elec_idx) & set(mat_1_n_idx)
+            mat2_matches = mat2_matches & set(mat_2_e_total_idx) & set(mat_2_e_ionic_idx) & set(mat_2_e_elec_idx) & set(mat_2_n_idx)
 
         # Check for materials that meet elastic criteria
         mat_1_bulk_idx = []
@@ -476,15 +465,8 @@ class HashinShtrikman:
                 if (univ_aniso >= mat_2_univ_aniso_lower_bound) and (univ_aniso <= mat_2_univ_aniso_upper_bound): 
                     mat_2_univ_aniso_idx.append(i) 
 
-            if mat1_matches == set(): # populate matches before taking intersections
-                mat1_matches = set(mat_1_bulk_idx) & set(mat_1_shear_idx) & set(mat_1_univ_aniso_idx) 
-            else:
-                mat1_matches = mat1_matches & set(mat_1_bulk_idx) & set(mat_1_shear_idx) & set(mat_1_univ_aniso_idx)
-
-            if mat2_matches == set(): 
-                mat2_matches = set(mat_2_bulk_idx) & set(mat_2_shear_idx) & set(mat_2_univ_aniso_idx) 
-            else:
-                mat2_matches = mat2_matches & set(mat_2_bulk_idx) & set(mat_2_shear_idx) & set(mat_2_univ_aniso_idx)
+            mat1_matches = mat1_matches & set(mat_1_bulk_idx) & set(mat_1_shear_idx) & set(mat_1_univ_aniso_idx)
+            mat2_matches = mat2_matches & set(mat_2_bulk_idx) & set(mat_2_shear_idx) & set(mat_2_univ_aniso_idx)
 
         # Check for materials that meet magnetic criteria
         mat_1_tot_mag_idx = []
@@ -506,15 +488,8 @@ class HashinShtrikman:
                 if (tot_mag_norm >= mat_2_tot_mag_norm_lower_bound) and (tot_mag_norm <= mat_2_tot_mag_norm_upper_bound):       
                     mat_2_tot_mag_norm_idx.append(i)
 
-            if mat1_matches == set(): # populate matches before taking intersections
-                mat1_matches = set(mat_1_tot_mag_idx) & set(mat_1_tot_mag_norm_idx) 
-            else:
-                mat1_matches = mat1_matches & set(mat_1_tot_mag_idx) & set(mat_1_tot_mag_norm_idx)
-
-            if mat2_matches == set(): 
-                mat2_matches = set(mat_2_tot_mag_idx) & set(mat_2_tot_mag_norm_idx) 
-            else:
-                mat2_matches = mat2_matches & set(mat_2_tot_mag_idx) & set(mat_2_tot_mag_norm_idx)
+            mat1_matches = mat1_matches & set(mat_1_tot_mag_idx) & set(mat_1_tot_mag_norm_idx)
+            mat2_matches = mat2_matches & set(mat_2_tot_mag_idx) & set(mat_2_tot_mag_norm_idx)
 
         # Check for materials that meet piezoelectric criteria
         mat_1_e_ij_idx = []
@@ -526,25 +501,15 @@ class HashinShtrikman:
                     mat_1_e_ij_idx.append(i)
                 if (e_ij >= mat_2_e_ij_lower_bound) and (e_ij <= mat_2_e_ij_upper_bound):       
                     mat_2_e_ij_idx.append(i)
-
-            if mat1_matches == set(): # populate matches before taking intersections
-                mat1_matches = set(mat_1_e_ij_idx)
-            else:
-                mat1_matches = mat1_matches & set(mat_1_e_ij_idx)
-
-            if mat2_matches == set(): 
-                mat2_matches = set(mat_2_e_ij_idx)
-            else:
-                mat2_matches = mat2_matches & set(mat_2_e_ij_idx)
+            
+            mat1_matches = mat1_matches & set(mat_1_e_ij_idx)
+            mat2_matches = mat2_matches & set(mat_2_e_ij_idx)
 
         # Extract mp-ids
         # mat1_matches is a set of indices, and we want to extract the corresponding mp-ids
         
         mat_1_ids = [consolidated_dict["material_id"][i] for i in mat1_matches]
         mat_2_ids = [consolidated_dict["material_id"][i] for i in mat2_matches]
-
-        # mat_1_ids = [mat_1_dict["mp-ids"][i] for i in range(len(mat1_matches))]
-        # mat_2_ids = [mat_2_dict["mp-ids"][i] for i in range(len(mat2_matches))]
 
         return mat_1_ids, mat_2_ids 
     
