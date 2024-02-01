@@ -1,6 +1,6 @@
 # Integration of Hashin-Shtrikman bounds using Genetic algorithm w/ Materials Project database
 
-***Aim*** /n
+***Aim***  
 The goal of this project is to determine the material properties and volume fractions of two materials in a binary mixture to meet a set of desired material properties. This involves integrating Hashin-Shtrikman (HS) bounds with a genetic algorithm, leveraging the Materials Project (MP) database.
 
 ***Workflow***
