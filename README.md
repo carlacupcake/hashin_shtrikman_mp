@@ -3,7 +3,7 @@
 ***Aim***  
 The goal of this project is to determine the material properties and volume fractions of two materials in a binary mixture to meet a set of desired material properties. This involves integrating Hashin-Shtrikman (HS) bounds with a genetic algorithm, leveraging the Materials Project (MP) database.
 
-***Workflow***
+***Workflow***  
 **User Input Initialization**: Instantiate a user input object with the desired material properties, including upper and lower search bounds for properties of both materials.
 
 **HS Object Initialization**: Create a Hashin-Shtrikman object with Materials Project API credentials, user input, and the required material properties.
@@ -36,14 +36,14 @@ The goal of this project is to determine the material properties and volume frac
 
 **Display of Top-Performing Pairs**: Repeat the process for all possible pairs of materials and display the top-performing pairs along with their volume fractions.
 
-***Implementation Notes***
+***Implementation Notes***  
 Ensure you have valid credentials for the Materials Project API which you can find by registering yourself with Materials Project -- https://next-gen.materialsproject.org/
 Optimization parameters (number of parents, children, etc.) should be chosen based on the complexity of the desired material properties and computational resources.
 The genetic algorithm's efficiency and effectiveness can vary greatly based on the optimization parameters and the definition of the cost function.
 Visualization of cost versus generation can provide insights into the convergence behavior of the genetic algorithm.
 
 
-***Miscallaneous features***
+***Miscallaneous features***  
 **mpi4py support is added to append final_dict**
 
 To take benefit of mpi parallelization, one can run the script as follows:
