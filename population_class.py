@@ -28,8 +28,8 @@ class Population:
             self.ga_params      = ga_params
 
             # Update from default based on self.property_docs
-            self.values = np.zeros((self.ga_params.get_num_members(), self.num_properties)) if values == np.empty else values
-            self.costs  = np.zeros((self.ga_params.get_num_members(), self.num_properties)) if costs  == np.empty else costs
+            self.values = np.zeros((self.ga_params.get_num_members(), self.num_properties)) if values is np.empty else values
+            self.costs  = np.zeros((self.ga_params.get_num_members(), self.num_properties)) if costs  is np.empty else costs
 
     #------ Getter Methods ------#
     def get_num_properties(self):

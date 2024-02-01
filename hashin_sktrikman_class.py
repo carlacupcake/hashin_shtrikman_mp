@@ -114,9 +114,9 @@ class HashinShtrikman:
             except ImportError:
                 self.contribs = None
                 warnings.warn(
-                    "mpcontribs-client not installed. "
+                    "mpcontribs-client not installed."
                     "Install the package to query MPContribs data:"
-                    "'pip install mpcontribs-client'"
+                    "pip install mpcontribs-client"
                 )
             except Exception as error:
                 self.contribs = None
@@ -174,38 +174,38 @@ class HashinShtrikman:
 
         headers = []
         if "carrier-transport" in self.property_docs:
-            headers.append('(Phase 1) Electrical conductivity, [S/m]')
-            headers.append('(Phase 1) Thermal conductivity, [W/m/K]')
-            headers.append('(Phase 2) Electrical conductivity, [S/m]')
-            headers.append('(Phase 2) Thermal conductivity, [W/m/K]')
+            headers.append("(Phase 1) Electrical conductivity, [S/m]")
+            headers.append("(Phase 1) Thermal conductivity, [W/m/K]")
+            headers.append("(Phase 2) Electrical conductivity, [S/m]")
+            headers.append("(Phase 2) Thermal conductivity, [W/m/K]")
         if "dielectric" in self.property_docs:
-            headers.append('(Phase 1) Total dielectric constant, [F/m]')
-            headers.append('(Phase 1) Ionic contrib dielectric constant, [F/m]')
-            headers.append('(Phase 1) Electronic contrib dielectric constant, [F/m]')
-            headers.append('(Phase 1) Dielectric n, [F/m]')
-            headers.append('(Phase 2) Total dielectric constant, [F/m]')
-            headers.append('(Phase 2) Ionic contrib dielectric constant, [F/m]')
-            headers.append('(Phase 2) Electronic contrib dielectric constant, [F/m]')
-            headers.append('(Phase 2) Dielectric n, [F/m]')
+            headers.append("(Phase 1) Total dielectric constant, [F/m]")
+            headers.append("(Phase 1) Ionic contrib dielectric constant, [F/m]")
+            headers.append("(Phase 1) Electronic contrib dielectric constant, [F/m]")
+            headers.append("(Phase 1) Dielectric n, [F/m]")
+            headers.append("(Phase 2) Total dielectric constant, [F/m]")
+            headers.append("(Phase 2) Ionic contrib dielectric constant, [F/m]")
+            headers.append("(Phase 2) Electronic contrib dielectric constant, [F/m]")
+            headers.append("(Phase 2) Dielectric n, [F/m]")
         if "elastic" in self.property_docs:
-            headers.append('(Phase 1) Bulk modulus, [GPa]')
-            headers.append('(Phase 1) Shear modulus, [GPa]')
-            headers.append('(Phase 1) Universal anisotropy, []')
-            headers.append('(Phase 2) Bulk modulus, [GPa]')
-            headers.append('(Phase 2) Shear modulus, [GPa]')
-            headers.append('(Phase 2) Universal anisotropy, []')
+            headers.append("(Phase 1) Bulk modulus, [GPa]")
+            headers.append("(Phase 1) Shear modulus, [GPa]")
+            headers.append("(Phase 1) Universal anisotropy, []")
+            headers.append("(Phase 2) Bulk modulus, [GPa]")
+            headers.append("(Phase 2) Shear modulus, [GPa]")
+            headers.append("(Phase 2) Universal anisotropy, []")
         if "magnetic" in self.property_docs:
-            headers.append('(Phase 1) Total magnetization, []')
-            headers.append('(Phase 1) Total magnetization normalized volume, []')
-            headers.append('(Phase 2) Total magnetization, []')
-            headers.append('(Phase 2) Total magnetization normalized volume, []')
+            headers.append("(Phase 1) Total magnetization, []")
+            headers.append("(Phase 1) Total magnetization normalized volume, []")
+            headers.append("(Phase 2) Total magnetization, []")
+            headers.append("(Phase 2) Total magnetization normalized volume, []")
         if "piezoelectric" in self.property_docs:
-            headers.append('(Phase 1) Piezoelectric constant, [C/N or m/V]')
-            headers.append('(Phase 2) Piezoelectric constant, [C/N or m/V]')
+            headers.append("(Phase 1) Piezoelectric constant, [C/N or m/V]")
+            headers.append("(Phase 2) Piezoelectric constant, [C/N or m/V]")
 
-        headers.extend(['Mixing paramter, []',
-                        '(Phase 1) Volume fraction, [] ',
-                        'Cost, []'])
+        headers.extend(["Mixing paramter, []",
+                        "(Phase 1) Volume fraction, [] ",
+                        "Cost, []"])
         
         return headers
     
@@ -560,47 +560,62 @@ class HashinShtrikman:
 
         for m1 in mat_1_ids:
             for m2 in mat_2_ids:
+
+                m1_idx = mat_1_ids.index(m1)
+                m2_idx = mat_2_ids.index(m2)
                 
                 material_values = []
                 if "carrier-transport" in self.property_docs:
-                    material_values.append(consolidated_dict["elec_cond_300K_low_doping"])
-                    material_values.append(consolidated_dict["therm_cond_300K_low_doping"])
+                    material_values.append(consolidated_dict["elec_cond_300K_low_doping"][m1_idx])
+                    material_values.append(consolidated_dict["therm_cond_300K_low_doping"][m1_idx])
+                    material_values.append(consolidated_dict["elec_cond_300K_low_doping"][m2_idx])
+                    material_values.append(consolidated_dict["therm_cond_300K_low_doping"][m2_idx])
                 if "dielectric" in self.property_docs:
-                    material_values.append(consolidated_dict["e_total"])
-                    material_values.append(consolidated_dict["e_ionic"])
-                    material_values.append(consolidated_dict["e_electronic"])
-                    material_values.append(consolidated_dict["n"])
+                    material_values.append(consolidated_dict["e_total"][m1_idx])
+                    material_values.append(consolidated_dict["e_ionic"][m1_idx])
+                    material_values.append(consolidated_dict["e_electronic"][m1_idx])
+                    material_values.append(consolidated_dict["n"][m1_idx])
+                    material_values.append(consolidated_dict["e_total"][m2_idx])
+                    material_values.append(consolidated_dict["e_ionic"][m2_idx])
+                    material_values.append(consolidated_dict["e_electronic"][m2_idx])
+                    material_values.append(consolidated_dict["n"][m2_idx])
                 if "elastic" in self.property_docs:
-                    material_values.append(consolidated_dict["bulk_modulus"])
-                    material_values.append(consolidated_dict["shear_modulus"])
-                    material_values.append(consolidated_dict["universal_anisotropy"])
+                    material_values.append(consolidated_dict["bulk_modulus"][m1_idx])
+                    material_values.append(consolidated_dict["shear_modulus"][m1_idx])
+                    material_values.append(consolidated_dict["universal_anisotropy"][m1_idx])
+                    material_values.append(consolidated_dict["bulk_modulus"][m2_idx])
+                    material_values.append(consolidated_dict["shear_modulus"][m2_idx])
+                    material_values.append(consolidated_dict["universal_anisotropy"][m2_idx])
                 if "magnetic" in self.property_docs:
-                    material_values.append(consolidated_dict["total_magnetization"])
-                    material_values.append(consolidated_dict["total_magnetization_normalized_volume"])
+                    material_values.append(consolidated_dict["total_magnetization"][m1_idx])
+                    material_values.append(consolidated_dict["total_magnetization_normalized_volume"][m1_idx])
+                    material_values.append(consolidated_dict["total_magnetization"][m2_idx])
+                    material_values.append(consolidated_dict["total_magnetization_normalized_volume"][m2_idx])
                 if "piezoelectric" in self.property_docs:
-                    material_values.append(consolidated_dict["e_ij"])
+                    material_values.append(consolidated_dict["e_ij"][m1_idx])
+                    material_values.append(consolidated_dict["e_ij"][m2_idx])
 
                 # Create population of same properties for all members based on material match pair
-                values = material_values * self.ga_params.get_num_members()
-                population = np.reshape(values, (self.ga_params.get_num_members(), len(values)))
+                values = np.reshape(material_values*self.ga_params.get_num_members(), (self.ga_params.get_num_members(), len(material_values))) 
+                population = np.reshape(values, (self.ga_params.get_num_members(), len(material_values)))
 
                 # Only the vary the mixing parameter and volume fraction across the population
                 mixing_param = np.random.rand(self.ga_params.get_num_members(), 1)
                 phase1_vol_frac = np.random.rand(self.ga_params.get_num_members(), 1)
 
                 # Include the random mixing parameters and volume fractions in the population
-                values = np.c_[population, mixing_param, phase1_vol_frac]                
+                values = np.c_[population, mixing_param, phase1_vol_frac]    
 
                 # Instantiate the population and find the best performers
                 population = Population(num_properties=self.num_properties, values=values, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
                 population.set_costs()
-
-                [sorted_costs, sorted_indices] = population.sort_costs()  
+                [sorted_costs, sorted_indices] = population.sort_costs()
                 population.set_order_by_costs(sorted_indices)
+
                 mat1_id = np.reshape([m1]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1))
                 mat2_id = np.reshape([m2]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1))
                 table_data = np.c_[mat1_id, mat2_id, population.values] 
-                print('\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION')
+                print("\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION")
                 print(tabulate(table_data[0:5, :], headers=self.get_headers())) # hardcoded to be 5 rows, could change
     
     #------ Setter Methods ------#
@@ -930,16 +945,16 @@ class HashinShtrikman:
     def print_table_of_best_designs(self):
 
         table_data = self.get_table_of_best_designs()
-        print('\nHASHIN-SHTRIKMAN + GENETIC ALGORITHM RECOMMENDED MATERIAL PROPERTIES')
+        print("\nHASHIN-SHTRIKMAN + GENETIC ALGORITHM RECOMMENDED MATERIAL PROPERTIES")
         print(tabulate(table_data, headers=self.get_headers()))
     
     def plot_optimization_results(self):
         fig, ax = plt.subplots(figsize=(10,6))
-        ax.plot(range(self.ga_params.get_num_generations()), self.avg_parent_costs, label='Avg. of top 10 performers')
+        ax.plot(range(self.ga_params.get_num_generations()), self.avg_parent_costs, label="Avg. of top 10 performers")
         ax.plot(range(self.ga_params.get_num_generations()), self.lowest_costs, label="Best costs")
-        plt.xlabel('Generation', fontsize= 20)
-        plt.ylabel('Cost', fontsize=20)
-        plt.title('Genetic Algorithm Results', fontsize = 24)
+        plt.xlabel("Generation", fontsize= 20)
+        plt.ylabel("Cost", fontsize=20)
+        plt.title("Genetic Algorithm Results", fontsize = 24)
         plt.legend(fontsize = 14)
         plt.show()  
 
@@ -1029,7 +1044,7 @@ class HashinShtrikman:
             elif isinstance(total_docs, int):
                 chunk_size = total_docs // size
 
-            # Calculate the start and end indices for this process's chunk
+            # Calculate the start and end indices for this process"s chunk
             start = rank * chunk_size
             end = start + chunk_size if rank != size - 1 else total_docs  # The last process gets the remainder
 
@@ -1077,33 +1092,33 @@ class HashinShtrikman:
                     # Carrier transport
                     if "carrier-transport" in self.property_docs:
                         self.fields["mp-ids-contrib"].append(my_dict["identifier"])
-                        thermal_cond_str = my_dict["tables"][7].iloc[2, 0].replace(',', '')
+                        thermal_cond_str = my_dict["tables"][7].iloc[2, 0].replace(",", "")
 
-                        if '×10' in thermal_cond_str:
-                            # Extract the numeric part before the '±' symbol and the exponent
-                            thermal_cond_str, thermal_cond_exponent_str = re.search(r'\((.*?) ±.*?\)×10(.*)', thermal_cond_str).groups()
+                        if "×10" in thermal_cond_str:
+                            # Extract the numeric part before the "±" symbol and the exponent
+                            thermal_cond_str, thermal_cond_exponent_str = re.search(r"\((.*?) ±.*?\)×10(.*)", thermal_cond_str).groups()
                             # Convert the exponent part to a format that Python can understand
                             thermal_cond_exponent = self.superscript_to_int(thermal_cond_exponent_str.strip())
                             # Combine the numeric part and the exponent part, and convert the result to a float
-                            thermal_cond = float(f'{thermal_cond_str}e{thermal_cond_exponent}') * 1e-14  # multply by relaxation time, 10 fs
-                            logger.info(f'thermal_cond_if_statement = {thermal_cond}')
+                            thermal_cond = float(f"{thermal_cond_str}e{thermal_cond_exponent}") * 1e-14  # multply by relaxation time, 10 fs
+                            logger.info(f"thermal_cond_if_statement = {thermal_cond}")
                         else:
                             thermal_cond = float(thermal_cond_str) * 1e-14  # multply by relaxation time, 10 fs
-                            logger.info(f'thermal_cond_else_statement = {thermal_cond}')
+                            logger.info(f"thermal_cond_else_statement = {thermal_cond}")
 
-                        elec_cond_str = my_dict["tables"][5].iloc[2, 0].replace(',', '')
+                        elec_cond_str = my_dict["tables"][5].iloc[2, 0].replace(",", "")
 
-                        if '×10' in elec_cond_str:
-                            # Extract the numeric part before the '±' symbol and the exponent
-                            elec_cond_str, elec_cond_exponent_str = re.search(r'\((.*?) ±.*?\)×10(.*)', elec_cond_str).groups()
+                        if "×10" in elec_cond_str:
+                            # Extract the numeric part before the "±" symbol and the exponent
+                            elec_cond_str, elec_cond_exponent_str = re.search(r"\((.*?) ±.*?\)×10(.*)", elec_cond_str).groups()
                             # Convert the exponent part to a format that Python can understand
                             elec_cond_exponent = self.superscript_to_int(elec_cond_exponent_str.strip())
                             # Combine the numeric part and the exponent part, and convert the result to a float
-                            elec_cond = float(f'{elec_cond_str}e{elec_cond_exponent}') * 1e-14  # multply by relaxation time, 10 fs
-                            logger.info(f'elec_cond_if_statement = {elec_cond}')
+                            elec_cond = float(f"{elec_cond_str}e{elec_cond_exponent}") * 1e-14  # multply by relaxation time, 10 fs
+                            logger.info(f"elec_cond_if_statement = {elec_cond}")
                         else:
                             elec_cond = float(elec_cond_str) * 1e-14  # multply by relaxation time, 10 fs
-                            logger.info(f'elec_cond_else_statement = {elec_cond}')
+                            logger.info(f"elec_cond_else_statement = {elec_cond}")
 
 
                         self.fields["therm_cond_300K_low_doping"].append(thermal_cond)
@@ -1121,7 +1136,7 @@ class HashinShtrikman:
                         self.fields["bulk_modulus"].append(doc.bulk_modulus["voigt"])
                         self.fields["shear_modulus"].append(doc.shear_modulus["voigt"])
                         self.fields["universal_anisotropy"].append(doc.universal_anisotropy)
-                        logger.info(f'bulk_modulus = {doc.bulk_modulus["voigt"]}')
+                        logger.info(f"bulk_modulus = {doc.bulk_modulus['voigt']}")
                 
                     # Magnetic
                     if "magnetic" in self.property_docs:
@@ -1157,10 +1172,10 @@ class HashinShtrikman:
     
     def superscript_to_int(self, superscript_str):
         superscript_to_normal = {
-            '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
-            '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9'
+            "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4",
+            "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9"
         }
-        normal_str = ''.join(superscript_to_normal.get(char, char) for char in superscript_str)
+        normal_str = "".join(superscript_to_normal.get(char, char) for char in superscript_str)
         return int(normal_str)
     
     
