@@ -880,7 +880,7 @@ class HashinShtrikman:
 
         # MAIN FUNCTION USED TO GENERATE MATRIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
 
-        if "carrier-transport" in self.property_docs:
+        if "carrier-transport" in self.property_categories:
             client = Client(apikey=self.api_key, project=self.mp_contribs_project)
         else:
             client = Client(apikey=self.api_key)
@@ -888,31 +888,31 @@ class HashinShtrikman:
         new_fields = self.fields
 
         # MP-contribs data
-        if "carrier-transport" in self.property_docs:
+        if "carrier-transport" in self.property_categories:
            new_fields["mp-ids-contrib"] = []
            new_fields["elec_cond_300K_low_doping"] = []
            new_fields["therm_cond_300K_low_doping"] = []
 
         # Dielectric
-        if "dielectric" in self.property_docs:
+        if "dielectric" in self.property_categories:
             new_fields["e_electronic"] = []
             new_fields["e_ionic"] = []
             new_fields["e_total"] = []
             new_fields["n"] = []
 
         # Elastic
-        if "elastic" in self.property_docs:
+        if "elastic" in self.property_categories:
             new_fields["bulk_modulus"] = []
             new_fields["shear_modulus"] = []
             new_fields["universal_anisotropy"] = []
         
         # Magnetic
-        if "magnetic" in self.property_docs:
+        if "magnetic" in self.property_categories:
             new_fields["total_magnetization"] = []
             new_fields["total_magnetization_normalized_vol"] = []
 
         # Piezoelectric
-        if "piezoelectric" in self.property_docs:
+        if "piezoelectric" in self.property_categories:
             new_fields["e_ij_max"] = []
 
         self.set_fields(new_fields)
@@ -949,22 +949,22 @@ class HashinShtrikman:
 
                 required_fields = [doc.material_id, doc.is_stable, doc.is_metal]
 
-                if "dielectric" in self.property_docs:
+                if "dielectric" in self.property_categories:
                     required_fields.append(doc.e_electronic)
                     required_fields.append(doc.e_ionic)
                     required_fields.append(doc.e_total)
                     required_fields.append(doc.n)
-                if "magnetic" in self.property_docs:
+                if "magnetic" in self.property_categories:
                     required_fields.append(doc.total_magnetization)
                     required_fields.append(doc.total_magnetization_normalized_vol)
-                if "piezoelectric" in self.property_docs:
+                if "piezoelectric" in self.property_categories:
                     required_fields.append(doc.e_ij_max)
-                if "elastic" in self.property_docs:
+                if "elastic" in self.property_categories:
                     required_fields.append(doc.bulk_modulus)
                     required_fields.append(doc.shear_modulus)
                     required_fields.append(doc.universal_anisotropy)
             
-                if "carrier-transport" in self.property_docs:
+                if "carrier-transport" in self.property_categories:
                     try:
                         mp_id = doc.material_id                           
                         query = {"identifier": mp_id}
@@ -981,7 +981,7 @@ class HashinShtrikman:
                     self.fields["band_gap"].append(doc.band_gap)
                     
                     # Carrier transport
-                    if "carrier-transport" in self.property_docs:
+                    if "carrier-transport" in self.property_categories:
                         self.fields["mp-ids-contrib"].append(my_dict["identifier"])
                         thermal_cond_str = my_dict["tables"][7].iloc[2, 0].replace(",", "")
 
@@ -1016,26 +1016,26 @@ class HashinShtrikman:
                         self.fields["elec_cond_300K_low_doping"].append(elec_cond)   
                     
                     # Dielectric
-                    if "dielectric" in self.property_docs:
+                    if "dielectric" in self.property_categories:
                         self.fields["e_electronic"].append(doc.e_electronic)
                         self.fields["e_ionic"].append(doc.e_ionic)
                         self.fields["e_total"].append(doc.e_total)
                         self.fields["n"].append(doc.n)
                     
                     # Elastic
-                    if "elastic" in self.property_docs:
+                    if "elastic" in self.property_categories:
                         self.fields["bulk_modulus"].append(doc.bulk_modulus["voigt"])
                         self.fields["shear_modulus"].append(doc.shear_modulus["voigt"])
                         self.fields["universal_anisotropy"].append(doc.universal_anisotropy)
                         logger.info(f"bulk_modulus = {doc.bulk_modulus['voigt']}")
                 
                     # Magnetic
-                    if "magnetic" in self.property_docs:
+                    if "magnetic" in self.property_categories:
                         self.fields["total_magnetization"].append(doc.total_magnetization)
                         self.fields["total_magnetization_normalized_vol"].append(doc.total_magnetization_normalized_vol)
                     
                     # Piezoelectric
-                    if "piezoelectric" in self.property_docs:
+                    if "piezoelectric" in self.property_categories:
                         self.fields["e_ij_max"].append(doc.e_ij_max)
 
         
