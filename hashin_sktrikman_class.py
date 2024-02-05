@@ -344,6 +344,7 @@ class HashinShtrikman:
     def get_material_matches(self, consolidated_dict: dict = {}): 
 
         best_designs_dict = self.get_dict_of_best_designs()
+        print(f"best_designs_dict = {best_designs_dict}")
         mat1_matches: set = set()
         mat2_matches: set = set()
         
@@ -681,60 +682,6 @@ class HashinShtrikman:
         self.upper_bounds = upper_bounds
         return self
     
-    def set_upper_bounds_from_user_input(self):
-
-        self.upper_bounds = {"mat1": {}, "mat2": {}}
-
-        # Carrier transport
-        if "carrier-transport" in self.property_docs:
-            self.upper_bounds["mat1"]["carrier-transport"] = []
-            self.upper_bounds["mat1"]["carrier-transport"].append(self.user_input.mat1_upper_elec_cond_300k_low_doping)
-            self.upper_bounds["mat1"]["carrier-transport"].append(self.user_input.mat1_upper_therm_cond_300k_low_doping)
-            self.upper_bounds["mat2"]["carrier-transport"] = []
-            self.upper_bounds["mat2"]["carrier-transport"].append(self.user_input.mat2_upper_elec_cond_300k_low_doping)
-            self.upper_bounds["mat2"]["carrier-transport"].append(self.user_input.mat2_upper_therm_cond_300k_low_doping)
-
-        # Dielectric
-        if "dielectric" in self.property_docs:
-            self.upper_bounds["mat1"]["dielectric"] = []
-            self.upper_bounds["mat1"]["dielectric"].append(self.user_input.mat1_upper_e_total)
-            self.upper_bounds["mat1"]["dielectric"].append(self.user_input.mat1_upper_e_ionic)
-            self.upper_bounds["mat1"]["dielectric"].append(self.user_input.mat1_upper_e_electronic)
-            self.upper_bounds["mat1"]["dielectric"].append(self.user_input.mat1_upper_n)
-            self.upper_bounds["mat2"]["dielectric"] = []
-            self.upper_bounds["mat2"]["dielectric"].append(self.user_input.mat2_upper_e_total)
-            self.upper_bounds["mat2"]["dielectric"].append(self.user_input.mat2_upper_e_ionic)
-            self.upper_bounds["mat2"]["dielectric"].append(self.user_input.mat2_upper_e_electronic)
-            self.upper_bounds["mat2"]["dielectric"].append(self.user_input.mat2_upper_n)
-
-        # Elastic
-        if "elastic" in self.property_docs:
-            self.upper_bounds["mat1"]["elastic"] = []
-            self.upper_bounds["mat1"]["elastic"].append(self.user_input.mat1_upper_bulk_modulus)
-            self.upper_bounds["mat1"]["elastic"].append(self.user_input.mat1_upper_shear_modulus)
-            self.upper_bounds["mat1"]["elastic"].append(self.user_input.mat1_upper_universal_anisotropy)
-            self.upper_bounds["mat2"]["elastic"] = []
-            self.upper_bounds["mat2"]["elastic"].append(self.user_input.mat2_upper_bulk_modulus)
-            self.upper_bounds["mat2"]["elastic"].append(self.user_input.mat2_upper_shear_modulus)
-            self.upper_bounds["mat2"]["elastic"].append(self.user_input.mat2_upper_universal_anisotropy)
-
-        # Magnetic
-        if "magnetic" in self.property_docs:
-            self.upper_bounds["mat1"]["magnetic"] = []
-            self.upper_bounds["mat1"]["magnetic"].append(self.user_input.mat1_upper_total_magnetization)
-            self.upper_bounds["mat1"]["magnetic"].append(self.user_input.mat1_upper_total_magnetization_normalized_volume)
-            self.upper_bounds["mat2"]["magnetic"] = []
-            self.upper_bounds["mat2"]["magnetic"].append(self.user_input.mat2_upper_total_magnetization)
-            self.upper_bounds["mat2"]["magnetic"].append(self.user_input.mat2_upper_total_magnetization_normalized_volume)
-
-        # Piezoelectric
-        if "piezoelectric" in self.property_docs:
-            self.upper_bounds["mat1"]["piezoelectric"] = []
-            self.upper_bounds["mat1"]["piezoelectric"].append(self.user_input.mat1_upper_e_ij)
-            self.upper_bounds["mat2"]["piezoelectric"] = []
-            self.upper_bounds["mat2"]["piezoelectric"].append(self.user_input.mat2_upper_e_ij)
-
-        return self
 
     def set_retain_parents(self, retain_parents):
         self.retain_parents = retain_parents
@@ -753,8 +700,6 @@ class HashinShtrikman:
         return self
 
     def set_desired_props_from_user_input(self, user_input):
-
-        # self.property_categories, self.property_docs = self.load_property_categories(user_input)
 
         # Initialize the dictionary to hold the desired properties
         self.desired_props = {category: [] for category in self.property_categories}
@@ -930,37 +875,6 @@ class HashinShtrikman:
         plt.title("Genetic Algorithm Results", fontsize = 24)
         plt.legend(fontsize = 14)
         plt.show()  
-
-    def generate_material_property_dict(self):
-
-        material_property_dict = {"mp-ids": [],
-                                  "mp-ids-contrib": [], 
-                                  "formula": [],
-                                  "metal": []} 
-
-        if "carrier-transport" in self.property_docs:
-            material_property_dict["elec_cond_300K_low_doping"] = []
-            material_property_dict["therm_cond_300K_low_doping"] = []
-
-        if "dielectric" in self.property_docs:
-            material_property_dict["e_total"] = []
-            material_property_dict["e_ionic"] = []
-            material_property_dict["e_electronic"] = []
-            material_property_dict["n"] = []
-
-        if "elastic" in self.property_docs:
-            material_property_dict["bulk_modulus"] = []
-            material_property_dict["shear_modulus"] = []
-            material_property_dict["universal_anisotropy"] = []
-
-        if "magnetic" in self.property_docs:
-            material_property_dict["total_magnetization"] = []
-            material_property_dict["total_magnetization_normalized_volume"] = []
-            
-        if "piezoelectric" in self.property_docs:
-            material_property_dict["e_ij"] = []
-
-        return material_property_dict
     
     def generate_consolidated_dict(self, total_docs = None):
 
