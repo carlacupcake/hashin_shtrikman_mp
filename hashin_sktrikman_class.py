@@ -16,6 +16,7 @@ from requests import Session, get
 
 from mp_api.client.core.settings import MAPIClientSettings
 from mp_api.client.core.utils import validate_ids
+import yaml
 
 # Custom Classes
 from ga_params_class import GAParams
@@ -46,22 +47,11 @@ _MAPI_SETTINGS = MAPIClientSettings()
 # HashinShtrikman class defaults
 DEFAULT_API_KEY       = environ.get("MP_API_KEY", None)
 DEFAULT_ENDPOINT      = environ.get("MP_API_ENDPOINT", "https://api.materialsproject.org/")
-DEFAULT_PROPERTY_DOCS = ["carrier-transport", "dielectric", "elastic", "magnetic", "piezoelectric"]
-DEFAULT_DESIRED_PROPS = {"carrier-transport": [],
-                         "dielectric": [],
-                         "elastic": [],
-                         "magnetic": [],
-                         "piezoelectric": []}
-DEFAULT_HAS_PROPS     = [HasProps.dielectric, HasProps.elasticity]
 DEFAULT_FIELDS        = {"material_id": [], 
                          "is_stable": [], 
                          "band_gap": [], 
                          "is_metal": [],
                          "formula": [],}
-DEFAULT_LOWER_BOUNDS  = {"mat1": DEFAULT_DESIRED_PROPS,
-                         "mat2": DEFAULT_DESIRED_PROPS}
-DEFAULT_UPPER_BOUNDS  = {"mat1": DEFAULT_DESIRED_PROPS,
-                         "mat2": DEFAULT_DESIRED_PROPS} # could generalize to more materials later
 
 class HashinShtrikman:
 
@@ -71,14 +61,10 @@ class HashinShtrikman:
             api_key:              Optional[str] = None,
             mp_contribs_project:  Optional[str] = None,
             endpoint:             str           = DEFAULT_ENDPOINT,
-            user_input:           UserInput     = UserInput(),
-            property_docs:        list          = DEFAULT_PROPERTY_DOCS,
-            desired_props:        dict          = DEFAULT_DESIRED_PROPS,
-            has_props:            list          = DEFAULT_HAS_PROPS,
+            # user_input:           UserInput     = UserInput(),
+            user_input:           dict     = {},
             fields:               dict          = DEFAULT_FIELDS,
             num_properties:       int           = 0,
-            lower_bounds:         dict          = DEFAULT_LOWER_BOUNDS,
-            upper_bounds:         dict          = DEFAULT_UPPER_BOUNDS, 
             ga_params:            GAParams      = GAParams(),
             final_population:     Population    = Population(),
             cost_history:         np.ndarray    = np.empty,   
@@ -90,25 +76,21 @@ class HashinShtrikman:
             self.mp_contribs_project  = mp_contribs_project
             self.endpoint             = endpoint
             self.user_input           = user_input
-            self.property_docs        = property_docs
-            self.desired_props        = desired_props 
-            self.has_props            = has_props
             self.fields               = fields
             self.num_properties       = num_properties  
-            self.lower_bounds         = lower_bounds 
-            self.upper_bounds         = upper_bounds
             self.ga_params            = ga_params 
             self.final_population     = final_population
             self.cost_history         = cost_history            
             self.lowest_costs         = lowest_costs
             self.avg_parent_costs     = avg_parent_costs
+            self.property_categories, self.property_docs  = self.load_property_categories()
 
             # Update from default based on self.user_input
-            self.set_desired_props_from_user_input()
-            self.set_num_properties_from_desired_props()
-            self.set_lower_bounds_from_user_input()
-            self.set_upper_bounds_from_user_input() 
-
+            self.set_desired_props_from_user_input(user_input) # populates self.desired_props = {"carrier-transport": [elec, therm], "dielectric": [e_total, e_ionic, e_electronic, n], "elastic": [bulk_modulus, shear_modulus, universal_anisotropy], "magnetic": [total_magnetization, total_magnetization_normalized_volume], "piezoelectric": [e_ij] }
+            self.set_bounds_from_user_input(user_input, 'lower_bound') # populates self.lower_bounds = {"mat1": {"carrier-transport":[elec, therm], }, "mat2": {"carrier-transport":[elec, therm], }}
+            self.set_bounds_from_user_input(user_input, 'upper_bound') # populates self.upper_bounds = {"mat1": {"carrier-transport":[elec, therm], }, "mat2": {"carrier-transport":[elec, therm], }}
+            self.set_num_properties_from_desired_props() # tracks the integer counter of num_props
+            
             try:
                 from mpcontribs.client import Client
                 self.contribs = Client(api_key, project="carrier_transport")
@@ -126,7 +108,35 @@ class HashinShtrikman:
             if not self.endpoint.endswith("/"):
                 self.endpoint += "/"
 
+    #------ Load property docs from MP ------# 
+    def load_property_categories(self, filename="mp_property_docs.json"):
+            print(f"Loading property categories from {filename}.")
+            """Load property categories from a JSON file."""
+            property_categories = []
+            try:
+                with open(filename, 'r') as file:
+                    property_docs = json.load(file)
+                
+                # Flatten the user input to get a list of all properties defined by the user
+                user_defined_properties = []
+                for material_props in self.user_input.values():
+                    for props in material_props.keys():
+                        user_defined_properties.append(props)
+                        #only keep the unique entries of the list
+                        user_defined_properties = list(set(user_defined_properties))
 
+                # Iterate through property categories to check which are present in the user input
+                for category, properties in property_docs.items():
+                    if any(prop in user_defined_properties for prop in properties):
+                        property_categories.append(category)
+
+            except FileNotFoundError:
+                print(f"File {filename} not found.")
+            except json.JSONDecodeError:
+                print(f"Error decoding JSON from file {filename}.")
+            
+            return property_categories, property_docs
+        
     #------ Getter Methods ------#
 
     def get_lower_bounds(self):
@@ -171,48 +181,48 @@ class HashinShtrikman:
     def get_avg_parent_costs(self):
         return self.avg_parent_costs
     
-    def get_headers(self, include_mpids=False):
+    def get_headers(self, include_mpids=False, file_name = "HS_headers.yaml"):
+        
+        with open(file_name, 'r') as stream:
+            try:
+                data = yaml.safe_load(stream)
+                headers = []
 
-        headers = []
-        if include_mpids:
-            headers.append("Material 1 MP-ID")
-            headers.append("Material 2 MP-ID")
-        if "carrier-transport" in self.property_docs:
-            headers.append("(Phase 1) Electrical conductivity, [S/m]")
-            headers.append("(Phase 1) Thermal conductivity, [W/m/K]")
-            headers.append("(Phase 2) Electrical conductivity, [S/m]")
-            headers.append("(Phase 2) Thermal conductivity, [W/m/K]")
-        if "dielectric" in self.property_docs:
-            headers.append("(Phase 1) Total dielectric constant, [F/m]")
-            headers.append("(Phase 1) Ionic contrib dielectric constant, [F/m]")
-            headers.append("(Phase 1) Electronic contrib dielectric constant, [F/m]")
-            headers.append("(Phase 1) Dielectric n, [F/m]")
-            headers.append("(Phase 2) Total dielectric constant, [F/m]")
-            headers.append("(Phase 2) Ionic contrib dielectric constant, [F/m]")
-            headers.append("(Phase 2) Electronic contrib dielectric constant, [F/m]")
-            headers.append("(Phase 2) Dielectric n, [F/m]")
-        if "elastic" in self.property_docs:
-            headers.append("(Phase 1) Bulk modulus, [GPa]")
-            headers.append("(Phase 1) Shear modulus, [GPa]")
-            headers.append("(Phase 1) Universal anisotropy, []")
-            headers.append("(Phase 2) Bulk modulus, [GPa]")
-            headers.append("(Phase 2) Shear modulus, [GPa]")
-            headers.append("(Phase 2) Universal anisotropy, []")
-        if "magnetic" in self.property_docs:
-            headers.append("(Phase 1) Total magnetization, []")
-            headers.append("(Phase 1) Total magnetization normalized volume, []")
-            headers.append("(Phase 2) Total magnetization, []")
-            headers.append("(Phase 2) Total magnetization normalized volume, []")
-        if "piezoelectric" in self.property_docs:
-            headers.append("(Phase 1) Piezoelectric constant, [C/N or m/V]")
-            headers.append("(Phase 2) Piezoelectric constant, [C/N or m/V]")
+                if include_mpids:
+                    headers.extend(["Material 1 MP-ID", "Material 2 MP-ID"])
 
-        headers.extend(["Mixing paramter, []",
-                        "(Phase 1) Volume fraction, [] ",
-                        "Cost, []"])
+                # Temporarily store headers by category to ensure phase grouping
+                temp_headers = {}
+
+                # Exclude 'Common' initially and handle it at the end
+                categories_to_exclude = ["Common"]
+
+                for material_key, categories in data.items():
+                    if material_key in categories_to_exclude:
+                        continue
+
+                    for category, properties in categories.items():
+                        if category in self.property_categories:
+                            if category not in temp_headers:
+                                temp_headers[category] = []
+
+                            for prop_key, prop_value in properties.items():
+                                temp_headers[category].append(prop_value)
+
+                # Add the consolidated headers from temp_headers to the final list, ensuring proper order
+                for category in temp_headers:
+                    headers.extend(temp_headers[category])
+
+                # Handle 'Common' properties if present
+                if "Common" in data:
+                    for common_key in data["Common"].keys():
+                        headers.append(common_key)
+
+            except yaml.YAMLError as exc:
+                print(exc)
         
         return headers
-    
+        
     def get_unique_designs(self):
 
         # Costs are often equal to >10 decimal points, truncate to obtain a richer set of suggestions
@@ -228,8 +238,10 @@ class HashinShtrikman:
 
     def get_table_of_best_designs(self):
 
-        [unique_members, unique_costs] = self.get_unique_designs()     
-        table_data = np.hstack((unique_members[0:self.user_input.num_results, :], unique_costs[0:self.user_input.num_results].reshape(-1, 1))) 
+        [unique_members, unique_costs] = self.get_unique_designs()   
+        # print(f"unique_members = {unique_members}")
+        # print(f"unique_costs = {unique_costs}")  
+        table_data = np.hstack((unique_members[0:20, :], unique_costs[0:20].reshape(-1, 1))) 
 
         return table_data
 
@@ -237,26 +249,26 @@ class HashinShtrikman:
 
         # Initialize a general dictionary for each material
         material_property_dict = {}
-        if "carrier-transport" in self.property_docs:
+        if "carrier-transport" in self.property_categories:
             material_property_dict["carrier-transport"] = {}
             material_property_dict["carrier-transport"]["elec_cond_300K_low_doping"] = []
             material_property_dict["carrier-transport"]["therm_cond_300K_low_doping"] = []
-        if "dielectric" in self.property_docs:
+        if "dielectric" in self.property_categories:
             material_property_dict["dielectric"] = {}
             material_property_dict["dielectric"]["e_total"] = []
             material_property_dict["dielectric"]["e_ionic"] = []
             material_property_dict["dielectric"]["e_electronic"] = []
             material_property_dict["dielectric"]["n"] = []
-        if "elastic" in self.property_docs:
+        if "elastic" in self.property_categories:
             material_property_dict["elastic"] = {}
             material_property_dict["elastic"]["bulk_modulus"] = []
             material_property_dict["elastic"]["shear_modulus"] = []
             material_property_dict["elastic"]["universal_anisotropy"] = []
-        if "magnetic" in self.property_docs:
+        if "magnetic" in self.property_categories:
             material_property_dict["magnetic"] = {}
             material_property_dict["magnetic"]["total_magnetization"] = []
             material_property_dict["magnetic"]["total_magnetization_normalized_volume"] = []
-        if "piezoelectric" in self.property_docs:
+        if "piezoelectric" in self.property_categories:
             material_property_dict["piezoelectric"] = {}
             material_property_dict["piezoelectric"]["e_ij"] = []
 
@@ -269,7 +281,7 @@ class HashinShtrikman:
         for i in range(len(unique_costs)):
             idx = 0
 
-            if "carrier-transport" in self.property_docs:
+            if "carrier-transport" in self.property_categories:
                 best_designs_dict["mat1"]["carrier-transport"]["elec_cond_300K_low_doping"].append(unique_members[i, idx])
                 idx += 1
                 best_designs_dict["mat1"]["carrier-transport"]["therm_cond_300K_low_doping"].append(unique_members[i, idx])
@@ -279,7 +291,7 @@ class HashinShtrikman:
                 best_designs_dict["mat2"]["carrier-transport"]["therm_cond_300K_low_doping"].append(unique_members[i, idx])
                 idx += 1
 
-            if "dielectric" in self.property_docs:
+            if "dielectric" in self.property_categories:
                 best_designs_dict["mat1"]["dielectric"]["e_total"].append(unique_members[i, idx])
                 idx += 1
                 best_designs_dict["mat1"]["dielectric"]["e_ionic"].append(unique_members[i, idx])
@@ -297,7 +309,7 @@ class HashinShtrikman:
                 best_designs_dict["mat2"]["dielectric"]["n"].append(unique_members[i, idx])
                 idx += 1
 
-            if "elastic" in self.property_docs:
+            if "elastic" in self.property_categories:
                 best_designs_dict["mat1"]["elastic"]["bulk_modulus"].append(unique_members[i, idx])
                 idx += 1
                 best_designs_dict["mat1"]["elastic"]["shear_modulus"].append(unique_members[i, idx])
@@ -311,7 +323,7 @@ class HashinShtrikman:
                 best_designs_dict["mat2"]["elastic"]["universal_anisotropy"].append(unique_members[i, idx])
                 idx += 1
 
-            if "magnetic" in self.property_docs:
+            if "magnetic" in self.property_categories:
                 best_designs_dict["mat1"]["magnetic"]["total_magnetization"].append(unique_members[i, idx])
                 idx += 1  
                 best_designs_dict["mat1"]["magnetic"]["total_magnetization_normalized_volume"].append(unique_members[i, idx])
@@ -321,7 +333,7 @@ class HashinShtrikman:
                 best_designs_dict["mat2"]["magnetic"]["total_magnetization_normalized_volume"].append(unique_members[i, idx])
                 idx += 1
 
-            if "piezoelectric" in self.property_docs:
+            if "piezoelectric" in self.property_categories:
                 best_designs_dict["mat1"]["piezoelectric"]["e_ij"].append(unique_members[i, idx])
                 idx += 1
                 best_designs_dict["mat2"]["piezoelectric"]["e_ij"].append(unique_members[i, idx])
@@ -341,7 +353,7 @@ class HashinShtrikman:
                 consolidated_dict = json.load(f)
 
         # Carrier transport extrema
-        if "carrier-transport" in self.property_docs:
+        if "carrier-transport" in self.property_categories:
             mat_1_elec_cond_lower_bound  = min(best_designs_dict["mat1"]["carrier-transport"]["elec_cond_300K_low_doping"])
             mat_1_elec_cond_upper_bound  = max(best_designs_dict["mat1"]["carrier-transport"]["elec_cond_300K_low_doping"])
             mat_2_elec_cond_lower_bound  = min(best_designs_dict["mat2"]["carrier-transport"]["elec_cond_300K_low_doping"])
@@ -353,7 +365,7 @@ class HashinShtrikman:
             mat_2_therm_cond_upper_bound  = max(best_designs_dict["mat2"]["carrier-transport"]["therm_cond_300K_low_doping"])
 
         # Dielectric extrema
-        if "dielectric" in self.property_docs:
+        if "dielectric" in self.property_categories:
             mat_1_e_total_lower_bound = min(best_designs_dict["mat1"]["dielectric"]["e_total"])
             mat_1_e_total_upper_bound = max(best_designs_dict["mat1"]["dielectric"]["e_total"])
             mat_2_e_total_lower_bound = min(best_designs_dict["mat2"]["dielectric"]["e_total"])
@@ -375,7 +387,7 @@ class HashinShtrikman:
             mat_2_n_upper_bound       = max(best_designs_dict["mat2"]["dielectric"]["n"])
 
         # Elastic extrema
-        if "elastic" in self.property_docs:
+        if "elastic" in self.property_categories:
             mat_1_bulk_mod_lower_bound   = min(best_designs_dict["mat1"]["elastic"]["bulk_modulus"])
             mat_1_bulk_mod_upper_bound   = max(best_designs_dict["mat1"]["elastic"]["bulk_modulus"])
             mat_2_bulk_mod_lower_bound   = min(best_designs_dict["mat2"]["elastic"]["bulk_modulus"])
@@ -392,7 +404,7 @@ class HashinShtrikman:
             mat_2_univ_aniso_upper_bound = max(best_designs_dict["mat2"]["elastic"]["universal_anisotropy"])
 
         # Magnetic extrema
-        if "magnetic" in self.property_docs:
+        if "magnetic" in self.property_categories:
             mat_1_tot_mag_lower_bound      = min(best_designs_dict["mat1"]["magnetic"]["total_magnetization"])
             mat_1_tot_mag_upper_bound      = max(best_designs_dict["mat1"]["magnetic"]["total_magnetization"])
             mat_2_tot_mag_lower_bound      = min(best_designs_dict["mat2"]["magnetic"]["total_magnetization"])
@@ -404,7 +416,7 @@ class HashinShtrikman:
             mat_2_tot_mag_norm_upper_bound = max(best_designs_dict["mat2"]["magnetic"]["total_magnetization_normalized_volume"])
 
         # Piezoelectric extrema
-        if "piezoelectric" in self.property_docs:
+        if "piezoelectric" in self.property_categories:
             mat_1_e_ij_lower_bound = min(best_designs_dict["mat1"]["piezoelectric"]["e_ij"])
             mat_1_e_ij_upper_bound = max(best_designs_dict["mat1"]["piezoelectric"]["e_ij"])
             mat_2_e_ij_lower_bound = min(best_designs_dict["mat2"]["piezoelectric"]["e_ij"])
@@ -423,7 +435,7 @@ class HashinShtrikman:
         mat1_matches = set(range(len(consolidated_dict["material_id"])))
         mat2_matches = set(range(len(consolidated_dict["material_id"])))
 
-        if "carrier-transport" in self.property_docs:
+        if "carrier-transport" in self.property_categories:
             for i, elec_cond in enumerate(consolidated_dict["elec_cond_300K_low_doping"]):
                 if (elec_cond >= mat_1_elec_cond_lower_bound) and (elec_cond <= mat_1_elec_cond_upper_bound):  
                     mat_1_elec_idx.append(i)
@@ -452,7 +464,7 @@ class HashinShtrikman:
         mat_1_n_idx = []
         mat_2_n_idx = []
 
-        if "dielectric" in self.property_docs:
+        if "dielectric" in self.property_categories:
             for i, e_total in enumerate(consolidated_dict["e_total"]):
                 if (e_total >= mat_1_e_total_lower_bound) and (e_total <= mat_1_e_total_upper_bound):       
                     mat_1_e_total_idx.append(i)
@@ -490,7 +502,7 @@ class HashinShtrikman:
         mat_1_univ_aniso_idx = []
         mat_2_univ_aniso_idx = []
 
-        if "elastic" in self.property_docs:
+        if "elastic" in self.property_categories:
         
             for i, bulk_mod in enumerate(consolidated_dict["bulk_modulus"]):
                 if (bulk_mod >= mat_1_bulk_mod_lower_bound) and (bulk_mod <= mat_1_bulk_mod_upper_bound):       
@@ -520,7 +532,7 @@ class HashinShtrikman:
         mat_1_tot_mag_norm_idx = []
         mat_2_tot_mag_norm_idx = []
 
-        if "magnetic" in self.property_docs:
+        if "magnetic" in self.property_categories:
             for i, tot_mag in enumerate(consolidated_dict["total_magnetization"]):
                 if (tot_mag >= mat_1_tot_mag_lower_bound) and (tot_mag <= mat_1_tot_mag_upper_bound):       
                     mat_1_tot_mag_idx.append(i)
@@ -540,7 +552,7 @@ class HashinShtrikman:
         mat_1_e_ij_idx = []
         mat_2_e_ij_idx = []
 
-        if "piezoelectric" in self.property_docs:
+        if "piezoelectric" in self.property_categories:
             for i, e_ij in enumerate(consolidated_dict["total_magnetization"]):
                 if (e_ij >= mat_1_e_ij_lower_bound) and (e_ij <= mat_1_e_ij_upper_bound):       
                     mat_1_e_ij_idx.append(i)
@@ -571,12 +583,12 @@ class HashinShtrikman:
                 m2_idx = mat_2_ids.index(m2)
                 
                 material_values = []
-                if "carrier-transport" in self.property_docs:
+                if "carrier-transport" in self.property_categories:
                     material_values.append(consolidated_dict["elec_cond_300K_low_doping"][m1_idx])
                     material_values.append(consolidated_dict["therm_cond_300K_low_doping"][m1_idx])
                     material_values.append(consolidated_dict["elec_cond_300K_low_doping"][m2_idx])
                     material_values.append(consolidated_dict["therm_cond_300K_low_doping"][m2_idx])
-                if "dielectric" in self.property_docs:
+                if "dielectric" in self.property_categories:
                     material_values.append(consolidated_dict["e_total"][m1_idx])
                     material_values.append(consolidated_dict["e_ionic"][m1_idx])
                     material_values.append(consolidated_dict["e_electronic"][m1_idx])
@@ -585,19 +597,19 @@ class HashinShtrikman:
                     material_values.append(consolidated_dict["e_ionic"][m2_idx])
                     material_values.append(consolidated_dict["e_electronic"][m2_idx])
                     material_values.append(consolidated_dict["n"][m2_idx])
-                if "elastic" in self.property_docs:
+                if "elastic" in self.property_categories:
                     material_values.append(consolidated_dict["bulk_modulus"][m1_idx])
                     material_values.append(consolidated_dict["shear_modulus"][m1_idx])
                     material_values.append(consolidated_dict["universal_anisotropy"][m1_idx])
                     material_values.append(consolidated_dict["bulk_modulus"][m2_idx])
                     material_values.append(consolidated_dict["shear_modulus"][m2_idx])
                     material_values.append(consolidated_dict["universal_anisotropy"][m2_idx])
-                if "magnetic" in self.property_docs:
+                if "magnetic" in self.property_categories:
                     material_values.append(consolidated_dict["total_magnetization"][m1_idx])
                     material_values.append(consolidated_dict["total_magnetization_normalized_volume"][m1_idx])
                     material_values.append(consolidated_dict["total_magnetization"][m2_idx])
                     material_values.append(consolidated_dict["total_magnetization_normalized_volume"][m2_idx])
-                if "piezoelectric" in self.property_docs:
+                if "piezoelectric" in self.property_categories:
                     material_values.append(consolidated_dict["e_ij"][m1_idx])
                     material_values.append(consolidated_dict["e_ij"][m2_idx])
 
@@ -606,14 +618,15 @@ class HashinShtrikman:
                 population = np.reshape(values, (self.ga_params.get_num_members(), len(material_values)))
 
                 # Only the vary the mixing parameter and volume fraction across the population
-                mixing_param = np.random.rand(self.ga_params.get_num_members(), 1)
-                phase1_vol_frac = np.random.rand(self.ga_params.get_num_members(), 1)
+                # create uniform mixing params from 0 to 1 with a spacing of 0.02 but with a shape of self.ga_params.get_num_members() & 1
+                mixing_param = np.linspace(0.01, 0.99, self.ga_params.get_num_members()).reshape(self.ga_params.get_num_members(), 1)
+                phase1_vol_frac = np.linspace(0.01, 0.99, self.ga_params.get_num_members()).reshape(self.ga_params.get_num_members(), 1)
 
                 # Include the random mixing parameters and volume fractions in the population
                 values = np.c_[population, mixing_param, phase1_vol_frac]    
 
                 # Instantiate the population and find the best performers
-                population = Population(num_properties=self.num_properties, values=values, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
+                population = Population(num_properties=self.num_properties, values=values, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params)
                 population.set_costs()
                 [sorted_costs, sorted_indices] = population.sort_costs()
                 population.set_order_by_costs(sorted_indices)
@@ -624,68 +637,45 @@ class HashinShtrikman:
                 mat2_id = np.reshape([m2]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1))
                 table_data = np.c_[mat1_id, mat2_id, population.values, sorted_costs] 
                 print("\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION")
-                print(tabulate(table_data[0:5, :], headers=self.get_headers(include_mpids=True))) # hardcoded to be 5 rows, could change
-    
+                print(tabulate(table_data[0:5, :], headers=self.get_headers())) # hardcoded to be 5 rows, could change
+                with open("table_data.csv", "w") as f:
+                    f.write(",".join(self.get_headers()) + "\n")
+                    # np.savetxt(f, table_data, delimiter=",")
+                    np.savetxt(f, table_data, delimiter=",", fmt="%s")
+
     #------ Setter Methods ------#
 
     def set_lower_bounds(self, lower_bounds):
         self.lower_bounds = lower_bounds
         return self
 
-    def set_lower_bounds_from_user_input(self):
+    
+    def set_bounds_from_user_input(self, user_input, bound_key):
+        if bound_key not in ['upper_bound', 'lower_bound']:
+            raise ValueError("bound_key must be either 'upper_bound' or 'lower_bound'.")
+        
+        bounds = {}
+        for material, properties in user_input.items():
+            if material == 'mixture':  # Skip 'mixture' as it's not a material
+                continue
 
-        self.lower_bounds = {"mat1": {}, "mat2": {}}
+            bounds[material] = {}
+            for category, prop_list in self.property_docs.items():
+                category_bounds = []
 
-        # Carrier transport
-        if "carrier-transport" in self.property_docs:
-            self.lower_bounds["mat1"]["carrier-transport"] = []
-            self.lower_bounds["mat1"]["carrier-transport"].append(self.user_input.mat1_lower_elec_cond_300k_low_doping)
-            self.lower_bounds["mat1"]["carrier-transport"].append(self.user_input.mat1_lower_therm_cond_300k_low_doping)
-            self.lower_bounds["mat2"]["carrier-transport"] = []
-            self.lower_bounds["mat2"]["carrier-transport"].append(self.user_input.mat2_lower_elec_cond_300k_low_doping)
-            self.lower_bounds["mat2"]["carrier-transport"].append(self.user_input.mat2_lower_therm_cond_300k_low_doping)
+                for prop in prop_list:
+                    if prop in properties and bound_key in properties[prop]:
+                        # Append the specified bound if the property is found
+                        category_bounds.append(properties[prop][bound_key])
 
-        # Dielectric
-        if "dielectric" in self.property_docs:
-            self.lower_bounds["mat1"]["dielectric"] = []
-            self.lower_bounds["mat1"]["dielectric"].append(self.user_input.mat1_lower_e_total)
-            self.lower_bounds["mat1"]["dielectric"].append(self.user_input.mat1_lower_e_ionic)
-            self.lower_bounds["mat1"]["dielectric"].append(self.user_input.mat1_lower_e_electronic)
-            self.lower_bounds["mat1"]["dielectric"].append(self.user_input.mat1_lower_n)
-            self.lower_bounds["mat2"]["dielectric"] = []
-            self.lower_bounds["mat2"]["dielectric"].append(self.user_input.mat2_lower_e_total)
-            self.lower_bounds["mat2"]["dielectric"].append(self.user_input.mat2_lower_e_ionic)
-            self.lower_bounds["mat2"]["dielectric"].append(self.user_input.mat2_lower_e_electronic)
-            self.lower_bounds["mat2"]["dielectric"].append(self.user_input.mat2_lower_n)
+                if category_bounds:
+                    bounds[material][category] = category_bounds
 
-        # Elastic
-        if "elastic" in self.property_docs:
-            self.lower_bounds["mat1"]["elastic"] = []
-            self.lower_bounds["mat1"]["elastic"].append(self.user_input.mat1_lower_bulk_modulus)
-            self.lower_bounds["mat1"]["elastic"].append(self.user_input.mat1_lower_shear_modulus)
-            self.lower_bounds["mat1"]["elastic"].append(self.user_input.mat1_lower_universal_anisotropy)
-            self.lower_bounds["mat2"]["elastic"] = []
-            self.lower_bounds["mat2"]["elastic"].append(self.user_input.mat2_lower_bulk_modulus)
-            self.lower_bounds["mat2"]["elastic"].append(self.user_input.mat2_lower_shear_modulus)
-            self.lower_bounds["mat2"]["elastic"].append(self.user_input.mat2_lower_universal_anisotropy)
-
-        # Magnetic
-        if "magnetic" in self.property_docs:
-            self.lower_bounds["mat1"]["magnetic"] = []
-            self.lower_bounds["mat1"]["magnetic"].append(self.user_input.mat1_lower_total_magnetization)
-            self.lower_bounds["mat1"]["magnetic"].append(self.user_input.mat1_lower_total_magnetization_normalized_volume)
-            self.lower_bounds["mat2"]["magnetic"] = []
-            self.lower_bounds["mat2"]["magnetic"].append(self.user_input.mat2_lower_total_magnetization)
-            self.lower_bounds["mat2"]["magnetic"].append(self.user_input.mat2_lower_total_magnetization_normalized_volume)
-
-        # Piezoelectric
-        if "piezoelectric" in self.property_docs:
-            self.lower_bounds["mat1"]["piezoelectric"] = []
-            self.lower_bounds["mat1"]["piezoelectric"].append(self.user_input.mat1_lower_e_ij)
-            self.lower_bounds["mat2"]["piezoelectric"] = []
-            self.lower_bounds["mat2"]["piezoelectric"].append(self.user_input.mat2_lower_e_ij)
-
-        return self
+        if bound_key == 'upper_bound':
+            self.upper_bounds = bounds
+        else:
+            self.lower_bounds = bounds
+        return bounds
     
     def set_upper_bounds(self, upper_bounds):
         self.upper_bounds = upper_bounds
@@ -761,44 +751,25 @@ class HashinShtrikman:
     def set_desired_props(self, desired_props):
         self.desired_props = desired_props
         return self
-    
-    def set_desired_props_from_user_input(self):
 
-        self.desired_props = {}
+    def set_desired_props_from_user_input(self, user_input):
 
-        # Carrier transport
-        if "carrier-transport" in self.property_docs:
-            self.desired_props["carrier-transport"] = []
-            self.desired_props["carrier-transport"].append(self.user_input.desired_elec_cond_300k_low_doping)
-            self.desired_props["carrier-transport"].append(self.user_input.desired_therm_cond_300k_low_doping)
+        # self.property_categories, self.property_docs = self.load_property_categories(user_input)
 
-        # Dielectric
-        if "dielectric" in self.property_docs:
-            self.desired_props["dielectric"] = []
-            self.desired_props["dielectric"].append(self.user_input.desired_e_total)
-            self.desired_props["dielectric"].append(self.user_input.desired_e_ionic)
-            self.desired_props["dielectric"].append(self.user_input.desired_e_electronic)
-            self.desired_props["dielectric"].append(self.user_input.desired_n)
+        # Initialize the dictionary to hold the desired properties
+        self.desired_props = {category: [] for category in self.property_categories}
 
-        # Elastic
-        if "elastic" in self.property_docs:
-            self.desired_props["elastic"] = []
-            self.desired_props["elastic"].append(self.user_input.desired_bulk_modulus)
-            self.desired_props["elastic"].append(self.user_input.desired_shear_modulus)
-            self.desired_props["elastic"].append(self.user_input.desired_universal_anisotropy)
+        # Extracting the desired properties from the 'mixture' part of final_dict
+        mixture_props = user_input.get('mixture', {})
 
-        # Magnetic
-        if "magnetic" in self.property_docs:
-            self.desired_props["magnetic"] = []
-            self.desired_props["magnetic"].append(self.user_input.desired_total_magnetization)
-            self.desired_props["magnetic"].append(self.user_input.desired_total_magnetization_normalized_volume)
+        # Iterate through each property category and its associated properties
+        for category, properties in self.property_docs.items():
+            for prop in properties:
+                # Check if the property is in the mixture; if so, append its desired value
+                if prop in mixture_props:
+                    self.desired_props[category].append(mixture_props[prop]['desired_prop'])
 
-        # Piezoelectric
-        if "piezoelectric" in self.property_docs:
-            self.desired_props["piezoelectric"] = []
-            self.desired_props["piezoelectric"].append(self.user_input.desired_e_ij)
-
-        return self
+        return self.desired_props, self.property_docs
     
     def set_has_props(self, has_props):
         self.has_props = has_props
@@ -813,30 +784,21 @@ class HashinShtrikman:
         return num_properties
     
     def set_num_properties_from_desired_props(self):
-
         num_properties = 0
-        
-        # Add variables to members for each property doc
-        if "carrier-transport" in self.property_docs:
-            num_properties += len(self.desired_props["carrier-transport"])
-        if "dielectric" in self.property_docs:
-            num_properties += len(self.desired_props["dielectric"])
-        if "elastic" in self.property_docs:
-            num_properties += len(self.desired_props["elastic"])
-        if "magnetic" in self.property_docs:
-            num_properties += len(self.desired_props["magnetic"])
-        if "piezoelectric" in self.property_docs:
-            num_properties += len(self.desired_props["piezoelectric"])
-        
-        # Make sure each material in the composite has variables for each property doc
-        # (Multiply by the number of materials in the composite)
-        num_materials = len(self.lower_bounds)
+
+        # Iterate through property categories to count the total number of properties
+        for _, properties in self.desired_props.items():
+            num_properties += len(properties)  # Add the number of properties in each category
+
+        # Multiply by the number of materials in the composite
+        num_materials = len(self.lower_bounds)  # Assuming self.lower_bounds is correctly structured
         num_properties = num_properties * num_materials
 
         # Add variables for mixing parameter and volume fraction
         num_properties += 2
 
         self.num_properties = num_properties
+
         return self
     
     def set_ga_params(self, ga_params):
@@ -883,7 +845,7 @@ class HashinShtrikman:
         costs = np.zeros(num_members)
 
         # Randomly populate first generation  
-        population = Population(num_properties=self.num_properties, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
+        population = Population(num_properties=self.num_properties, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params)
         population.set_initial_random(self.lower_bounds, self.upper_bounds)
 
         # Calculate the costs of the first generation
@@ -917,8 +879,8 @@ class HashinShtrikman:
                 population.values[num_parents+p+1, :] = kid2
             
                 # Cast offspring to members and evaluate costs
-                kid1 = Member(num_properties=self.num_properties, values=kid1, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
-                kid2 = Member(num_properties=self.num_properties, values=kid2, property_docs=self.property_docs, desired_props=self.desired_props, ga_params=self.ga_params)
+                kid1 = Member(num_properties=self.num_properties, values=kid1, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params)
+                kid2 = Member(num_properties=self.num_properties, values=kid2, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params)
                 costs[num_parents+p]   = kid1.get_cost()
                 costs[num_parents+p+1] = kid2.get_cost()
                         

@@ -15,7 +15,7 @@ class Population:
     def __init__(
             self,
             num_properties: int = 0,
-            property_docs:  list = DEFAULT_PROPERTY_DOCS,
+            property_categories:  list = DEFAULT_PROPERTY_DOCS,
             desired_props:  dict = DEFAULT_DESIRED_PROPS,
             values:         np.ndarray = np.empty,
             costs:          np.ndarray = np.empty,
@@ -23,7 +23,7 @@ class Population:
             ):
         
             self.num_properties = num_properties
-            self.property_docs  = property_docs
+            self.property_categories  = property_categories
             self.desired_props  = desired_props
             self.ga_params      = ga_params
 
@@ -52,8 +52,8 @@ class Population:
         self.num_properties = num_properties
         return self 
 
-    def set_property_docs(self, property_docs):
-        self.property_docs = property_docs
+    def set_property_docs(self, property_categories):
+        self.property_categories = property_categories
         return self
 
     def set_values(self, values):
@@ -74,31 +74,31 @@ class Population:
 
         # Unpack bounds from dictionaries, include bounds for all materials
         # Could extend to more materials later
-        if "carrier-transport" in self.property_docs:
+        if "carrier-transport" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["carrier-transport"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["carrier-transport"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["carrier-transport"])
             upper_bounds_list.extend(upper_bounds["mat2"]["carrier-transport"]) 
 
-        if "dielectric" in self.property_docs:
+        if "dielectric" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["dielectric"])
             lower_bounds_list.extend(lower_bounds["mat2"]["dielectric"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["dielectric"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["dielectric"]) 
 
-        if "elastic" in self.property_docs:
+        if "elastic" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["elastic"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["elastic"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["elastic"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["elastic"]) 
 
-        if "magnetic" in self.property_docs:
+        if "magnetic" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["magnetic"])
             lower_bounds_list.extend(lower_bounds["mat2"]["magnetic"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["magnetic"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["magnetic"]) 
 
-        if "piezoelectric" in self.property_docs:
+        if "piezoelectric" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["piezoelectric"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["piezoelectric"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["piezoelectric"]) 
@@ -129,31 +129,31 @@ class Population:
 
         # Unpack bounds from dictionaries, include bounds for all materials
         # Could extend to more materials later
-        if "carrier-transport" in self.property_docs:
+        if "carrier-transport" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["carrier-transport"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["carrier-transport"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["carrier-transport"])
             upper_bounds_list.extend(upper_bounds["mat2"]["carrier-transport"]) 
 
-        if "dielectric" in self.property_docs:
+        if "dielectric" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["dielectric"])
             lower_bounds_list.extend(lower_bounds["mat2"]["dielectric"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["dielectric"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["dielectric"]) 
 
-        if "elastic" in self.property_docs:
+        if "elastic" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["elastic"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["elastic"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["elastic"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["elastic"]) 
 
-        if "magnetic" in self.property_docs:
+        if "magnetic" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["magnetic"])
             lower_bounds_list.extend(lower_bounds["mat2"]["magnetic"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["magnetic"]) 
             upper_bounds_list.extend(upper_bounds["mat2"]["magnetic"]) 
             
-        if "piezoelectric" in self.property_docs:
+        if "piezoelectric" in self.property_categories:
             lower_bounds_list.extend(lower_bounds["mat1"]["piezoelectric"]) 
             lower_bounds_list.extend(lower_bounds["mat2"]["piezoelectric"]) 
             upper_bounds_list.extend(upper_bounds["mat1"]["piezoelectric"]) 
@@ -180,7 +180,7 @@ class Population:
         for i in range(num_members):
             this_member = Member(num_properties=self.num_properties, 
                                  values=population_values[i, :], 
-                                 property_docs=self.property_docs, 
+                                 property_categories=self.property_categories, 
                                  desired_props=self.desired_props, 
                                  ga_params=self.ga_params)
             costs[i] = this_member.get_cost()

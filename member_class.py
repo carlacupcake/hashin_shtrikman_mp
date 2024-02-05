@@ -8,14 +8,14 @@ class Member:
             self,
             num_properties: int = 0,
             values:         np.ndarray = np.empty,
-            property_docs:  list = [],
+            property_categories:  list = [],
             desired_props:  dict={},
             ga_params:      GAParams = GAParams(),
             ):
             
             self.num_properties = num_properties
             self.values         = np.zeros(shape=(num_properties, 1)) if values is np.empty else values
-            self.property_docs  = property_docs
+            self.property_categories  = property_categories
             self.desired_props  = desired_props
             self.ga_params      = ga_params
 
@@ -26,8 +26,8 @@ class Member:
     def get_values(self):
         return self.values
     
-    def get_property_docs(self):
-        return self.property_docs
+    def get_property_categories(self):
+        return self.property_categories
     
     def get_desired_props(self):
         return self.desired_props
@@ -57,7 +57,7 @@ class Member:
         cost_func_weights = []   
     
         idx = 0
-        if "carrier-transport" in self.property_docs:
+        if "carrier-transport" in self.property_categories:
 
             # Extract electrical conductivities from member (property 2 should be larger)
             mat1_elec_cond, mat2_elec_cond = self.values[idx:idx+2]
@@ -117,7 +117,7 @@ class Member:
             concentration_factors.append(cf_heat1)
             concentration_factors.append(cf_heat2)
 
-        if "dielectric" in self.property_docs:
+        if "dielectric" in self.property_categories:
 
             # Extract total dielectric constant from member 
             mat1_e_total, mat2_e_total = self.values[idx:idx+2]
@@ -225,7 +225,7 @@ class Member:
             concentration_factors.append(cf_pol1_cf_elec1_n)
             concentration_factors.append(cf_pol2_cf_elec2_n)
 
-        if "elastic" in self.property_docs:
+        if "elastic" in self.property_categories:
 
             # Extract bulk modulus and shear modulus from member 
             mat1_bulk_mod, mat2_bulk_mod = self.values[idx:idx+2]
@@ -303,7 +303,7 @@ class Member:
             concentration_factors.append(cf_univ_aniso1)
             concentration_factors.append(cf_univ_aniso2)
 
-        if "magnetic" in self.property_docs:
+        if "magnetic" in self.property_categories:
 
             # Extract total magnetization from member 
             mat1_tot_mag, mat2_tot_mag = self.values[idx:idx+2]
@@ -358,7 +358,7 @@ class Member:
             concentration_factors.append(cf_tot_mag_norm_vol1)
             concentration_factors.append(cf_tot_mag_norm_vol2)
 
-        if "piezoelectric" in self.property_docs:
+        if "piezoelectric" in self.property_categories:
             
             # Extract total magnetization normalized volume from member 
             mat1_e_ij, mat2_e_ij = self.values[idx:idx+2]
@@ -402,20 +402,20 @@ class Member:
 
         # Extract desired properties from dictionary
         des_props = []
-        if "carrier-transport" in self.property_docs:
+        if "carrier-transport" in self.property_categories:
             des_props.extend(self.desired_props["carrier-transport"])
-        if "dielectric" in self.property_docs:
+        if "dielectric" in self.property_categories:
             des_props.extend(self.desired_props["dielectric"])
-        if "elastic" in self.property_docs:
+        if "elastic" in self.property_categories:
             des_props.extend(self.desired_props["elastic"])
-        if "magnetic" in self.property_docs:
+        if "magnetic" in self.property_categories:
             des_props.extend(self.desired_props["magnetic"]) 
-        if "piezoelectric" in self.property_docs:
+        if "piezoelectric" in self.property_categories:
             des_props.extend(self.desired_props["piezoelectric"])
         des_props = np.array(des_props)
 
         # Assemble the cost function
-        domains = len(self.property_docs)
+        domains = len(self.property_categories)
         W = 1/domains
         cost = weight_eff_prop*W * np.sum(abs(np.divide(des_props - effective_properties, effective_properties))) + np.sum(np.multiply(cost_func_weights, abs(np.divide(concentration_factors - tolerance, tolerance))))
 
@@ -431,8 +431,8 @@ class Member:
         self.values = values
         return self
     
-    def set_property_docs(self, property_docs):
-        self.property_docs = property_docs
+    def set_property_categories(self, property_categories):
+        self.property_categories = property_categories
         return self
     
     def set_desired_props(self, des_props):
