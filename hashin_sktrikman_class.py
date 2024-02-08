@@ -109,16 +109,18 @@ class HashinShtrikman:
                 self.endpoint += "/"
 
     #------ Load property docs from MP ------# 
-    def load_property_categories(self, filename="mp_property_docs.json"):
+    def load_property_categories(self, filename="mp_property_docs.yaml"):
             print(f"Loading property categories from {filename}.")
             """Load property categories from a JSON file."""
             property_categories = []
             try:
                 with open(filename, 'r') as file:
-                    property_docs = json.load(file)
+                    # property_docs = json.load(file)
+                    property_docs = yaml.safe_load(file)
                 
                 # Flatten the user input to get a list of all properties defined by the user
                 user_defined_properties = []
+
                 for material_props in self.user_input.values():
                     for props in material_props.keys():
                         user_defined_properties.append(props)
@@ -127,6 +129,7 @@ class HashinShtrikman:
 
                 # Iterate through property categories to check which are present in the user input
                 for category, properties in property_docs.items():
+
                     if any(prop in user_defined_properties for prop in properties):
                         property_categories.append(category)
 
@@ -135,6 +138,7 @@ class HashinShtrikman:
             except json.JSONDecodeError:
                 print(f"Error decoding JSON from file {filename}.")
             
+            print(f"property_categories = {property_categories}")
             return property_categories, property_docs
         
     #------ Getter Methods ------#
@@ -437,13 +441,13 @@ class HashinShtrikman:
         mat2_matches = set(range(len(consolidated_dict["material_id"])))
 
         if "carrier-transport" in self.property_categories:
-            for i, elec_cond in enumerate(consolidated_dict["elec_cond_300K_low_doping"]):
+            for i, elec_cond in enumerate(consolidated_dict["elec_cond_300k_low_doping"]):
                 if (elec_cond >= mat_1_elec_cond_lower_bound) and (elec_cond <= mat_1_elec_cond_upper_bound):  
                     mat_1_elec_idx.append(i)
                 if (elec_cond >= mat_2_elec_cond_lower_bound) and (elec_cond <= mat_2_elec_cond_upper_bound):  
                     mat_2_elec_idx.append(i) 
 
-            for i, therm_cond in enumerate(consolidated_dict["therm_cond_300K_low_doping"]):
+            for i, therm_cond in enumerate(consolidated_dict["therm_cond_300k_low_doping"]):
                 if (therm_cond >= mat_1_therm_cond_lower_bound) and (therm_cond <= mat_1_therm_cond_upper_bound):  
                     mat_1_therm_idx.append(i)
                 if (therm_cond >= mat_2_therm_cond_lower_bound) and (therm_cond <= mat_2_therm_cond_upper_bound):  
@@ -645,11 +649,6 @@ class HashinShtrikman:
                     np.savetxt(f, table_data, delimiter=",", fmt="%s")
 
     #------ Setter Methods ------#
-
-    def set_lower_bounds(self, lower_bounds):
-        self.lower_bounds = lower_bounds
-        return self
-
     
     def set_bounds_from_user_input(self, user_input, bound_key):
         if bound_key not in ['upper_bound', 'lower_bound']:
@@ -678,11 +677,14 @@ class HashinShtrikman:
             self.lower_bounds = bounds
         return bounds
     
+    def set_lower_bounds(self, lower_bounds):
+        self.lower_bounds = lower_bounds
+        return self
+    
     def set_upper_bounds(self, upper_bounds):
         self.upper_bounds = upper_bounds
         return self
     
-
     def set_retain_parents(self, retain_parents):
         self.retain_parents = retain_parents
         return self
@@ -887,33 +889,16 @@ class HashinShtrikman:
         
         new_fields = self.fields
 
-        # MP-contribs data
-        if "carrier-transport" in self.property_categories:
-           new_fields["mp-ids-contrib"] = []
-           new_fields["elec_cond_300K_low_doping"] = []
-           new_fields["therm_cond_300K_low_doping"] = []
+        # Iterate over the user input to dynamically update self.fields based on requested property categories
+        # Iterate over property categories and update new_fields based on mp_property_docs
+        for category in self.property_categories:
+            if category in self.property_docs:
+                if category == "carrier-transport":
+                    new_fields["mp-ids-contrib"] = []
 
-        # Dielectric
-        if "dielectric" in self.property_categories:
-            new_fields["e_electronic"] = []
-            new_fields["e_ionic"] = []
-            new_fields["e_total"] = []
-            new_fields["n"] = []
-
-        # Elastic
-        if "elastic" in self.property_categories:
-            new_fields["bulk_modulus"] = []
-            new_fields["shear_modulus"] = []
-            new_fields["universal_anisotropy"] = []
-        
-        # Magnetic
-        if "magnetic" in self.property_categories:
-            new_fields["total_magnetization"] = []
-            new_fields["total_magnetization_normalized_vol"] = []
-
-        # Piezoelectric
-        if "piezoelectric" in self.property_categories:
-            new_fields["e_ij_max"] = []
+                for prop in self.property_docs[category]:
+                    # Initialize empty list for each property under the category
+                    new_fields[prop] = []
 
         self.set_fields(new_fields)
 
@@ -949,20 +934,37 @@ class HashinShtrikman:
 
                 required_fields = [doc.material_id, doc.is_stable, doc.is_metal]
 
-                if "dielectric" in self.property_categories:
-                    required_fields.append(doc.e_electronic)
-                    required_fields.append(doc.e_ionic)
-                    required_fields.append(doc.e_total)
-                    required_fields.append(doc.n)
-                if "magnetic" in self.property_categories:
-                    required_fields.append(doc.total_magnetization)
-                    required_fields.append(doc.total_magnetization_normalized_vol)
-                if "piezoelectric" in self.property_categories:
-                    required_fields.append(doc.e_ij_max)
-                if "elastic" in self.property_categories:
-                    required_fields.append(doc.bulk_modulus)
-                    required_fields.append(doc.shear_modulus)
-                    required_fields.append(doc.universal_anisotropy)
+                for category in self.property_categories:
+                    if category in self.property_docs:
+                        if category == "carrier-transport":
+                            pass
+                        else:
+                            for prop in self.property_docs[category]:
+                                # Dynamically get the property value from the doc
+                                prop_value = getattr(doc, prop, None)  # Returns None if prop doesn't exist
+                                # Initialize empty list for each property under the category
+                                print(f"prop = {prop}")
+                                if prop_value is not None:
+                                    print(f"{prop} = {prop_value}")
+                                    required_fields.append(prop_value)
+                                else:
+                                    print(f"No data for {prop}")
+                                    required_fields.append(prop_value)
+
+                # if "dielectric" in self.property_categories:
+                #     required_fields.append(doc.e_electronic)
+                #     required_fields.append(doc.e_ionic)
+                #     required_fields.append(doc.e_total)
+                #     required_fields.append(doc.n)
+                # if "magnetic" in self.property_categories:
+                #     required_fields.append(doc.total_magnetization)
+                #     required_fields.append(doc.total_magnetization_normalized_vol)
+                # if "piezoelectric" in self.property_categories:
+                #     required_fields.append(doc.e_ij_max)
+                # if "elastic" in self.property_categories:
+                #     required_fields.append(doc.bulk_modulus)
+                #     required_fields.append(doc.shear_modulus)
+                #     required_fields.append(doc.universal_anisotropy)
             
                 if "carrier-transport" in self.property_categories:
                     try:
@@ -974,6 +976,8 @@ class HashinShtrikman:
                         continue
 
                 if all(field is not None for field in required_fields):
+                    print(f"self.fields = {self.fields}")
+                    print(f"required_fields = {required_fields}")
                     self.fields["material_id"].append(mp_id)
                     self.fields["formula"].append(my_dict["formula"])
                     self.fields["is_stable"].append(doc.is_stable)
@@ -983,7 +987,10 @@ class HashinShtrikman:
                     # Carrier transport
                     if "carrier-transport" in self.property_categories:
                         self.fields["mp-ids-contrib"].append(my_dict["identifier"])
-                        thermal_cond_str = my_dict["tables"][7].iloc[2, 0].replace(",", "")
+                        thermal_cond_str = my_dict["tables"][7].iloc[2, 0]
+                        if not isinstance(thermal_cond_str, str):
+                            thermal_cond_str = str(thermal_cond_str)
+                        thermal_cond_str = thermal_cond_str.replace(",", "")
 
                         if "×10" in thermal_cond_str:
                             # Extract the numeric part before the "±" symbol and the exponent
@@ -997,7 +1004,10 @@ class HashinShtrikman:
                             thermal_cond = float(thermal_cond_str) * 1e-14  # multply by relaxation time, 10 fs
                             logger.info(f"thermal_cond_else_statement = {thermal_cond}")
 
-                        elec_cond_str = my_dict["tables"][5].iloc[2, 0].replace(",", "")
+                        elec_cond_str = my_dict["tables"][5].iloc[2, 0]
+                        if not isinstance(elec_cond_str, str):
+                            elec_cond_str = str(elec_cond_str)
+                        elec_cond_str = elec_cond_str.replace(",", "")
 
                         if "×10" in elec_cond_str:
                             # Extract the numeric part before the "±" symbol and the exponent
@@ -1012,8 +1022,8 @@ class HashinShtrikman:
                             logger.info(f"elec_cond_else_statement = {elec_cond}")
 
 
-                        self.fields["therm_cond_300K_low_doping"].append(thermal_cond)
-                        self.fields["elec_cond_300K_low_doping"].append(elec_cond)   
+                        self.fields["therm_cond_300k_low_doping"].append(thermal_cond)
+                        self.fields["elec_cond_300k_low_doping"].append(elec_cond)   
                     
                     # Dielectric
                     if "dielectric" in self.property_categories:
