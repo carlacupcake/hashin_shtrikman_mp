@@ -17,6 +17,7 @@ from requests import Session, get
 from mp_api.client.core.settings import MAPIClientSettings
 from mp_api.client.core.utils import validate_ids
 import yaml
+from monty.serialization import loadfn
 
 # Custom Classes
 from ga_params_class import GAParams
@@ -114,9 +115,7 @@ class HashinShtrikman:
             """Load property categories from a JSON file."""
             property_categories = []
             try:
-                with open(filename, 'r') as file:
-                    # property_docs = json.load(file)
-                    property_docs = yaml.safe_load(file)
+                property_docs = loadfn(filename)
                 
                 # Flatten the user input to get a list of all properties defined by the user
                 user_defined_properties = []
@@ -129,10 +128,8 @@ class HashinShtrikman:
 
                 # Iterate through property categories to check which are present in the user input
                 for category, properties in property_docs.items():
-
                     if any(prop in user_defined_properties for prop in properties):
                         property_categories.append(category)
-
             except FileNotFoundError:
                 print(f"File {filename} not found.")
             except json.JSONDecodeError:
@@ -589,10 +586,10 @@ class HashinShtrikman:
                 
                 material_values = []
                 if "carrier-transport" in self.property_categories:
-                    material_values.append(consolidated_dict["elec_cond_300K_low_doping"][m1_idx])
-                    material_values.append(consolidated_dict["therm_cond_300K_low_doping"][m1_idx])
-                    material_values.append(consolidated_dict["elec_cond_300K_low_doping"][m2_idx])
-                    material_values.append(consolidated_dict["therm_cond_300K_low_doping"][m2_idx])
+                    material_values.append(consolidated_dict["elec_cond_300k_low_doping"][m1_idx])
+                    material_values.append(consolidated_dict["therm_cond_300k_low_doping"][m1_idx])
+                    material_values.append(consolidated_dict["elec_cond_300k_low_doping"][m2_idx])
+                    material_values.append(consolidated_dict["therm_cond_300k_low_doping"][m2_idx])
                 if "dielectric" in self.property_categories:
                     material_values.append(consolidated_dict["e_total"][m1_idx])
                     material_values.append(consolidated_dict["e_ionic"][m1_idx])
@@ -708,10 +705,12 @@ class HashinShtrikman:
 
         # Extracting the desired properties from the 'mixture' part of final_dict
         mixture_props = user_input.get('mixture', {})
+        print(f"mixture_props = {mixture_props}")
 
         # Iterate through each property category and its associated properties
         for category, properties in self.property_docs.items():
             for prop in properties:
+                print(f"prop = {prop}")
                 # Check if the property is in the mixture; if so, append its desired value
                 if prop in mixture_props:
                     self.desired_props[category].append(mixture_props[prop]['desired_prop'])
@@ -936,86 +935,63 @@ class HashinShtrikman:
 
                 for category in self.property_categories:
                     if category in self.property_docs:
-                        if category == "carrier-transport":
-                            pass
-                        else:
-                            for prop in self.property_docs[category]:
-                                # Dynamically get the property value from the doc
-                                prop_value = getattr(doc, prop, None)  # Returns None if prop doesn't exist
-                                # Initialize empty list for each property under the category
+                        for prop, value in self.property_docs[category].items():
+                            if category == "carrier-transport":
+                                try:
+                                    mp_id = doc.material_id                           
+                                    query = {"identifier": mp_id}
+                                    my_dict = client.download_contributions(query=query, include=["tables"])[0]
+                                    required_fields.append(my_dict["identifier"])
+                                except IndexError:
+                                    continue
+                            elif category == "elastic":
+                                print(f"prop = {prop}")
+                                prop_value = getattr(doc, prop, None)
+                                # For "elastic", you expect 'value' to be directly usable
+                                if value is not None:  # 'voigt' or similar
+                                    if prop_value is not None:
+                                        prop_value = prop_value.get(value, None)
                                 required_fields.append(prop_value)
-            
-                if "carrier-transport" in self.property_categories:
-                    try:
-                        mp_id = doc.material_id                           
-                        query = {"identifier": mp_id}
-                        my_dict = client.download_contributions(query=query, include=["tables"])[0]
-                        required_fields.append(my_dict["identifier"])
-                    except IndexError:
-                        continue
+                            else:
+                                # For other categories, just append the property name for now
+                                prop_value = getattr(doc, prop, None)
+                                required_fields.append(prop_value)
+                
+                logger.info(f"required_fields = {required_fields}")
 
                 if all(field is not None for field in required_fields):
-                    print(f"self.fields = {self.fields}")
-                    print(f"required_fields = {required_fields}")
                     self.fields["material_id"].append(mp_id)
                     self.fields["formula"].append(my_dict["formula"])
                     self.fields["is_stable"].append(doc.is_stable)
                     self.fields["is_metal"].append(doc.is_metal)
                     self.fields["band_gap"].append(doc.band_gap)
                     
-                    # Carrier transport
-                    if "carrier-transport" in self.property_categories:
-                        self.fields["mp-ids-contrib"].append(my_dict["identifier"])
-                        thermal_cond_str = my_dict["tables"][7].iloc[2, 0]
-                        if not isinstance(thermal_cond_str, str):
-                            thermal_cond_str = str(thermal_cond_str)
-                        thermal_cond_str = thermal_cond_str.replace(",", "")
-
-                        if "×10" in thermal_cond_str:
-                            # Extract the numeric part before the "±" symbol and the exponent
-                            thermal_cond_str, thermal_cond_exponent_str = re.search(r"\((.*?) ±.*?\)×10(.*)", thermal_cond_str).groups()
-                            # Convert the exponent part to a format that Python can understand
-                            thermal_cond_exponent = self.superscript_to_int(thermal_cond_exponent_str.strip())
-                            # Combine the numeric part and the exponent part, and convert the result to a float
-                            thermal_cond = float(f"{thermal_cond_str}e{thermal_cond_exponent}") * 1e-14  # multply by relaxation time, 10 fs
-                            logger.info(f"thermal_cond_if_statement = {thermal_cond}")
-                        else:
-                            thermal_cond = float(thermal_cond_str) * 1e-14  # multply by relaxation time, 10 fs
-                            logger.info(f"thermal_cond_else_statement = {thermal_cond}")
-
-                        elec_cond_str = my_dict["tables"][5].iloc[2, 0]
-                        if not isinstance(elec_cond_str, str):
-                            elec_cond_str = str(elec_cond_str)
-                        elec_cond_str = elec_cond_str.replace(",", "")
-
-                        if "×10" in elec_cond_str:
-                            # Extract the numeric part before the "±" symbol and the exponent
-                            elec_cond_str, elec_cond_exponent_str = re.search(r"\((.*?) ±.*?\)×10(.*)", elec_cond_str).groups()
-                            # Convert the exponent part to a format that Python can understand
-                            elec_cond_exponent = self.superscript_to_int(elec_cond_exponent_str.strip())
-                            # Combine the numeric part and the exponent part, and convert the result to a float
-                            elec_cond = float(f"{elec_cond_str}e{elec_cond_exponent}") * 1e-14  # multply by relaxation time, 10 fs
-                            logger.info(f"elec_cond_if_statement = {elec_cond}")
-                        else:
-                            elec_cond = float(elec_cond_str) * 1e-14  # multply by relaxation time, 10 fs
-                            logger.info(f"elec_cond_else_statement = {elec_cond}")
-
-
-                        self.fields["therm_cond_300k_low_doping"].append(thermal_cond)
-                        self.fields["elec_cond_300k_low_doping"].append(elec_cond)   
-                    
-
-
                     for category in self.property_categories:
                         if category in self.property_docs:
                             if category == "carrier-transport":
-                                pass
-                            else:
-                                for prop in self.property_docs[category]:
-                                    # Dynamically get the property value from the doc
-                                    prop_value = getattr(doc, prop, None)  # Returns None if prop doesn't exist
-                                    # Initialize empty list for each property under the category
+                                self.fields["mp-ids-contrib"].append(my_dict["identifier"])
+                            
+                            for prop, value in self.property_docs[category].items():
+                                
+                                # Carrier transport
+                                if category == "carrier-transport":
+                                    self.mp_contribs_prop(prop, my_dict)
+                                
+                                # Elastic
+                                elif category == "elastic":
+                                    prop_value = getattr(doc, prop, None)
+                                    if value is not None:  # 'voigt' or similar
+                                        if prop_value is not None:
+                                            prop_value = prop_value.get(value, None)
                                     self.fields[prop].append(prop_value)
+                                
+                                # All other property categories
+                                else:
+                                    for prop in self.property_docs[category]:
+                                        # Dynamically get the property value from the doc
+                                        prop_value = getattr(doc, prop, None)  # Returns None if prop doesn't exist
+                                        # Initialize empty list for each property under the category
+                                        self.fields[prop].append(prop_value)
         
             # comm.gather the self.fields data after the for loop
             gathered_fields = comm.gather(self.fields, root=0)
@@ -1047,9 +1023,27 @@ class HashinShtrikman:
         normal_str = "".join(superscript_to_normal.get(char, char) for char in superscript_str)
         return int(normal_str)
     
-    
+    def mp_contribs_prop(self, prop, my_dict):
+        if prop == "therm_cond_300k_low_doping":
+            table_column = 7
+        elif prop == "elec_cond_300k_low_doping":
+            table_column = 5
 
+        prop_str = my_dict["tables"][table_column].iloc[2, 0]
+        if not isinstance(prop_str, str):
+            prop_str = str(prop_str)
+        prop_str = prop_str.replace(",", "")
+
+        if "×10" in prop_str:
+            # Extract the numeric part before the "±" symbol and the exponent
+            prop_str, prop_exponent_str = re.search(r"\((.*?) ±.*?\)×10(.*)", prop_str).groups()
+            # Convert the exponent part to a format that Python can understand
+            prop_exponent = self.superscript_to_int(prop_exponent_str.strip())
+            # Combine the numeric part and the exponent part, and convert the result to a float
+            prop_value = float(f"{prop_str}e{prop_exponent}") * 1e-14  # multply by relaxation time, 10 fs
+            logger.info(f"{prop}_if_statement = {prop_value}")
+        else:
+            prop_value = float(prop_str) * 1e-14  # multply by relaxation time, 10 fs
+            logger.info(f"{prop}_else_statement = {prop_value}")
         
-    
-
-    
+        self.fields[prop].append(prop_value)
