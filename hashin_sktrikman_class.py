@@ -257,8 +257,6 @@ class HashinShtrikman:
                 for prop in self.property_docs[category]:
                     best_designs_dict[mat][category][prop] = []
 
-        logger.info(f"best_designs_dict_template_new = {best_designs_dict}")
-
         [unique_members, unique_costs] = self.get_unique_designs()
 
         # Populate the dictionary with unique design values
@@ -329,8 +327,6 @@ class HashinShtrikman:
                         self.append_property_values(self.property_docs[category], m1_idx, material_values, consolidated_dict)
                         # Append material 2 properties
                         self.append_property_values(self.property_docs[category], m2_idx, material_values, consolidated_dict)
-
-                logger.info(f"material_values = {material_values}")
 
                 # Create population of same properties for all members based on material match pair
                 values = np.reshape(material_values*self.ga_params.get_num_members(), (self.ga_params.get_num_members(), len(material_values))) 
@@ -433,7 +429,6 @@ class HashinShtrikman:
         # Iterate through each property category and its associated properties
         for category, properties in self.property_docs.items():
             for prop in properties:
-                print(f"prop = {prop}")
                 # Check if the property is in the mixture; if so, append its desired value
                 if prop in mixture_props:
                     self.desired_props[category].append(mixture_props[prop]['desired_prop'])
@@ -668,7 +663,6 @@ class HashinShtrikman:
                                 except IndexError:
                                     continue
                             elif category == "elastic":
-                                print(f"prop = {prop}")
                                 prop_value = getattr(doc, prop, None)
                                 # For "elastic", you expect 'value' to be directly usable
                                 if value is not None:  # 'voigt' or similar
@@ -680,7 +674,7 @@ class HashinShtrikman:
                                 prop_value = getattr(doc, prop, None)
                                 required_fields.append(prop_value)
                 
-                logger.info(f"required_fields = {required_fields}")
+                # logger.info(f"required_fields = {required_fields}")
 
                 if all(field is not None for field in required_fields):
                     self.fields["material_id"].append(mp_id)
