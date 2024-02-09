@@ -943,28 +943,7 @@ class HashinShtrikman:
                                 # Dynamically get the property value from the doc
                                 prop_value = getattr(doc, prop, None)  # Returns None if prop doesn't exist
                                 # Initialize empty list for each property under the category
-                                print(f"prop = {prop}")
-                                if prop_value is not None:
-                                    print(f"{prop} = {prop_value}")
-                                    required_fields.append(prop_value)
-                                else:
-                                    print(f"No data for {prop}")
-                                    required_fields.append(prop_value)
-
-                # if "dielectric" in self.property_categories:
-                #     required_fields.append(doc.e_electronic)
-                #     required_fields.append(doc.e_ionic)
-                #     required_fields.append(doc.e_total)
-                #     required_fields.append(doc.n)
-                # if "magnetic" in self.property_categories:
-                #     required_fields.append(doc.total_magnetization)
-                #     required_fields.append(doc.total_magnetization_normalized_vol)
-                # if "piezoelectric" in self.property_categories:
-                #     required_fields.append(doc.e_ij_max)
-                # if "elastic" in self.property_categories:
-                #     required_fields.append(doc.bulk_modulus)
-                #     required_fields.append(doc.shear_modulus)
-                #     required_fields.append(doc.universal_anisotropy)
+                                required_fields.append(prop_value)
             
                 if "carrier-transport" in self.property_categories:
                     try:
@@ -1025,29 +1004,18 @@ class HashinShtrikman:
                         self.fields["therm_cond_300k_low_doping"].append(thermal_cond)
                         self.fields["elec_cond_300k_low_doping"].append(elec_cond)   
                     
-                    # Dielectric
-                    if "dielectric" in self.property_categories:
-                        self.fields["e_electronic"].append(doc.e_electronic)
-                        self.fields["e_ionic"].append(doc.e_ionic)
-                        self.fields["e_total"].append(doc.e_total)
-                        self.fields["n"].append(doc.n)
-                    
-                    # Elastic
-                    if "elastic" in self.property_categories:
-                        self.fields["bulk_modulus"].append(doc.bulk_modulus["voigt"])
-                        self.fields["shear_modulus"].append(doc.shear_modulus["voigt"])
-                        self.fields["universal_anisotropy"].append(doc.universal_anisotropy)
-                        logger.info(f"bulk_modulus = {doc.bulk_modulus['voigt']}")
-                
-                    # Magnetic
-                    if "magnetic" in self.property_categories:
-                        self.fields["total_magnetization"].append(doc.total_magnetization)
-                        self.fields["total_magnetization_normalized_vol"].append(doc.total_magnetization_normalized_vol)
-                    
-                    # Piezoelectric
-                    if "piezoelectric" in self.property_categories:
-                        self.fields["e_ij_max"].append(doc.e_ij_max)
 
+
+                    for category in self.property_categories:
+                        if category in self.property_docs:
+                            if category == "carrier-transport":
+                                pass
+                            else:
+                                for prop in self.property_docs[category]:
+                                    # Dynamically get the property value from the doc
+                                    prop_value = getattr(doc, prop, None)  # Returns None if prop doesn't exist
+                                    # Initialize empty list for each property under the category
+                                    self.fields[prop].append(prop_value)
         
             # comm.gather the self.fields data after the for loop
             gathered_fields = comm.gather(self.fields, root=0)
