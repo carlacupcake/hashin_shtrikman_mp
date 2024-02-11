@@ -72,51 +72,8 @@ class Population:
 
         num_members = self.ga_params.get_num_members()
 
-        # Initialize bounds lists
-        lower_bounds_list = []
-        upper_bounds_list = []
+        lower_bounds_array, upper_bounds_array = self.append_lower_upper_bounds(lower_bounds, upper_bounds)
 
-        # Unpack bounds from dictionaries, include bounds for all materials
-        # Could extend to more materials later
-        if "carrier-transport" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["carrier-transport"]) 
-            lower_bounds_list.extend(lower_bounds["mat2"]["carrier-transport"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["carrier-transport"])
-            upper_bounds_list.extend(upper_bounds["mat2"]["carrier-transport"]) 
-
-        if "dielectric" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["dielectric"])
-            lower_bounds_list.extend(lower_bounds["mat2"]["dielectric"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["dielectric"]) 
-            upper_bounds_list.extend(upper_bounds["mat2"]["dielectric"]) 
-
-        if "elastic" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["elastic"]) 
-            lower_bounds_list.extend(lower_bounds["mat2"]["elastic"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["elastic"]) 
-            upper_bounds_list.extend(upper_bounds["mat2"]["elastic"]) 
-
-        if "magnetic" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["magnetic"])
-            lower_bounds_list.extend(lower_bounds["mat2"]["magnetic"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["magnetic"]) 
-            upper_bounds_list.extend(upper_bounds["mat2"]["magnetic"]) 
-
-        if "piezoelectric" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["piezoelectric"]) 
-            lower_bounds_list.extend(lower_bounds["mat2"]["piezoelectric"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["piezoelectric"]) 
-            upper_bounds_list.extend(upper_bounds["mat2"]["piezoelectric"]) 
-
-        # Include for mixing parameter and volume fraction
-        lower_bounds_list.append(0) # mixing parameter gamma in [0,1]
-        upper_bounds_list.append(1)
-        lower_bounds_list.append(0) # volume fraction in [0,1]
-        upper_bounds_list.append(1)
-
-        # Cast lists to ndarrays
-        lower_bounds_array = np.array(lower_bounds_list)
-        upper_bounds_array = np.array(upper_bounds_list)
         for i in range(num_members):
             self.values[i, :] = np.random.uniform(lower_bounds_array, upper_bounds_array)
 
@@ -127,41 +84,26 @@ class Population:
         num_members = self.ga_params.get_num_members()
         parents_and_kids = num_members - members_minus_parents_minus_kids # P + K = M - (M - P - K)
 
+        lower_bounds_array, upper_bounds_array = self.append_lower_upper_bounds(lower_bounds, upper_bounds)
+        
+        for i in range (members_minus_parents_minus_kids):
+            self.values[parents_and_kids+i, :] = np.random.uniform(lower_bounds_array, upper_bounds_array)
+
+        return self
+
+    def append_lower_upper_bounds(self, lower_bounds, upper_bounds):
+        
         # Initialize bounds lists
         lower_bounds_list = []
         upper_bounds_list = []
 
         # Unpack bounds from dictionaries, include bounds for all materials
         # Could extend to more materials later
-        if "carrier-transport" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["carrier-transport"]) 
-            lower_bounds_list.extend(lower_bounds["mat2"]["carrier-transport"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["carrier-transport"])
-            upper_bounds_list.extend(upper_bounds["mat2"]["carrier-transport"]) 
-
-        if "dielectric" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["dielectric"])
-            lower_bounds_list.extend(lower_bounds["mat2"]["dielectric"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["dielectric"]) 
-            upper_bounds_list.extend(upper_bounds["mat2"]["dielectric"]) 
-
-        if "elastic" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["elastic"]) 
-            lower_bounds_list.extend(lower_bounds["mat2"]["elastic"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["elastic"]) 
-            upper_bounds_list.extend(upper_bounds["mat2"]["elastic"]) 
-
-        if "magnetic" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["magnetic"])
-            lower_bounds_list.extend(lower_bounds["mat2"]["magnetic"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["magnetic"]) 
-            upper_bounds_list.extend(upper_bounds["mat2"]["magnetic"]) 
-            
-        if "piezoelectric" in self.property_categories:
-            lower_bounds_list.extend(lower_bounds["mat1"]["piezoelectric"]) 
-            lower_bounds_list.extend(lower_bounds["mat2"]["piezoelectric"]) 
-            upper_bounds_list.extend(upper_bounds["mat1"]["piezoelectric"]) 
-            upper_bounds_list.extend(upper_bounds["mat2"]["piezoelectric"]) 
+        for category in self.property_categories:
+            lower_bounds_list.extend(lower_bounds["mat1"][category]) 
+            lower_bounds_list.extend(lower_bounds["mat2"][category]) 
+            upper_bounds_list.extend(upper_bounds["mat1"][category])
+            upper_bounds_list.extend(upper_bounds["mat2"][category])
 
         # Include for mixing parameter and volume fraction
         lower_bounds_list.append(0) # mixing parameter gamma in [0,1]
@@ -172,10 +114,8 @@ class Population:
         # Cast lists to ndarrays
         lower_bounds_array = np.array(lower_bounds_list)
         upper_bounds_array = np.array(upper_bounds_list)
-        for i in range (members_minus_parents_minus_kids):
-            self.values[parents_and_kids+i, :] = np.random.uniform(lower_bounds_array, upper_bounds_array)
 
-        return self
+        return lower_bounds_array, upper_bounds_array
     
     def set_costs(self):
         population_values = self.values
@@ -221,4 +161,5 @@ class Population:
         unique_members = population[unique_indices]
 
         return [unique_members, unique_costs] 
+    
     
