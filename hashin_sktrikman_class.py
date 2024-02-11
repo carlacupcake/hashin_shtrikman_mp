@@ -71,6 +71,7 @@ class HashinShtrikman:
             cost_history:         np.ndarray    = np.empty,   
             lowest_costs:         np.ndarray    = np.empty,          
             avg_parent_costs:     np.ndarray    = np.empty, 
+            calc_guide:           str           = "cost_calculation_guide.yaml"
         ):
             
             self.api_key              = api_key 
@@ -85,6 +86,7 @@ class HashinShtrikman:
             self.lowest_costs         = lowest_costs
             self.avg_parent_costs     = avg_parent_costs
             self.property_categories, self.property_docs  = self.load_property_categories()
+            self.calc_guide           = loadfn(calc_guide)
 
             # Update from default based on self.user_input
             self.set_desired_props_from_user_input(user_input) # populates self.desired_props = {"carrier-transport": [elec, therm], "dielectric": [e_total, e_ionic, e_electronic, n], "elastic": [bulk_modulus, shear_modulus, universal_anisotropy], "magnetic": [total_magnetization, total_magnetization_normalized_volume], "piezoelectric": [e_ij] }
@@ -341,7 +343,7 @@ class HashinShtrikman:
                 values = np.c_[population, mixing_param, phase1_vol_frac]    
 
                 # Instantiate the population and find the best performers
-                population = Population(num_properties=self.num_properties, values=values, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params)
+                population = Population(num_properties=self.num_properties, values=values, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params, calc_guide=self.calc_guide, property_docs=self.property_docs)
                 population.set_costs()
                 [sorted_costs, sorted_indices] = population.sort_costs()
                 population.set_order_by_costs(sorted_indices)
@@ -507,9 +509,8 @@ class HashinShtrikman:
 
         # Initialize array to store costs for current generation
         costs = np.zeros(num_members)
-
         # Randomly populate first generation  
-        population = Population(num_properties=self.num_properties, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params)
+        population = Population(num_properties=self.num_properties, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params, property_docs=self.property_docs, calc_guide=self.calc_guide)
         population.set_initial_random(self.lower_bounds, self.upper_bounds)
 
         # Calculate the costs of the first generation
@@ -541,10 +542,9 @@ class HashinShtrikman:
                 # Append offspring to population, overwriting old population members 
                 population.values[num_parents+p,   :] = kid1
                 population.values[num_parents+p+1, :] = kid2
-            
                 # Cast offspring to members and evaluate costs
-                kid1 = Member(num_properties=self.num_properties, values=kid1, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params)
-                kid2 = Member(num_properties=self.num_properties, values=kid2, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params)
+                kid1 = Member(num_properties=self.num_properties, values=kid1, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params, calc_guide=self.calc_guide, property_docs=self.property_docs)
+                kid2 = Member(num_properties=self.num_properties, values=kid2, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params, calc_guide=self.calc_guide, property_docs=self.property_docs)
                 costs[num_parents+p]   = kid1.get_cost()
                 costs[num_parents+p+1] = kid2.get_cost()
                         

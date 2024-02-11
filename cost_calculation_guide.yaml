@@ -1,0 +1,15 @@
+property_comparison:
+  min: "min({prop1}, {prop2})"
+  max: "max({prop1}, {prop2})"
+effective_props:
+  min: "{min_prop} + {phase2_vol_frac} / (1/({max_prop} - {min_prop}) + {phase1_vol_frac}/(3*{min_prop}))"
+  max: "{max_prop} + {phase1_vol_frac} / (1/({min_prop} - {max_prop}) + {phase2_vol_frac}/(3*{max_prop}))"
+  min_bulk_mod: "{min_prop_bulk_mod} + {phase2_vol_frac} / (1/({max_prop_bulk_mod} - {min_prop_bulk_mod}) + 3*{phase1_vol_frac}/(3*{min_prop_bulk_mod} + 4*{min_prop_shear_mod}))"
+  max_bulk_mod: "{max_prop_bulk_mod} + {phase1_vol_frac} / (1/({min_prop_bulk_mod} - {max_prop_bulk_mod}) + 3*{phase2_vol_frac}/(3*{max_prop_bulk_mod} + 4*{max_prop_shear_mod}))"
+  min_shear_mod: "{min_prop_shear_mod} + {phase2_vol_frac} / (1/({max_prop_shear_mod} - {min_prop_shear_mod}) + 6*{phase1_vol_frac}*({min_prop_bulk_mod} + 2*{min_prop_shear_mod}) / (5*{min_prop_shear_mod}*(3*{min_prop_bulk_mod} + 4*{min_prop_shear_mod})))"
+  max_shear_mod: "{max_prop_shear_mod} + {phase1_vol_frac} / (1/({min_prop_shear_mod} - {max_prop_shear_mod}) + 6*{phase2_vol_frac}*({max_prop_bulk_mod} + 2*{max_prop_shear_mod}) / (5*{max_prop_shear_mod}*(3*{max_prop_bulk_mod} + 4*{max_prop_shear_mod})))"
+concentration_factor:
+  cf_1: "{min_prop}/{effective_property} * (1/{phase1_vol_frac} * ({max_prop} - {effective_property})/({max_prop} - {min_prop}))**2"
+  cf_2: "{max_prop}/{effective_property} * (1/{phase2_vol_frac} * ({min_prop} - {effective_property})/({min_prop} - {max_prop}))**2"
+  cf_2_other: "1/{phase2_vol_frac} * ({effective_property} - {min_prop}) / ({max_prop} - {min_prop})"
+  cf_1_other: "1/{phase1_vol_frac} * (1 - {phase2_vol_frac} * {cf_2_other})"

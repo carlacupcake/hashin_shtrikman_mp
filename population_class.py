@@ -20,12 +20,16 @@ class Population:
             values:         np.ndarray = np.empty,
             costs:          np.ndarray = np.empty,
             ga_params:      GAParams = GAParams(),
+            property_docs:  dict = {},
+            calc_guide:     dict = {}
             ):
         
             self.num_properties = num_properties
             self.property_categories  = property_categories
             self.desired_props  = desired_props
             self.ga_params      = ga_params
+            self.property_docs  = property_docs
+            self.calc_guide     = calc_guide
 
             # Update from default based on self.property_docs
             self.values = np.zeros((self.ga_params.get_num_members(), self.num_properties)) if values is np.empty else values
@@ -182,7 +186,9 @@ class Population:
                                  values=population_values[i, :], 
                                  property_categories=self.property_categories, 
                                  desired_props=self.desired_props, 
-                                 ga_params=self.ga_params)
+                                 ga_params=self.ga_params,
+                                 property_docs=self.property_docs,
+                                 calc_guide=self.calc_guide)
             costs[i] = this_member.get_cost()
 
         self.costs = costs
