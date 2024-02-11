@@ -3,20 +3,20 @@ from member_class import Member
 from ga_params_class import GAParams
 from hs_logger import logger
 
-DEFAULT_PROPERTY_DOCS = ["carrier-transport", "dielectric", "elastic", "magnetic", "piezoelectric"]
-DEFAULT_DESIRED_PROPS = {"carrier-transport": [],
-                         "dielectric": [],
-                         "elastic": [],
-                         "magnetic": [],
-                         "piezoelectric": []}
+# DEFAULT_PROPERTY_DOCS = ["carrier-transport", "dielectric", "elastic", "magnetic", "piezoelectric"]
+# DEFAULT_DESIRED_PROPS = {"carrier-transport": [],
+#                          "dielectric": [],
+#                          "elastic": [],
+#                          "magnetic": [],
+#                          "piezoelectric": []}
 
 class Population:
 
     def __init__(
             self,
             num_properties: int = 0,
-            property_categories:  list = DEFAULT_PROPERTY_DOCS,
-            desired_props:  dict = DEFAULT_DESIRED_PROPS,
+            property_categories:  list = [],
+            desired_props:  dict = {},
             values:         np.ndarray = np.empty,
             costs:          np.ndarray = np.empty,
             ga_params:      GAParams = GAParams(),

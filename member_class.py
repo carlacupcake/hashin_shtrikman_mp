@@ -11,10 +11,10 @@ class Member:
             num_properties: int = 0,
             values:         np.ndarray = np.empty,
             property_categories:  list = [],
-            desired_props:  dict={},
-            ga_params:      GAParams = GAParams(),
-            calc_guide:     dict = {},
-            property_docs:  dict = {}
+            desired_props:  dict       = {},
+            ga_params:      GAParams   = GAParams(),
+            calc_guide:     dict       = {},
+            property_docs:  dict       = {}
             ):
             
             self.num_properties = num_properties
