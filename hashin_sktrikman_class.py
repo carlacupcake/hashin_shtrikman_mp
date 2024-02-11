@@ -1,21 +1,13 @@
 # From MPRester
-import itertools
 import re
 import warnings
 import json
-from functools import lru_cache
-from json import loads
 from os import environ
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from emmet.core.mpid import MPID
 from emmet.core.settings import EmmetSettings
-from emmet.core.summary import HasProps
-from packaging import version
-from requests import Session, get
 
 from mp_api.client.core.settings import MAPIClientSettings
-from mp_api.client.core.utils import validate_ids
 import yaml
 from monty.serialization import loadfn
 
@@ -23,7 +15,6 @@ from monty.serialization import loadfn
 from ga_params_class import GAParams
 from member_class import Member
 from population_class import Population
-from user_input_class import UserInput
 
 # Other
 import numpy as np
@@ -36,23 +27,12 @@ from tabulate import tabulate
 from hs_logger import logger
 
 
-_DEPRECATION_WARNING = (
-    "MPRester is being modernized. Please use the new method suggested and "
-    "read more about these changes at https://docs.materialsproject.org/api. The current "
-    "methods will be retained until at least January 2022 for backwards compatibility."
-)
-
-_EMMET_SETTINGS = EmmetSettings()
-_MAPI_SETTINGS = MAPIClientSettings()
-
 # HashinShtrikman class defaults
-DEFAULT_API_KEY       = environ.get("MP_API_KEY", None)
-DEFAULT_ENDPOINT      = environ.get("MP_API_ENDPOINT", "https://api.materialsproject.org/")
-DEFAULT_FIELDS        = {"material_id": [], 
-                         "is_stable": [], 
-                         "band_gap": [], 
-                         "is_metal": [],
-                         "formula": [],}
+DEFAULT_FIELDS: dict    = {"material_id": [], 
+                           "is_stable": [], 
+                           "band_gap": [], 
+                           "is_metal": [],
+                           "formula": [],}
 
 class HashinShtrikman:
 
@@ -61,9 +41,7 @@ class HashinShtrikman:
             self,
             api_key:              Optional[str] = None,
             mp_contribs_project:  Optional[str] = None,
-            endpoint:             str           = DEFAULT_ENDPOINT,
-            # user_input:           UserInput     = UserInput(),
-            user_input:           dict     = {},
+            user_input:           dict          = {},
             fields:               dict          = DEFAULT_FIELDS,
             num_properties:       int           = 0,
             ga_params:            GAParams      = GAParams(),
@@ -76,7 +54,6 @@ class HashinShtrikman:
             
             self.api_key              = api_key 
             self.mp_contribs_project  = mp_contribs_project
-            self.endpoint             = endpoint
             self.user_input           = user_input
             self.fields               = fields
             self.num_properties       = num_properties  
@@ -108,8 +85,6 @@ class HashinShtrikman:
                 self.contribs = None
                 warnings.warn(f"Problem loading MPContribs client: {error}")
 
-            if not self.endpoint.endswith("/"):
-                self.endpoint += "/"
 
     #------ Load property docs from MP ------# 
     def load_property_categories(self, filename="mp_property_docs.yaml"):
@@ -132,6 +107,7 @@ class HashinShtrikman:
                 for category, properties in property_docs.items():
                     if any(prop in user_defined_properties for prop in properties):
                         property_categories.append(category)
+
             except FileNotFoundError:
                 print(f"File {filename} not found.")
             except json.JSONDecodeError:
@@ -311,17 +287,16 @@ class HashinShtrikman:
         return mat_1_ids, mat_2_ids     
 
 
-    def get_material_match_costs(self, mat_1_ids, mat_2_ids, consolidated_dict: dict = {}):
-
-        if consolidated_dict == {}:
-            with open("test_final_dict") as f: # TODO change to get most recent consolidated dict
-                consolidated_dict = json.load(f)
+    def get_material_match_costs(self, 
+                                 mat_1_ids, 
+                                 mat_2_ids, 
+                                 consolidated_dict: dict = {}):
 
         for m1 in mat_1_ids:
             for m2 in mat_2_ids:
                 m1_idx = consolidated_dict["material_id"].index(m1)
                 m2_idx = consolidated_dict["material_id"].index(m2)
-                material_values = []
+                material_values: List = []
                 # Iterate through each property category of interest
                 for category in self.property_categories:
                     if category in self.property_docs:
@@ -343,18 +318,28 @@ class HashinShtrikman:
                 values = np.c_[population, mixing_param, phase1_vol_frac]    
 
                 # Instantiate the population and find the best performers
-                population = Population(num_properties=self.num_properties, values=values, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params, calc_guide=self.calc_guide, property_docs=self.property_docs)
-                population.set_costs()
-                [sorted_costs, sorted_indices] = population.sort_costs()
-                population.set_order_by_costs(sorted_indices)
+                population_obj = Population(num_properties=self.num_properties, 
+                                        values=values, 
+                                        property_categories=self.property_categories, 
+                                        desired_props=self.desired_props, 
+                                        ga_params=self.ga_params, 
+                                        calc_guide=self.calc_guide, 
+                                        property_docs=self.property_docs)
+                population_obj.set_costs()
+                sorted_costs, sorted_indices = population_obj.sort_costs()
+                population_obj.set_order_by_costs(sorted_indices)
                 sorted_costs = np.reshape(sorted_costs, (len(sorted_costs), 1))
 
                 # Assemble a table for printing
-                mat1_id = np.reshape([m1]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1))
-                mat2_id = np.reshape([m2]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1))
-                table_data = np.c_[mat1_id, mat2_id, population.values, sorted_costs] 
+                mat1_id = np.reshape([m1]*self.ga_params.get_num_members(), 
+                                     (self.ga_params.get_num_members(),1))
+                mat2_id = np.reshape([m2]*self.ga_params.get_num_members(), 
+                                     (self.ga_params.get_num_members(),1))
+                table_data = np.c_[mat1_id, mat2_id, population_obj.values, sorted_costs] 
+                
                 print("\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION")
                 print(tabulate(table_data[0:5, :], headers=self.get_headers())) # hardcoded to be 5 rows, could change
+                
                 # with open("table_data.csv", "w") as f:
                 #     f.write(",".join(self.get_headers()) + "\n")
                 #     # np.savetxt(f, table_data, delimiter=",")
@@ -510,7 +495,12 @@ class HashinShtrikman:
         # Initialize array to store costs for current generation
         costs = np.zeros(num_members)
         # Randomly populate first generation  
-        population = Population(num_properties=self.num_properties, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params, property_docs=self.property_docs, calc_guide=self.calc_guide)
+        population = Population(num_properties=self.num_properties, 
+                                property_categories=self.property_categories, 
+                                desired_props=self.desired_props, 
+                                ga_params=self.ga_params, 
+                                property_docs=self.property_docs, 
+                                calc_guide=self.calc_guide)
         population.set_initial_random(self.lower_bounds, self.upper_bounds)
 
         # Calculate the costs of the first generation
@@ -543,8 +533,20 @@ class HashinShtrikman:
                 population.values[num_parents+p,   :] = kid1
                 population.values[num_parents+p+1, :] = kid2
                 # Cast offspring to members and evaluate costs
-                kid1 = Member(num_properties=self.num_properties, values=kid1, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params, calc_guide=self.calc_guide, property_docs=self.property_docs)
-                kid2 = Member(num_properties=self.num_properties, values=kid2, property_categories=self.property_categories, desired_props=self.desired_props, ga_params=self.ga_params, calc_guide=self.calc_guide, property_docs=self.property_docs)
+                kid1 = Member(num_properties=self.num_properties, 
+                              values=kid1, 
+                              property_categories=self.property_categories, 
+                              desired_props=self.desired_props, 
+                              ga_params=self.ga_params, 
+                              calc_guide=self.calc_guide, 
+                              property_docs=self.property_docs)
+                kid2 = Member(num_properties=self.num_properties, 
+                              values=kid2, 
+                              property_categories=self.property_categories, 
+                              desired_props=self.desired_props, 
+                              ga_params=self.ga_params, 
+                              calc_guide=self.calc_guide, 
+                              property_docs=self.property_docs)
                 costs[num_parents+p]   = kid1.get_cost()
                 costs[num_parents+p+1] = kid2.get_cost()
                         
