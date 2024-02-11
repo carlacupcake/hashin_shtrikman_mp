@@ -2,7 +2,6 @@ import datetime
 import numpy as np
 from ga_params_class import GAParams
 from hs_logger import logger
-from monty.serialization import loadfn
 
 class Member:
 

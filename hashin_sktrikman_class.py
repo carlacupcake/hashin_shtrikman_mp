@@ -25,6 +25,7 @@ from mp_api.client import MPRester
 from mpcontribs.client import Client
 from tabulate import tabulate
 from hs_logger import logger
+import copy
 
 
 # HashinShtrikman class defaults
@@ -32,7 +33,7 @@ DEFAULT_FIELDS: dict    = {"material_id": [],
                            "is_stable": [], 
                            "band_gap": [], 
                            "is_metal": [],
-                           "formula": [],}
+                           "formula_pretty": [],}
 
 class HashinShtrikman:
 
@@ -65,11 +66,17 @@ class HashinShtrikman:
             self.property_categories, self.property_docs  = self.load_property_categories()
             self.calc_guide           = loadfn(calc_guide)
 
-            # Update from default based on self.user_input
-            self.set_desired_props_from_user_input(user_input) # populates self.desired_props = {"carrier-transport": [elec, therm], "dielectric": [e_total, e_ionic, e_electronic, n], "elastic": [bulk_modulus, shear_modulus, universal_anisotropy], "magnetic": [total_magnetization, total_magnetization_normalized_volume], "piezoelectric": [e_ij] }
-            self.set_bounds_from_user_input(user_input, 'lower_bound') # populates self.lower_bounds = {"mat1": {"carrier-transport":[elec, therm], }, "mat2": {"carrier-transport":[elec, therm], }}
-            self.set_bounds_from_user_input(user_input, 'upper_bound') # populates self.upper_bounds = {"mat1": {"carrier-transport":[elec, therm], }, "mat2": {"carrier-transport":[elec, therm], }}
-            self.set_num_properties_from_desired_props() # tracks the integer counter of num_props
+            # populates self.desired_props = {"carrier-transport": [elec, therm], "dielectric": [e_total, e_ionic, e_electronic, n], "elastic": [bulk_modulus, shear_modulus, universal_anisotropy], "magnetic": [total_magnetization, total_magnetization_normalized_volume], "piezoelectric": [e_ij] }
+            self.set_desired_props_from_user_input(user_input) 
+
+            # populates self.lower_bounds = {"mat1": {"carrier-transport":[elec, therm], }, "mat2": {"carrier-transport":[elec, therm], }}
+            self.set_bounds_from_user_input(user_input, 'lower_bound')
+
+            # populates self.upper_bounds = {"mat1": {"carrier-transport":[elec, therm], }, "mat2": {"carrier-transport":[elec, therm], }}
+            self.set_bounds_from_user_input(user_input, 'upper_bound')
+            
+            # tracks the integer counter of num_props
+            self.set_num_properties_from_desired_props()
             
             try:
                 from mpcontribs.client import Client
@@ -606,7 +613,7 @@ class HashinShtrikman:
         else:
             client = Client(apikey=self.api_key)
         
-        new_fields = self.fields
+        new_fields = copy.deepcopy(self.fields)
 
         # Iterate over the user input to dynamically update self.fields based on requested property categories
         # Iterate over property categories and update new_fields based on mp_property_docs
@@ -679,17 +686,15 @@ class HashinShtrikman:
                 # logger.info(f"required_fields = {required_fields}")
 
                 if all(field is not None for field in required_fields):
-                    self.fields["material_id"].append(mp_id)
-                    self.fields["formula"].append(my_dict["formula"])
-                    self.fields["is_stable"].append(doc.is_stable)
-                    self.fields["is_metal"].append(doc.is_metal)
-                    self.fields["band_gap"].append(doc.band_gap)
+
+                    for c in DEFAULT_FIELDS.keys():
+                        self.fields[c].append(getattr(doc, c, None))
                     
                     for category in self.property_categories:
                         if category in self.property_docs:
                             if category == "carrier-transport":
                                 self.fields["mp-ids-contrib"].append(my_dict["identifier"])
-                            
+                                
                             for prop, value in self.property_docs[category].items():
                                 
                                 # Carrier transport

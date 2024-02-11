@@ -3,13 +3,6 @@ from member_class import Member
 from ga_params_class import GAParams
 from hs_logger import logger
 
-# DEFAULT_PROPERTY_DOCS = ["carrier-transport", "dielectric", "elastic", "magnetic", "piezoelectric"]
-# DEFAULT_DESIRED_PROPS = {"carrier-transport": [],
-#                          "dielectric": [],
-#                          "elastic": [],
-#                          "magnetic": [],
-#                          "piezoelectric": []}
-
 class Population:
 
     def __init__(
