@@ -1,6 +1,6 @@
 import numpy as np
-from ga_params_class import GAParams
-from hs_logger import logger
+from core.genetic_algo import GAParams
+from log.custom_logger import logger
 from pydantic import BaseModel, root_validator, Field
 from typing import List, Dict, Optional, Any
 

@@ -1,7 +1,7 @@
 import numpy as np
-from member_class import Member
-from ga_params_class import GAParams
-from hs_logger import logger
+from core.member import Member
+from core.genetic_algo import GAParams
+from log.custom_logger import logger
 from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field, root_validator
 

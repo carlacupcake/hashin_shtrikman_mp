@@ -3,15 +3,13 @@ import re
 import json
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, root_validator
-
-
 import yaml
 from monty.serialization import loadfn
 
 # Custom Classes
-from ga_params_class import GAParams
-from member_class import Member
-from population_class import Population
+from core.genetic_algo import GAParams
+from core.member import Member
+from core.population import Population
 
 # Other
 import numpy as np
@@ -20,8 +18,10 @@ from datetime import datetime
 from mp_api.client import MPRester
 from mpcontribs.client import Client
 from tabulate import tabulate
-from hs_logger import logger
+from log.custom_logger import logger
 import copy
+from importlib import resources
+from pathlib import Path
 
 # HashinShtrikman class defaults
 DEFAULT_FIELDS: dict    = {"material_id": [], 
@@ -29,6 +29,7 @@ DEFAULT_FIELDS: dict    = {"material_id": [],
                            "band_gap": [], 
                            "is_metal": [],
                            "formula_pretty": [],}
+MODULE_DIR = Path(__file__).resolve().parent
 
 class HashinShtrikman(BaseModel):
     """
@@ -97,12 +98,12 @@ class HashinShtrikman(BaseModel):
     @root_validator(pre=True)
     def load_and_set_properties(cls, values):
         # Load property categories and docs
-        property_categories, property_docs = cls.load_property_categories("io/mp_property_docs.yaml", user_input=values.get("user_input", {}))
+        property_categories, property_docs = cls.load_property_categories(f"{MODULE_DIR}/../io/mp_property_docs.yaml", user_input=values.get("user_input", {}))
         values["property_categories"] = property_categories
         values["property_docs"] = property_docs
         
         # Load calculation guide, if necessary
-        calc_guide = loadfn(values.get("calc_guide", "io/cost_calculation_formulas.yaml"))
+        calc_guide = loadfn(values.get("calc_guide", f"{MODULE_DIR}/../io/cost_calculation_formulas.yaml"))
         values["calc_guide"] = calc_guide
         
         # Since user_input is required to set desired props and bounds, ensure it's processed last
@@ -126,8 +127,10 @@ class HashinShtrikman(BaseModel):
 
     #------ Load property docs from MP ------# 
     @staticmethod
-    def load_property_categories(filename="io/mp_property_docs.yaml", user_input: Dict = {}):
+    def load_property_categories(filename=f"{MODULE_DIR}/../io/mp_property_docs.yaml", user_input: Dict = {}):
             print(f"Loading property categories from {filename}.")
+            import os
+            print(f"Loading property categories from {os.getcwd()}.")
             """Load property categories from a JSON file."""
             property_categories = []
             try:
@@ -199,7 +202,7 @@ class HashinShtrikman(BaseModel):
     def get_avg_parent_costs(self):
         return self.avg_parent_costs
     
-    def get_headers(self, include_mpids=False, file_name = "io/display_table_headers.yaml"):
+    def get_headers(self, include_mpids=False, file_name = f"{MODULE_DIR}/../io/display_table_headers.yaml"):
         
         with open(file_name, 'r') as stream:
             try:

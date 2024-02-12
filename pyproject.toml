@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools >= 68", "versioningit ~= 1.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hashin_shtrikman_mp"
+version = "0.1.0"
+description = "determine the material properties and volume fractions of two materials in a binary mixture to meet a set of desired material properties"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "emmet-core>=0.74.5",
+    "matplotlib-stubs>=0.2.0",
+    "monty>=2023.11.3",
+    "mp-api>=0.39.1",
+    "mpi4py>=3.1.5",
+    "numpy>=1.26.2",
+    "pandas>=2.2.0",
+    "pydantic>=2.5.0",
+    "pydantic-core>=2.14.1",
+    "pydantic-settings>=2.1.0"
+]
+
+[project.urls]
+repository = "https://github.com/carlacupcake/hashin_shtrikman_mp"
+changelog = "https://github.com/carlacupcake/hashin_shtrikman_mp/.chglog/CHANGELOG.tpl.md"
