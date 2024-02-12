@@ -1,13 +1,11 @@
 # From MPRester
 import re
-import warnings
 import json
 from os import environ
 from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, Field, validator, root_validator
 
-from emmet.core.settings import EmmetSettings
 
-from mp_api.client.core.settings import MAPIClientSettings
 import yaml
 from monty.serialization import loadfn
 
@@ -19,14 +17,12 @@ from population_class import Population
 # Other
 import numpy as np
 import matplotlib.pyplot as plt
-import json
 from datetime import datetime
 from mp_api.client import MPRester
 from mpcontribs.client import Client
 from tabulate import tabulate
 from hs_logger import logger
 import copy
-
 
 # HashinShtrikman class defaults
 DEFAULT_FIELDS: dict    = {"material_id": [], 
@@ -35,66 +31,62 @@ DEFAULT_FIELDS: dict    = {"material_id": [],
                            "is_metal": [],
                            "formula_pretty": [],}
 
-class HashinShtrikman:
+class HashinShtrikman(BaseModel):
 
-    #------ Initialization method ------#
-    def __init__(
-            self,
-            api_key:              Optional[str] = None,
-            mp_contribs_project:  Optional[str] = None,
-            user_input:           dict          = {},
-            fields:               dict          = DEFAULT_FIELDS,
-            num_properties:       int           = 0,
-            ga_params:            GAParams      = GAParams(),
-            final_population:     Population    = Population(),
-            cost_history:         np.ndarray    = np.empty,   
-            lowest_costs:         np.ndarray    = np.empty,          
-            avg_parent_costs:     np.ndarray    = np.empty, 
-            calc_guide:           str           = "cost_calculation_guide.yaml"
-        ):
-            
-            self.api_key              = api_key 
-            self.mp_contribs_project  = mp_contribs_project
-            self.user_input           = user_input
-            self.fields               = fields
-            self.num_properties       = num_properties  
-            self.ga_params            = ga_params 
-            self.final_population     = final_population
-            self.cost_history         = cost_history            
-            self.lowest_costs         = lowest_costs
-            self.avg_parent_costs     = avg_parent_costs
-            self.property_categories, self.property_docs  = self.load_property_categories()
-            self.calc_guide           = loadfn(calc_guide)
+    api_key: Optional[str] = None
+    mp_contribs_project: Optional[str] = None
+    user_input: Dict = Field(default_factory=dict)
+    fields: Dict[str, List[Any]] = Field(default_factory=lambda: DEFAULT_FIELDS.copy())
+    num_properties: int = 0
+    ga_params: GAParams = Field(default_factory=GAParams)
+    final_population: Population = Field(default_factory=Population)
+    cost_history: np.ndarray = Field(default_factory=lambda: np.empty(0))
+    lowest_costs: np.ndarray = Field(default_factory=lambda: np.empty(0))
+    avg_parent_costs: np.ndarray = Field(default_factory=lambda: np.empty(0))
+    calc_guide: Any = Field(default_factory=lambda: loadfn("cost_calculation_guide.yaml"))
+    property_categories: List[str] = Field(default_factory=list)
+    property_docs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
+    desired_props: Dict[str, List[float]] = Field(default_factory=dict)
+    lower_bounds: Dict[str, Any] = Field(default_factory=dict)
+    upper_bounds: Dict[str, Any] = Field(default_factory=dict)
+    
+    # Remove the following line once GAParams and Population are updated to Pydantic models
+    class Config:
+        arbitrary_types_allowed = True
 
-            # populates self.desired_props = {"carrier-transport": [elec, therm], "dielectric": [e_total, e_ionic, e_electronic, n], "elastic": [bulk_modulus, shear_modulus, universal_anisotropy], "magnetic": [total_magnetization, total_magnetization_normalized_volume], "piezoelectric": [e_ij] }
-            self.set_desired_props_from_user_input(user_input) 
+    @root_validator(pre=True)
+    def load_and_set_properties(cls, values):
+        # Load property categories and docs
+        property_categories, property_docs = cls.load_property_categories("mp_property_docs.yaml", user_input=values.get("user_input", {}))
+        values["property_categories"] = property_categories
+        values["property_docs"] = property_docs
+        
+        # Load calculation guide, if necessary
+        calc_guide = loadfn(values.get("calc_guide", "cost_calculation_guide.yaml"))
+        values["calc_guide"] = calc_guide
+        
+        # Since user_input is required to set desired props and bounds, ensure it's processed last
+        user_input = values.get("user_input", {})
+        if user_input:
+            desired_props = cls.set_desired_props_from_user_input(user_input, property_categories=property_categories, property_docs=property_docs)
+            lower_bounds = cls.set_bounds_from_user_input(user_input, 'lower_bound', property_docs=property_docs)
+            upper_bounds = cls.set_bounds_from_user_input(user_input, 'upper_bound', property_docs=property_docs)
+            num_properties = cls.set_num_properties_from_desired_props(desired_props, lower_bounds)
 
-            # populates self.lower_bounds = {"mat1": {"carrier-transport":[elec, therm], }, "mat2": {"carrier-transport":[elec, therm], }}
-            self.set_bounds_from_user_input(user_input, 'lower_bound')
-
-            # populates self.upper_bounds = {"mat1": {"carrier-transport":[elec, therm], }, "mat2": {"carrier-transport":[elec, therm], }}
-            self.set_bounds_from_user_input(user_input, 'upper_bound')
-            
-            # tracks the integer counter of num_props
-            self.set_num_properties_from_desired_props()
-            
-            try:
-                from mpcontribs.client import Client
-                self.contribs = Client(api_key, project="carrier_transport")
-            except ImportError:
-                self.contribs = None
-                warnings.warn(
-                    "mpcontribs-client not installed."
-                    "Install the package to query MPContribs data:"
-                    "pip install mpcontribs-client"
-                )
-            except Exception as error:
-                self.contribs = None
-                warnings.warn(f"Problem loading MPContribs client: {error}")
+            # Update values accordingly
+            values.update({
+                "desired_props": desired_props,
+                "lower_bounds": lower_bounds,
+                "upper_bounds": upper_bounds,
+                "num_properties": num_properties
+            })
+        
+        return values
 
 
     #------ Load property docs from MP ------# 
-    def load_property_categories(self, filename="mp_property_docs.yaml"):
+    @staticmethod
+    def load_property_categories(filename="mp_property_docs.yaml", user_input: Dict = {}):
             print(f"Loading property categories from {filename}.")
             """Load property categories from a JSON file."""
             property_categories = []
@@ -104,7 +96,7 @@ class HashinShtrikman:
                 # Flatten the user input to get a list of all properties defined by the user
                 user_defined_properties = []
 
-                for material_props in self.user_input.values():
+                for material_props in user_input.values():
                     for props in material_props.keys():
                         user_defined_properties.append(props)
                         #only keep the unique entries of the list
@@ -360,17 +352,18 @@ class HashinShtrikman:
 
     #------ Setter Methods ------#
     
-    def set_bounds_from_user_input(self, user_input, bound_key):
+    @staticmethod
+    def set_bounds_from_user_input(user_input: Dict, bound_key: str, property_docs: Dict[str, List[str]]):
         if bound_key not in ['upper_bound', 'lower_bound']:
             raise ValueError("bound_key must be either 'upper_bound' or 'lower_bound'.")
         
-        bounds = {}
+        bounds: Dict[str, Dict[str, List[float]]] = {}
         for material, properties in user_input.items():
             if material == 'mixture':  # Skip 'mixture' as it's not a material
                 continue
 
             bounds[material] = {}
-            for category, prop_list in self.property_docs.items():
+            for category, prop_list in property_docs.items():
                 category_bounds = []
 
                 for prop in prop_list:
@@ -381,10 +374,6 @@ class HashinShtrikman:
                 if category_bounds:
                     bounds[material][category] = category_bounds
 
-        if bound_key == 'upper_bound':
-            self.upper_bounds = bounds
-        else:
-            self.lower_bounds = bounds
         return bounds
     
     def set_lower_bounds(self, lower_bounds):
@@ -410,24 +399,25 @@ class HashinShtrikman:
     def set_desired_props(self, desired_props):
         self.desired_props = desired_props
         return self
-
-    def set_desired_props_from_user_input(self, user_input):
+    
+    @staticmethod
+    def set_desired_props_from_user_input(user_input: Dict, property_categories: List[str], property_docs: Dict):
 
         # Initialize the dictionary to hold the desired properties
-        self.desired_props = {category: [] for category in self.property_categories}
+        desired_props: Dict[str, List[float]] = {category: [] for category in property_categories}
 
         # Extracting the desired properties from the 'mixture' part of final_dict
         mixture_props = user_input.get('mixture', {})
         print(f"mixture_props = {mixture_props}")
 
         # Iterate through each property category and its associated properties
-        for category, properties in self.property_docs.items():
+        for category, properties in property_docs.items():
             for prop in properties:
                 # Check if the property is in the mixture; if so, append its desired value
                 if prop in mixture_props:
-                    self.desired_props[category].append(mixture_props[prop]['desired_prop'])
+                    desired_props[category].append(mixture_props[prop]['desired_prop'])
 
-        return self.desired_props, self.property_docs
+        return desired_props
     
     def set_has_props(self, has_props):
         self.has_props = has_props
@@ -441,23 +431,22 @@ class HashinShtrikman:
         self.num_properties = num_properties
         return num_properties
     
-    def set_num_properties_from_desired_props(self):
+    @staticmethod
+    def set_num_properties_from_desired_props(desired_props, lower_bounds):
         num_properties = 0
 
         # Iterate through property categories to count the total number of properties
-        for _, properties in self.desired_props.items():
+        for _, properties in desired_props.items():
             num_properties += len(properties)  # Add the number of properties in each category
 
         # Multiply by the number of materials in the composite
-        num_materials = len(self.lower_bounds)  # Assuming self.lower_bounds is correctly structured
+        num_materials = len(lower_bounds)  # Assuming self.lower_bounds is correctly structured
         num_properties = num_properties * num_materials
 
         # Add variables for mixing parameter and volume fraction
         num_properties += 2
 
-        self.num_properties = num_properties
-
-        return self
+        return num_properties
     
     def set_ga_params(self, ga_params):
         self.ga_params = ga_params
