@@ -32,6 +32,12 @@ DEFAULT_FIELDS: dict    = {"material_id": [],
                            "formula_pretty": [],}
 
 class HashinShtrikman(BaseModel):
+    """
+    Hashin-Shtrikman optimization class. 
+
+    Class to integrate Hashin-Shtrikman (HS) bounds with a genetic algorithm, 
+    leveraging the Materials Project (MP) database.
+    """
 
     api_key: Optional[str] = None
     mp_contribs_project: Optional[str] = None
@@ -50,7 +56,7 @@ class HashinShtrikman(BaseModel):
     lower_bounds: Dict[str, Any] = Field(default_factory=dict)
     upper_bounds: Dict[str, Any] = Field(default_factory=dict)
     
-    # Remove the following line once GAParams and Population are updated to Pydantic models
+    # To use np.ndarray or other arbitrary types in your Pydantic models
     class Config:
         arbitrary_types_allowed = True
 

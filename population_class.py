@@ -2,31 +2,47 @@ import numpy as np
 from member_class import Member
 from ga_params_class import GAParams
 from hs_logger import logger
+from typing import List, Dict, Optional, Any
+from pydantic import BaseModel, Field, root_validator
 
-class Population:
+class Population(BaseModel):
+    """
+    Class to hold the population of members. The class also implements
+    methods to generate the initial population, set the costs of the
+    members, and sort the members based on their costs.
+    """
+    
+    num_properties: int = 0
+    property_categories: List[str] = []
+    desired_props: Dict[str, List[float]] = {}
+    ga_params: GAParams = GAParams()
+    property_docs: Dict[str, Dict[str, Any]] = {}
+    calc_guide: Dict[str, Dict[str, str]] = {}
 
-    def __init__(
-            self,
-            num_properties: int = 0,
-            property_categories:  list = [],
-            desired_props:  dict = {},
-            values:         np.ndarray = np.empty,
-            costs:          np.ndarray = np.empty,
-            ga_params:      GAParams = GAParams(),
-            property_docs:  dict = {},
-            calc_guide:     dict = {}
-            ):
-        
-            self.num_properties = num_properties
-            self.property_categories  = property_categories
-            self.desired_props  = desired_props
-            self.ga_params      = ga_params
-            self.property_docs  = property_docs
-            self.calc_guide     = calc_guide
+    # Handling numpy arrays as optional attributes without default validation
+    values: Optional[np.ndarray] = None
+    costs: Optional[np.ndarray] = None
 
-            # Update from default based on self.property_docs
-            self.values = np.zeros((self.ga_params.get_num_members(), self.num_properties)) if values is np.empty else values
-            self.costs  = np.zeros((self.ga_params.get_num_members(), self.num_properties)) if costs  is np.empty else costs
+    # To use np.ndarray or other arbitrary types in your Pydantic models
+    class Config:
+        arbitrary_types_allowed = True
+
+    @root_validator(pre=True)
+    def set_default_values_and_costs(cls, values):
+        # Extract or initialize ga_params
+        ga_params = values.get('ga_params', GAParams())
+        num_members = ga_params.get_num_members()  # Assuming GAParams model has a num_members field directly accessible
+        num_properties = values.get('num_properties', 0)
+
+        # Set default for values if not provided or is np.empty
+        if values.get('values') is None or (isinstance(values.get('values'), np.ndarray) and values.get('values').size == 0):
+            values['values'] = np.zeros((num_members, num_properties))
+
+        # Set default for costs in a similar manner
+        if values.get('costs') is None or (isinstance(values.get('costs'), np.ndarray) and values.get('costs').size == 0):
+            values['costs'] = np.zeros((num_members, num_properties))
+
+        return values
 
     #------ Getter Methods ------#
     def get_num_properties(self):

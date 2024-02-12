@@ -1,23 +1,17 @@
-class GAParams:
+from pydantic import BaseModel
 
-    def __init__(
-            self,
-            num_parents:        int = 10,
-            num_kids:           int = 10,
-            num_generations:    int = 900, 
-            num_members:        int = 200,
-            tolerance:          float = 0.5,
-            weight_eff_prop:    float = 1.0,
-            weight_conc_factor: float = 0.5, 
-    ):
-       
-        self.num_parents        = num_parents     
-        self.num_kids           = num_kids      
-        self.num_generations    = num_generations     
-        self.num_members        = num_members     
-        self.tolerance          = tolerance 
-        self.weight_eff_prop    = weight_eff_prop       
-        self.weight_conc_factor = weight_conc_factor  
+class GAParams(BaseModel):
+    """
+    Class to hold the parameters used for the genetic algorithm.
+    """
+
+    num_parents: int = 10
+    num_kids: int = 10
+    num_generations: int = 500
+    num_members: int = 200
+    tolerance: float = 0.5
+    weight_eff_prop: float = 10.0
+    weight_conc_factor: float = 0.5
 
     #------ Getter Methods ------#
     def get_num_parents(self):
