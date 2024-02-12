@@ -1,18 +1,45 @@
-import datetime
 import numpy as np
 from ga_params_class import GAParams
 from hs_logger import logger
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, root_validator, Field
 from typing import List, Dict, Optional, Any
 
 class Member(BaseModel):
-    num_properties: int = 0
-    values: Optional[np.ndarray] = None
-    property_categories: List[str] = []
-    desired_props: Dict[str, Any] = {}
-    ga_params: Optional[GAParams] = None  # Assuming GAParams is a Pydantic model
-    calc_guide: Dict[str, Any] = {}
-    property_docs: Dict[str, Dict[str, Any]] = {}
+    """
+    Class to represent a member of the population in genetic algorithm optimization.
+    Stores the properties and configuration for genetic algorithm operations.
+    """
+    num_properties: int = Field(
+        default=0,
+        description="Number of properties that each member of the population has."
+    )
+    values: Optional[np.ndarray] = Field(
+        default=None,
+        description="Values array representing the member's properties."
+    )
+    property_categories: List[str] = Field(
+        default=[],
+        description="List of property categories considered for optimization."
+    )
+    desired_props: Dict[str, Any] = Field(
+        default={},
+        description="Dictionary mapping individual properties to their desired "
+                    "properties."
+    )
+    ga_params: Optional[GAParams] = Field(
+        default=None,
+        description="Parameter initilization class for the genetic algorithm."
+    )
+    calc_guide: Dict[str, Any] = Field(
+        default={},
+        description="Calculation guide for property evaluation. This is a "
+                    "hard coded yaml file."
+    )
+    property_docs: Dict[str, Dict[str, Any]] = Field(
+        default={},
+        description="A hard coded yaml file containing property categories "
+                    "and their individual properties."
+    )
 
     # To use np.ndarray or other arbitrary types in your Pydantic models
     class Config:
@@ -26,27 +53,7 @@ class Member(BaseModel):
             # Assuming you want a 2D array shape based on your original code
             values['values'] = np.zeros(shape=(num_properties, 1))  
         return values
-
-
-    # def __init__(
-    #         self,
-    #         num_properties: int = 0,
-    #         values:         np.ndarray = np.empty,
-    #         property_categories:  list = [],
-    #         desired_props:  dict       = {},
-    #         ga_params:      GAParams   = GAParams(),
-    #         calc_guide:     dict       = {},
-    #         property_docs:  dict       = {}
-    #         ):
-            
-    #         self.num_properties = num_properties
-    #         self.values         = np.zeros(shape=(num_properties, 1)) if values is np.empty else values
-    #         self.property_categories  = property_categories
-    #         self.desired_props  = desired_props
-    #         self.ga_params      = ga_params
-    #         self.calc_guide     = calc_guide
-    #         self.property_docs  = property_docs
-
+    
     #------ Getter Methods ------#
     def get_num_properties(self):
         return self.num_properties

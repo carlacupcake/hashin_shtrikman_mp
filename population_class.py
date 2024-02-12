@@ -12,16 +12,41 @@ class Population(BaseModel):
     members, and sort the members based on their costs.
     """
     
-    num_properties: int = 0
-    property_categories: List[str] = []
-    desired_props: Dict[str, List[float]] = {}
-    ga_params: GAParams = GAParams()
-    property_docs: Dict[str, Dict[str, Any]] = {}
-    calc_guide: Dict[str, Dict[str, str]] = {}
-
-    # Handling numpy arrays as optional attributes without default validation
-    values: Optional[np.ndarray] = None
-    costs: Optional[np.ndarray] = None
+    num_properties: int = Field(
+        default=0,
+        description="Number of properties that each member of the population has."
+    )
+    property_categories: List[str] = Field(
+        default=[],
+        description="List of property categories considered for optimization."
+    )
+    desired_props: Dict[str, List[float]] = Field(
+        default={},
+        description="Dictionary mapping individual properties to their desired "
+                    "properties."
+    )
+    ga_params: GAParams = Field(
+        default_factory=GAParams,
+        description="Parameter initilization class for the genetic algorithm."
+    )
+    property_docs: Dict[str, Dict[str, Any]] = Field(
+        default={},
+        description="A hard coded yaml file containing property categories "
+                    "and their individual properties."
+    )
+    calc_guide: Dict[str, Dict[str, str]] = Field(
+        default={},
+        description="Calculation guide for property evaluation. This is a "
+                    "hard coded yaml file."
+    )
+    values: Optional[np.ndarray] = Field(
+        default=None,
+        description="Matrix of values representing the population's properties."
+    )
+    costs: Optional[np.ndarray] = Field(
+        default=None,
+        description="Array of costs associated with each member of the population."
+    )
 
     # To use np.ndarray or other arbitrary types in your Pydantic models
     class Config:

@@ -1,9 +1,8 @@
 # From MPRester
 import re
 import json
-from os import environ
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, root_validator
 
 
 import yaml
@@ -39,22 +38,57 @@ class HashinShtrikman(BaseModel):
     leveraging the Materials Project (MP) database.
     """
 
-    api_key: Optional[str] = None
-    mp_contribs_project: Optional[str] = None
-    user_input: Dict = Field(default_factory=dict)
-    fields: Dict[str, List[Any]] = Field(default_factory=lambda: DEFAULT_FIELDS.copy())
-    num_properties: int = 0
-    ga_params: GAParams = Field(default_factory=GAParams)
-    final_population: Population = Field(default_factory=Population)
-    cost_history: np.ndarray = Field(default_factory=lambda: np.empty(0))
-    lowest_costs: np.ndarray = Field(default_factory=lambda: np.empty(0))
-    avg_parent_costs: np.ndarray = Field(default_factory=lambda: np.empty(0))
-    calc_guide: Any = Field(default_factory=lambda: loadfn("cost_calculation_guide.yaml"))
-    property_categories: List[str] = Field(default_factory=list)
-    property_docs: Dict[str, Dict[str, Any]] = Field(default_factory=dict)
-    desired_props: Dict[str, List[float]] = Field(default_factory=dict)
-    lower_bounds: Dict[str, Any] = Field(default_factory=dict)
-    upper_bounds: Dict[str, Any] = Field(default_factory=dict)
+    api_key: Optional[str] = Field(default=None, 
+                                   description="API key for accessing Materials "
+                                   "Project database.")
+    mp_contribs_project: Optional[str] = Field(default=None, 
+                                               description="MPContribs project name "
+                                               "for querying project-specific data.")
+    user_input: Dict = Field(default_factory=dict, 
+                             description="User input specifications for the "
+                             "optimization process.")
+    fields: Dict[str, List[Any]] = Field(default_factory=lambda: DEFAULT_FIELDS.copy(), 
+                                         description="Fields to query from the "
+                                         "Materials Project database.")
+    num_properties: int = Field(default=0, 
+                                description="Number of properties being optimized.")
+    ga_params: GAParams = Field(default_factory=GAParams, 
+                                description="Parameter initilization class for the "
+                                "genetic algorithm.")
+    final_population: Population = Field(default_factory=Population, 
+                                         description="Final population object after "
+                                         "optimization.")
+    cost_history: np.ndarray = Field(default_factory=lambda: np.empty(0),
+                                     description="Historical cost values of "
+                                     "populations across generations.")
+    lowest_costs: np.ndarray = Field(default_factory=lambda: np.empty(0), 
+                                     description="Lowest cost values across "
+                                     "generations.")
+    avg_parent_costs: np.ndarray = Field(default_factory=lambda: np.empty(0), 
+                                         description="Average cost of the "
+                                         "top-performing parents across generations.")
+    calc_guide: Dict[str, Any] = Field(default_factory=lambda: 
+                                       loadfn("cost_calculation_guide.yaml"), 
+                                       description="Calculation guide for property "
+                                       "evaluation. This is a hard coded yaml file.")
+    property_categories: List[str] = Field(default_factory=list, 
+                                           description="List of property categories "
+                                           "considered for optimization.")
+    property_docs: Dict[str, Dict[str, Any]] = Field(default_factory=dict, 
+                                                     description="A hard coded yaml "
+                                                     "file containing property "
+                                                     "categories and their individual "
+                                                     "properties.")
+    desired_props: Dict[str, List[float]] = Field(default_factory=dict, 
+                                                  description="Dictionary mapping "
+                                                  "individual properties to their "
+                                                  "desired properties.")
+    lower_bounds: Dict[str, Any] = Field(default_factory=dict, 
+                                         description="Lower bounds for properties of "
+                                         "materials considered in the optimization.")
+    upper_bounds: Dict[str, Any] = Field(default_factory=dict, 
+                                         description="Upper bounds for properties of "
+                                         "materials considered in the optimization.")
     
     # To use np.ndarray or other arbitrary types in your Pydantic models
     class Config:
