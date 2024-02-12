@@ -98,12 +98,12 @@ class HashinShtrikman(BaseModel):
     @root_validator(pre=True)
     def load_and_set_properties(cls, values):
         # Load property categories and docs
-        property_categories, property_docs = cls.load_property_categories(f"{MODULE_DIR}/../io/mp_property_docs.yaml", user_input=values.get("user_input", {}))
+        property_categories, property_docs = cls.load_property_categories(f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input=values.get("user_input", {}))
         values["property_categories"] = property_categories
         values["property_docs"] = property_docs
         
         # Load calculation guide, if necessary
-        calc_guide = loadfn(values.get("calc_guide", f"{MODULE_DIR}/../io/cost_calculation_formulas.yaml"))
+        calc_guide = loadfn(values.get("calc_guide", f"{MODULE_DIR}/../io/inputs/cost_calculation_formulas.yaml"))
         values["calc_guide"] = calc_guide
         
         # Since user_input is required to set desired props and bounds, ensure it's processed last
@@ -127,7 +127,7 @@ class HashinShtrikman(BaseModel):
 
     #------ Load property docs from MP ------# 
     @staticmethod
-    def load_property_categories(filename=f"{MODULE_DIR}/../io/mp_property_docs.yaml", user_input: Dict = {}):
+    def load_property_categories(filename=f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input: Dict = {}):
             print(f"Loading property categories from {filename}.")
             import os
             print(f"Loading property categories from {os.getcwd()}.")
@@ -202,7 +202,7 @@ class HashinShtrikman(BaseModel):
     def get_avg_parent_costs(self):
         return self.avg_parent_costs
     
-    def get_headers(self, include_mpids=False, file_name = f"{MODULE_DIR}/../io/display_table_headers.yaml"):
+    def get_headers(self, include_mpids=False, file_name = f"{MODULE_DIR}/../io/inputs/display_table_headers.yaml"):
         
         with open(file_name, 'r') as stream:
             try:
@@ -765,7 +765,7 @@ class HashinShtrikman(BaseModel):
 
                 # Save the consolidated results to a JSON file
                 now = datetime.now()
-                my_file_name = "consolidated_dict_" + now.strftime("%m_%d_%Y_%H_%M_%S")
+                my_file_name = f"{MODULE_DIR}/../io/outputs/consolidated_dict_" + now.strftime("%m_%d_%Y_%H_%M_%S")
                 with open(my_file_name, "w") as my_file:
                     json.dump(consolidated_dict, my_file)
 
