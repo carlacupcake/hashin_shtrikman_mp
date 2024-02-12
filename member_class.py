@@ -2,27 +2,50 @@ import datetime
 import numpy as np
 from ga_params_class import GAParams
 from hs_logger import logger
+from pydantic import BaseModel, root_validator
+from typing import List, Dict, Optional, Any
 
-class Member:
+class Member(BaseModel):
+    num_properties: int = 0
+    values: Optional[np.ndarray] = None
+    property_categories: List[str] = []
+    desired_props: Dict[str, Any] = {}
+    ga_params: Optional[GAParams] = None  # Assuming GAParams is a Pydantic model
+    calc_guide: Dict[str, Any] = {}
+    property_docs: Dict[str, Dict[str, Any]] = {}
 
-    def __init__(
-            self,
-            num_properties: int = 0,
-            values:         np.ndarray = np.empty,
-            property_categories:  list = [],
-            desired_props:  dict       = {},
-            ga_params:      GAParams   = GAParams(),
-            calc_guide:     dict       = {},
-            property_docs:  dict       = {}
-            ):
+    # To use np.ndarray or other arbitrary types in your Pydantic models
+    class Config:
+        arbitrary_types_allowed = True
+
+    @root_validator(pre=True)
+    def check_and_initialize_arrays(cls, values):
+        # Initialize 'values' with zeros if not provided or if it is np.empty
+        if values.get('values') is None or (isinstance(values.get('values'), np.ndarray) and values.get('values').size == 0):
+            num_properties = values.get('num_properties', 0)
+            # Assuming you want a 2D array shape based on your original code
+            values['values'] = np.zeros(shape=(num_properties, 1))  
+        return values
+
+
+    # def __init__(
+    #         self,
+    #         num_properties: int = 0,
+    #         values:         np.ndarray = np.empty,
+    #         property_categories:  list = [],
+    #         desired_props:  dict       = {},
+    #         ga_params:      GAParams   = GAParams(),
+    #         calc_guide:     dict       = {},
+    #         property_docs:  dict       = {}
+    #         ):
             
-            self.num_properties = num_properties
-            self.values         = np.zeros(shape=(num_properties, 1)) if values is np.empty else values
-            self.property_categories  = property_categories
-            self.desired_props  = desired_props
-            self.ga_params      = ga_params
-            self.calc_guide     = calc_guide
-            self.property_docs  = property_docs
+    #         self.num_properties = num_properties
+    #         self.values         = np.zeros(shape=(num_properties, 1)) if values is np.empty else values
+    #         self.property_categories  = property_categories
+    #         self.desired_props  = desired_props
+    #         self.ga_params      = ga_params
+    #         self.calc_guide     = calc_guide
+    #         self.property_docs  = property_docs
 
     #------ Getter Methods ------#
     def get_num_properties(self):
