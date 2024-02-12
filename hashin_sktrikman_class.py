@@ -68,7 +68,7 @@ class HashinShtrikman(BaseModel):
                                          description="Average cost of the "
                                          "top-performing parents across generations.")
     calc_guide: Dict[str, Any] = Field(default_factory=lambda: 
-                                       loadfn("cost_calculation_guide.yaml"), 
+                                       loadfn("cost_calculation_formulas.yaml"), 
                                        description="Calculation guide for property "
                                        "evaluation. This is a hard coded yaml file.")
     property_categories: List[str] = Field(default_factory=list, 
@@ -97,12 +97,12 @@ class HashinShtrikman(BaseModel):
     @root_validator(pre=True)
     def load_and_set_properties(cls, values):
         # Load property categories and docs
-        property_categories, property_docs = cls.load_property_categories("mp_property_docs.yaml", user_input=values.get("user_input", {}))
+        property_categories, property_docs = cls.load_property_categories("io/mp_property_docs.yaml", user_input=values.get("user_input", {}))
         values["property_categories"] = property_categories
         values["property_docs"] = property_docs
         
         # Load calculation guide, if necessary
-        calc_guide = loadfn(values.get("calc_guide", "cost_calculation_guide.yaml"))
+        calc_guide = loadfn(values.get("calc_guide", "io/cost_calculation_formulas.yaml"))
         values["calc_guide"] = calc_guide
         
         # Since user_input is required to set desired props and bounds, ensure it's processed last
@@ -126,7 +126,7 @@ class HashinShtrikman(BaseModel):
 
     #------ Load property docs from MP ------# 
     @staticmethod
-    def load_property_categories(filename="mp_property_docs.yaml", user_input: Dict = {}):
+    def load_property_categories(filename="io/mp_property_docs.yaml", user_input: Dict = {}):
             print(f"Loading property categories from {filename}.")
             """Load property categories from a JSON file."""
             property_categories = []
@@ -199,7 +199,7 @@ class HashinShtrikman(BaseModel):
     def get_avg_parent_costs(self):
         return self.avg_parent_costs
     
-    def get_headers(self, include_mpids=False, file_name = "HS_headers.yaml"):
+    def get_headers(self, include_mpids=False, file_name = "io/display_table_headers.yaml"):
         
         with open(file_name, 'r') as stream:
             try:
