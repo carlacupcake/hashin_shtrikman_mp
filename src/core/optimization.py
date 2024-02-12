@@ -1,27 +1,22 @@
-# From MPRester
 import re
 import json
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, root_validator
-import yaml
-from monty.serialization import loadfn
-
-# Custom Classes
-from core.genetic_algo import GAParams
-from core.member import Member
-from core.population import Population
-
-# Other
 import numpy as np
 import matplotlib.pyplot as plt
+import copy
+import yaml
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, Field, root_validator
+from monty.serialization import loadfn
 from datetime import datetime
 from mp_api.client import MPRester
 from mpcontribs.client import Client
 from tabulate import tabulate
 from log.custom_logger import logger
-import copy
-from importlib import resources
 from pathlib import Path
+
+from core.genetic_algo import GAParams
+from core.member import Member
+from core.population import Population
 
 # HashinShtrikman class defaults
 DEFAULT_FIELDS: dict    = {"material_id": [], 
@@ -128,9 +123,8 @@ class HashinShtrikman(BaseModel):
     #------ Load property docs from MP ------# 
     @staticmethod
     def load_property_categories(filename=f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input: Dict = {}):
-            print(f"Loading property categories from {filename}.")
-            import os
-            print(f"Loading property categories from {os.getcwd()}.")
+            logger.info(f"Loading property categories from {filename}.")
+
             """Load property categories from a JSON file."""
             property_categories = []
             try:
@@ -151,11 +145,11 @@ class HashinShtrikman(BaseModel):
                         property_categories.append(category)
 
             except FileNotFoundError:
-                print(f"File {filename} not found.")
+                logger.error(f"File {filename} not found.")
             except json.JSONDecodeError:
-                print(f"Error decoding JSON from file {filename}.")
+                logger.error(f"Error decoding JSON from file {filename}.")
             
-            print(f"property_categories = {property_categories}")
+            logger.info(f"property_categories = {property_categories}")
             return property_categories, property_docs
         
     #------ Getter Methods ------#
@@ -240,7 +234,7 @@ class HashinShtrikman(BaseModel):
                         headers.append(common_key)
 
             except yaml.YAMLError as exc:
-                print(exc)
+                logger.error(exc)
         
         return headers
         
@@ -293,7 +287,7 @@ class HashinShtrikman(BaseModel):
     def get_material_matches(self, consolidated_dict: dict = {}): 
 
         best_designs_dict = self.get_dict_of_best_designs()
-        print(f"best_designs_dict = {best_designs_dict}")
+        logger.info(f"best_designs_dict = {best_designs_dict}")
         
         # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
         if consolidated_dict == {}:
@@ -451,7 +445,7 @@ class HashinShtrikman(BaseModel):
 
         # Extracting the desired properties from the 'mixture' part of final_dict
         mixture_props = user_input.get('mixture', {})
-        print(f"mixture_props = {mixture_props}")
+        logger.info(f"mixture_props = {mixture_props}")
 
         # Iterate through each property category and its associated properties
         for category, properties in property_docs.items():
@@ -559,7 +553,7 @@ class HashinShtrikman(BaseModel):
         # Perform all later generations    
         while g < num_generations:
 
-            print(f"Generation {g} of {num_generations}")
+            logger.info(f"Generation {g} of {num_generations}")
             costs[0:num_parents] = sorted_costs[0:num_parents] # retain the parents from the previous generation
             
             # Select top parents from population to be breeders
