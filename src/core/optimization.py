@@ -151,50 +151,7 @@ class HashinShtrikman(BaseModel):
             
             logger.info(f"property_categories = {property_categories}")
             return property_categories, property_docs
-        
-    #------ Getter Methods ------#
 
-    def get_lower_bounds(self):
-        return self.lower_bounds
-    
-    def get_upper_bounds(self):
-        return self.upper_bounds
-    
-    def get_retain_parents(self):
-        return self.retain_parents
-    
-    def get_allow_mutations(self):
-        return self.allow_mutations
-
-    def get_property_docs(self):
-        return self.property_docs
-    
-    def get_desired_props(self):
-        return self.desired_props
-    
-    def get_has_props(self):
-        return self.has_props
-    
-    def get_fields(self):
-        return self.fields
-    
-    def get_num_properties(self):
-        return self.num_properties
-    
-    def get_ga_params(self):
-        return self.ga_params
-    
-    def get_final_population(self):
-        return self.final_population
-    
-    def get_cost_history(self):
-        return self.cost_history
-    
-    def get_lowest_costs(self):
-        return self.lowest_costs           
-
-    def get_avg_parent_costs(self):
-        return self.avg_parent_costs
     
     def get_headers(self, include_mpids=False, file_name = f"{MODULE_DIR}/../io/inputs/display_table_headers.yaml"):
         
@@ -413,30 +370,6 @@ class HashinShtrikman(BaseModel):
 
         return bounds
     
-    def set_lower_bounds(self, lower_bounds):
-        self.lower_bounds = lower_bounds
-        return self
-    
-    def set_upper_bounds(self, upper_bounds):
-        self.upper_bounds = upper_bounds
-        return self
-    
-    def set_retain_parents(self, retain_parents):
-        self.retain_parents = retain_parents
-        return self
-    
-    def set_allow_mutations(self, allow_mutations):
-        self.allow_mutations = allow_mutations
-        return self
-
-    def set_property_docs(self, property_docs):
-        self.property_docs = property_docs
-        return self
-    
-    def set_desired_props(self, desired_props):
-        self.desired_props = desired_props
-        return self
-    
     @staticmethod
     def set_desired_props_from_user_input(user_input: Dict, property_categories: List[str], property_docs: Dict):
 
@@ -456,17 +389,9 @@ class HashinShtrikman(BaseModel):
 
         return desired_props
     
-    def set_has_props(self, has_props):
-        self.has_props = has_props
-        return self
-    
     def set_fields(self, fields):
         self.fields = fields
         return self
-    
-    def set_num_properties(self, num_properties):
-        self.num_properties = num_properties
-        return num_properties
     
     @staticmethod
     def set_num_properties_from_desired_props(desired_props, lower_bounds):
@@ -484,26 +409,6 @@ class HashinShtrikman(BaseModel):
         num_properties += 2
 
         return num_properties
-    
-    def set_ga_params(self, ga_params):
-        self.ga_params = ga_params
-        return self
-    
-    def set_final_population(self, final_pop):
-        self.final_population = final_pop
-        return self
-    
-    def set_cost_history(self, cost_history):
-        self.cost_history = cost_history
-        return self
-    
-    def set_lowest_costs(self, lowest_costs):
-        self.lowest_costs = lowest_costs
-        return self           
-
-    def set_avg_parent_costs(self, avg_parent_costs):
-        self.avg_parent_costs = avg_parent_costs
-        return self
     
     def set_HS_optim_params(self):
         

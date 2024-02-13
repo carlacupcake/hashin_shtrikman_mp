@@ -68,39 +68,9 @@ class Population(BaseModel):
             values['costs'] = np.zeros((num_members, num_properties))
 
         return values
-
-    #------ Getter Methods ------#
-    def get_num_properties(self):
-        return self.num_properties
-    
-    def get_property_docs(self):
-        return self.property_docs
-    
-    def get_values(self):
-        return self.values
     
     def get_costs(self):
         return self.costs
-    
-    def get_ga_params(self):
-        return self.ga_params
-    
-    #------ Setter Methods ------#
-    def set_num_properties(self, num_properties):
-        self.num_properties = num_properties
-        return self 
-
-    def set_property_docs(self, property_categories):
-        self.property_categories = property_categories
-        return self
-
-    def set_values(self, values):
-        self.values = values
-        return self
-
-    def set_ga_params(self, ga_params):
-        self.ga_params = ga_params
-        return self  
     
     def set_initial_random(self, lower_bounds, upper_bounds):
 

@@ -53,24 +53,12 @@ class Member(BaseModel):
             # Assuming you want a 2D array shape based on your original code
             values['values'] = np.zeros(shape=(num_properties, 1))  
         return values
-    
-    #------ Getter Methods ------#
-    def get_num_properties(self):
-        return self.num_properties
-    
-    def get_values(self):
-        return self.values
-    
-    def get_property_categories(self):
-        return self.property_categories
-    
-    def get_desired_props(self):
-        return self.desired_props
-    
-    def get_ga_params(self):
-        return self.ga_params
             
     def get_cost(self):
+        """
+        Calculate the cost function for the member of the population.
+        
+        """
         
         # MAIN COST FUNCTION
         # Concentration factors guide (for 2 material composites only): Carrier transport (6), Dielectric (8), Elastic (6), Magnetic (4), Piezoelectic (2)
@@ -213,26 +201,3 @@ class Member(BaseModel):
         cost = weight_eff_prop*W * np.sum(abs(np.divide(des_props - effective_properties, effective_properties))) + np.sum(np.multiply(cost_func_weights, abs(np.divide(concentration_factors - tolerance, tolerance))))
 
         return cost
-
-    #------ Setter Methods ------#
-
-    def set_num_properties(self, num_properties):
-        self.num_properties = num_properties
-        return self
-    
-    def set_values(self, values):
-        self.values = values
-        return self
-    
-    def set_property_categories(self, property_categories):
-        self.property_categories = property_categories
-        return self
-    
-    def set_desired_props(self, des_props):
-        self.desired_props = des_props
-        return self
-    
-    def set_ga_params(self, ga_params):
-        self.ga_params = ga_params
-        return self
-    

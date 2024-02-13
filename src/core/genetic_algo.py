@@ -76,35 +76,3 @@ class GAParams(BaseModel):
     
     def get_weight_conc_factor(self):
         return self.weight_conc_factor
-    
-    #------ Setter Methods ------#
-    def set_num_parents(self, num_parents):
-        self.num_parents = num_parents
-        return self
-    
-    def set_num_kids(self, num_kids):
-        self.num_kids = num_kids
-        return self
-    
-    def set_num_generations(self, num_generations):
-        self.num_generations = num_generations
-        return self
-    
-    def set_num_members(self, num_members):
-        self.num_members = num_members
-        return self
-    
-    def set_tolerance(self, tolerance):
-        self.tolerance = tolerance
-        return self
-    
-    def set_weight_eff_prop(self, weight_eff_prop):
-        self.weight_eff_prop = weight_eff_prop
-        return self
-    
-    def set_weight_conc_factor(self, weight_conc_factor):
-        self.weight_conc_factor = weight_conc_factor
-        return self
-
-    
-
