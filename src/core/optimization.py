@@ -30,7 +30,7 @@ MODULE_DIR = Path(__file__).resolve().parent
 # YAML files
 CALC_GUIDE = "cost_calculation_formulas.yaml"
 MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
-HS_HEADERS_YAML = "HS_headers.yaml"
+HS_HEADERS_YAML = "display_table_headers.yaml"
 
 class HashinShtrikman(BaseModel):
     """
@@ -190,7 +190,7 @@ class HashinShtrikman(BaseModel):
         
     #------ Getter Methods ------#
     
-    def get_headers(self, include_mpids=False, file_name = HS_HEADERS_YAML):
+    def get_headers(self, include_mpids=False, file_name = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}"):
 
         with open(file_name, 'r') as stream:
             try:
@@ -227,7 +227,7 @@ class HashinShtrikman(BaseModel):
 
         # Costs are often equal to >10 decimal points, truncate to obtain a richer set of suggestions
         self.final_population.set_costs()
-        final_costs = self.final_population.get_costs()
+        final_costs = self.final_population.costs
         rounded_costs = np.round(final_costs, decimals=3)
     
         # Obtain unique members and costs
@@ -367,7 +367,8 @@ class HashinShtrikman(BaseModel):
                                     property_categories=self.property_categories,
                                     property_docs=self.property_docs, 
                                     desired_props=self.desired_props, 
-                                    ga_params=self.ga_params)
+                                    ga_params=self.ga_params,
+                                    calc_guide=self.calc_guide)
             population.set_costs()
             [sorted_costs, sorted_indices] = population.sort_costs()
             population.set_order_by_costs(sorted_indices)
@@ -385,7 +386,7 @@ class HashinShtrikman(BaseModel):
     #------ Setter Methods ------#
     @staticmethod
     def set_num_materials_from_user_input(user_input):
-        num_materials = len(user_input)
+        num_materials = len(user_input) - 1
         return num_materials
     
     @staticmethod
@@ -484,8 +485,9 @@ class HashinShtrikman(BaseModel):
                                 property_categories=self.property_categories, 
                                 property_docs=self.property_docs,
                                 desired_props=self.desired_props, 
-                                ga_params=self.ga_params)
-        print("num: ", self.num_materials)
+                                ga_params=self.ga_params,
+                                calc_guide=self.calc_guide)
+        logger.info(f"num_materials = {self.num_materials}")
         population.set_random_values(lower_bounds=self.lower_bounds, 
                                      upper_bounds=self.upper_bounds, 
                                      num_members=self.ga_params.num_members)
@@ -527,14 +529,16 @@ class HashinShtrikman(BaseModel):
                               property_categories=self.property_categories,
                               property_docs=self.property_docs, 
                               desired_props=self.desired_props, 
-                              ga_params=self.ga_params)
+                              ga_params=self.ga_params,
+                              calc_guide=self.calc_guide)
                 kid2 = Member(num_materials=self.num_materials,
                               num_properties=self.num_properties, 
                               values=kid2, 
                               property_categories=self.property_categories, 
                               property_docs=self.property_docs, 
                               desired_props=self.desired_props, 
-                              ga_params=self.ga_params)
+                              ga_params=self.ga_params,
+                              calc_guide=self.calc_guide)
                 costs[num_parents+p]   = kid1.get_cost()
                 costs[num_parents+p+1] = kid2.get_cost()
                         

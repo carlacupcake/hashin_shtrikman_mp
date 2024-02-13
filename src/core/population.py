@@ -62,14 +62,15 @@ class Population(BaseModel):
         ga_params = values.get('ga_params', GAParams())
         num_members = ga_params.num_members  # Assuming GAParams model has a num_members field directly accessible
         num_properties = values.get('num_properties', 0)
+        num_materials = values.get('num_materials', 0)
 
         # Set default for values if not provided or is np.empty
         if values.get('values') is None or (isinstance(values.get('values'), np.ndarray) and values.get('values').size == 0):
-            values['values'] = np.zeros((num_members, num_properties))
+            values['values'] = np.zeros((num_members, num_properties * num_materials))
 
         # Set default for costs in a similar manner
         if values.get('costs') is None or (isinstance(values.get('costs'), np.ndarray) and values.get('costs').size == 0):
-            values['costs'] = np.zeros((num_members, num_properties))
+            values['costs'] = np.zeros((num_members, num_properties * num_materials))
 
         return values
    

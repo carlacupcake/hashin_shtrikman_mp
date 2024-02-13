@@ -149,8 +149,8 @@ class Member(BaseModel):
             effective_prop_min = phase1
             effective_prop_max = phase2
         else:
-            effective_prop_min = eval(self.calc_guide['ceffective_props']['eff_min'].format(phase1=phase1, phase2=phase2, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
-            effective_prop_max = eval(self.calc_guide['ceffective_props']['eff_max'].format(phase1=phase1, phase2=phase2, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
+            effective_prop_min = eval(self.calc_guide['effective_props']['eff_min'].format(phase1=phase1, phase2=phase2, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
+            effective_prop_max = eval(self.calc_guide['effective_props']['eff_max'].format(phase1=phase1, phase2=phase2, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
 
         # Compute concentration factors for electrical load sharing
         mixing_param = self.ga_params.mixing_param
@@ -161,8 +161,8 @@ class Member(BaseModel):
             cf_response1_cf_load1 = (1/phase1_vol_frac)**2 
             cf_response2_cf_load2 = (1/phase2_vol_frac)**2 
         else:
-            cf_response1_cf_load1 = eval(self.calc_guide['concentration_factors']['cf_1'].format(phase1=phase1, phase2=phase2, phase1_vol_frac=phase1_vol_frac))
-            cf_response2_cf_load2 = eval(self.calc_guide['concentration_factors']['cf_2'].format(phase1=phase1, phase2=phase2, phase2_vol_frac=phase2_vol_frac))
+            cf_response1_cf_load1 = eval(self.calc_guide['concentration_factors']['cf_1'].format(phase1=phase1, phase2=phase2, phase1_vol_frac=phase1_vol_frac, effective_property=effective_prop))
+            cf_response2_cf_load2 = eval(self.calc_guide['concentration_factors']['cf_2'].format(phase1=phase1, phase2=phase2, phase2_vol_frac=phase2_vol_frac, effective_property=effective_prop))
 
         concentration_factors.append(cf_response1_cf_load1)
         concentration_factors.append(cf_response2_cf_load2)

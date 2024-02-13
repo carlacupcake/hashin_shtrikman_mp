@@ -1,11 +1,11 @@
 effective_props:
   eff_min: "{phase1} + {phase2_vol_frac} / (1/({phase2} - {phase1}) + {phase1_vol_frac}/(3*{phase1}))"
   eff_max: "{phase2} + {phase1_vol_frac} / (1/({phase1} - {phase2}) + {phase2_vol_frac}/(3*{phase2}))"
-  eff_prop: "{mixing_param} * {eff_max}}  + (1 - {mixing_param}) * {eff_min}"
-  bulk_mod_min: "{phase1_bulk_mod} + {phase2_vol_frac} / (1/({phase2_bulk_mod} - {phase1_bulk_mod}) + 3*{phase1_vol_frac}/(3*{phase1_bulk_mod} + 4*{phase1_shear_mod}))"
-  bulk_mod_max: "{phase2_bulk_mod} + {phase1_vol_frac} / (1/({phase1_bulk_mod} - {phase2_bulk_mod}) + 3*{phase2_vol_frac}/(3*{phase2_bulk_mod} + 4*{phase2_shear_mod}))"
-  shear_mod_min: "{phase1_shear_mod} + {phase2_vol_frac} / (1/({phase2_shear_mod} - {phase1_shear_mod}) + 6*{phase1_vol_frac}*({phase1_bulk_mod} + 2*{phase1_shear_mod}) / (5*{phase1_shear_mod}*(3*{phase1_bulk_mod} + 4*{phase1_shear_mod})))"
-  shear_mod_max: "{phase2_shear_mod} + {phase1_vol_frac} / (1/({phase1_shear_mod} - {phase2_shear_mod}) + 6*{phase2_vol_frac}*({phase2_bulk_mod} + 2*{phase2_shear_mod}) / (5*{phase2_shear_mod}*(3*{phase2_bulk_mod} + 4*{phase2_shear_mod})))"
+  eff_prop: "{mixing_param} * {eff_max}  + (1 - {mixing_param}) * {eff_min}"
+  bulk_mod_min: "{phase1_bulk} + {phase2_vol_frac} / (1/({phase2_bulk} - {phase1_bulk}) + 3*{phase1_vol_frac}/(3*{phase1_bulk} + 4*{phase1_shear}))"
+  bulk_mod_max: "{phase2_bulk} + {phase1_vol_frac} / (1/({phase1_bulk} - {phase2_bulk}) + 3*{phase2_vol_frac}/(3*{phase2_bulk} + 4*{phase2_shear}))"
+  shear_mod_min: "{phase1_shear} + {phase2_vol_frac} / (1/({phase2_shear} - {phase1_shear}) + 6*{phase1_vol_frac}*({phase1_bulk} + 2*{phase1_shear}) / (5*{phase1_shear}*(3*{phase1_bulk} + 4*{phase1_shear})))"
+  shear_mod_max: "{phase2_shear} + {phase1_vol_frac} / (1/({phase1_shear} - {phase2_shear}) + 6*{phase2_vol_frac}*({phase2_bulk} + 2*{phase2_shear}) / (5*{phase2_shear}*(3*{phase2_bulk} + 4*{phase2_shear})))"
 concentration_factors:
   cf_1: "{phase1}/{effective_property} * (1/{phase1_vol_frac} * ({phase2} - {effective_property})/({phase2} - {phase1}))**2"
   cf_2: "{phase2}/{effective_property} * (1/{phase2_vol_frac} * ({phase1} - {effective_property})/({phase1} - {phase2}))**2"
