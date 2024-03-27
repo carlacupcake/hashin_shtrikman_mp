@@ -4,7 +4,6 @@ class GAParams(BaseModel):
     """
     Class to hold the parameters used for the genetic algorithm.
     """
-
     num_parents: int = Field(
         default=10,
         description="Number of parent members to retain in each generation."
@@ -14,12 +13,16 @@ class GAParams(BaseModel):
         description="Number of children to produce from the parent members."
     )
     num_generations: int = Field(
-        default=500,
+        default=100,
         description="Total number of generations to simulate in the genetic algorithm."
     )
     num_members: int = Field(
         default=200,
         description="Total number of members in each generation of the population."
+    )
+    mixing_param: float = Field(
+        default = 0.5,
+        description = "TODO"
     )
     tolerance: float = Field(
         default=0.5,
@@ -55,24 +58,6 @@ class GAParams(BaseModel):
                     "constituents is more critical to minimizing the overall cost."
     )
 
-    #------ Getter Methods ------#
-    def get_num_parents(self):
-        return self.num_parents
+
     
-    def get_num_kids(self):
-        return self.num_kids
-    
-    def get_num_generations(self):
-        return self.num_generations
-    
-    def get_num_members(self):
-        return self.num_members
-    
-    def get_tolerance(self):
-        return self.tolerance
-    
-    def get_weight_eff_prop(self):
-        return self.weight_eff_prop
-    
-    def get_weight_conc_factor(self):
-        return self.weight_conc_factor
+

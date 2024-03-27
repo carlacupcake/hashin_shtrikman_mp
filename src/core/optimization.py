@@ -3,7 +3,10 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
+import itertools
+import sys
 import yaml
+
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, root_validator
 from monty.serialization import loadfn
@@ -11,12 +14,14 @@ from datetime import datetime
 from mp_api.client import MPRester
 from mpcontribs.client import Client
 from tabulate import tabulate
-from log.custom_logger import logger
+
+sys.path.insert(1, '../log')
+from custom_logger import logger
 from pathlib import Path
 
-from core.genetic_algo import GAParams
-from core.member import Member
-from core.population import Population
+from genetic_algo import GAParams
+from member import Member
+from population import Population
 
 # HashinShtrikman class defaults
 DEFAULT_FIELDS: dict    = {"material_id": [], 
@@ -26,6 +31,12 @@ DEFAULT_FIELDS: dict    = {"material_id": [],
                            "formula_pretty": [],}
 MODULE_DIR = Path(__file__).resolve().parent
 
+# YAML files
+sys.path.insert(1, '../io')
+CALC_GUIDE = "cost_calculation_formulas.yaml"
+MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
+HS_HEADERS_YAML = "display_table_headers.yaml"
+
 class HashinShtrikman(BaseModel):
     """
     Hashin-Shtrikman optimization class. 
@@ -34,57 +45,86 @@ class HashinShtrikman(BaseModel):
     leveraging the Materials Project (MP) database.
     """
 
-    api_key: Optional[str] = Field(default=None, 
-                                   description="API key for accessing Materials "
-                                   "Project database.")
-    mp_contribs_project: Optional[str] = Field(default=None, 
-                                               description="MPContribs project name "
-                                               "for querying project-specific data.")
-    user_input: Dict = Field(default_factory=dict, 
-                             description="User input specifications for the "
-                             "optimization process.")
-    fields: Dict[str, List[Any]] = Field(default_factory=lambda: DEFAULT_FIELDS.copy(), 
-                                         description="Fields to query from the "
-                                         "Materials Project database.")
-    num_properties: int = Field(default=0, 
-                                description="Number of properties being optimized.")
-    ga_params: GAParams = Field(default_factory=GAParams, 
-                                description="Parameter initilization class for the "
-                                "genetic algorithm.")
-    final_population: Population = Field(default_factory=Population, 
-                                         description="Final population object after "
-                                         "optimization.")
-    cost_history: np.ndarray = Field(default_factory=lambda: np.empty(0),
-                                     description="Historical cost values of "
-                                     "populations across generations.")
-    lowest_costs: np.ndarray = Field(default_factory=lambda: np.empty(0), 
-                                     description="Lowest cost values across "
-                                     "generations.")
-    avg_parent_costs: np.ndarray = Field(default_factory=lambda: np.empty(0), 
-                                         description="Average cost of the "
-                                         "top-performing parents across generations.")
-    calc_guide: Dict[str, Any] = Field(default_factory=lambda: 
-                                       loadfn("cost_calculation_formulas.yaml"), 
-                                       description="Calculation guide for property "
-                                       "evaluation. This is a hard coded yaml file.")
-    property_categories: List[str] = Field(default_factory=list, 
-                                           description="List of property categories "
-                                           "considered for optimization.")
-    property_docs: Dict[str, Dict[str, Any]] = Field(default_factory=dict, 
-                                                     description="A hard coded yaml "
-                                                     "file containing property "
-                                                     "categories and their individual "
-                                                     "properties.")
-    desired_props: Dict[str, List[float]] = Field(default_factory=dict, 
-                                                  description="Dictionary mapping "
-                                                  "individual properties to their "
-                                                  "desired properties.")
-    lower_bounds: Dict[str, Any] = Field(default_factory=dict, 
-                                         description="Lower bounds for properties of "
-                                         "materials considered in the optimization.")
-    upper_bounds: Dict[str, Any] = Field(default_factory=dict, 
-                                         description="Upper bounds for properties of "
-                                         "materials considered in the optimization.")
+    api_key: Optional[str] = Field(
+        default=None, 
+        description="API key for accessing Materials "
+                    "Project database."
+        )
+    mp_contribs_project: Optional[str] = Field(
+        default=None, 
+        description="MPContribs project name "
+                    "for querying project-specific data."
+        )
+    user_input: Dict = Field(
+        default_factory=dict, 
+        description="User input specifications for the "
+        "optimization process."
+        )
+    fields: Dict[str, List[Any]] = Field(
+        default_factory=lambda: DEFAULT_FIELDS.copy(), 
+        description="Fields to query from the "
+                    "Materials Project database."
+        )
+    property_categories: List[str] = Field(
+        default_factory=list, 
+        description="List of property categories "
+                    "considered for optimization."
+        )
+    property_docs: Dict[str, Dict[str, Any]] = Field(
+        default_factory=dict, 
+        description="A hard coded yaml file containing property "
+                    "categories and their individual properties."
+        )
+    lower_bounds: Dict[str, Any] = Field(
+        default_factory=dict, 
+        description="Lower bounds for properties of "
+                    "materials considered in the optimization."
+        )
+    upper_bounds: Dict[str, Any] = Field(
+        default_factory=dict, 
+        description="Upper bounds for properties of "
+                    "materials considered in the optimization."
+        )
+    desired_props: Dict[str, List[float]] = Field(
+        default_factory=dict, 
+        description="Dictionary mapping "
+                    "individual properties to their "
+                    "desired properties."
+        )
+    num_materials: int = Field(
+        default=0, 
+        description="TODO"
+        )
+    num_properties: int = Field(
+        default=0, 
+        description="Number of properties being optimized."
+        )
+    ga_params: GAParams = Field(
+        default_factory=GAParams, 
+        description="Parameter initilization class for the "
+                    "genetic algorithm."
+        )
+    final_population: Population = Field(
+        default_factory=Population, 
+        description="Final population object after "
+                    "optimization."
+        )
+    lowest_costs: np.ndarray = Field(
+        default_factory=lambda: np.empty(0), 
+        description="Lowest cost values across "
+                    "generations."
+        )
+    avg_parent_costs: np.ndarray = Field(
+        default_factory=lambda: np.empty(0), 
+        description="Average cost of the "
+                    "top-performing parents across generations."
+        )   
+    calc_guide: Dict[str, Any] = Field(
+        default_factory=lambda: 
+        loadfn(CALC_GUIDE), 
+        description="Calculation guide for property "
+                    "evaluation. This is a hard coded yaml file."
+    )
     
     # To use np.ndarray or other arbitrary types in your Pydantic models
     class Config:
@@ -104,21 +144,22 @@ class HashinShtrikman(BaseModel):
         # Since user_input is required to set desired props and bounds, ensure it's processed last
         user_input = values.get("user_input", {})
         if user_input:
-            desired_props = cls.set_desired_props_from_user_input(user_input, property_categories=property_categories, property_docs=property_docs)
-            lower_bounds = cls.set_bounds_from_user_input(user_input, 'lower_bound', property_docs=property_docs)
-            upper_bounds = cls.set_bounds_from_user_input(user_input, 'upper_bound', property_docs=property_docs)
-            num_properties = cls.set_num_properties_from_desired_props(desired_props, lower_bounds)
-
+            num_materials  = cls.set_num_materials_from_user_input(user_input)
+            desired_props  = cls.set_desired_props_from_user_input(user_input, property_categories=property_categories, property_docs=property_docs)
+            lower_bounds   = cls.set_bounds_from_user_input(user_input, 'lower_bound', property_docs=property_docs, num_materials=num_materials)
+            upper_bounds   = cls.set_bounds_from_user_input(user_input, 'upper_bound', property_docs=property_docs, num_materials=num_materials)
+            num_properties = cls.set_num_properties_from_desired_props(desired_props=desired_props)
+            
             # Update values accordingly
             values.update({
-                "desired_props": desired_props,
-                "lower_bounds": lower_bounds,
-                "upper_bounds": upper_bounds,
-                "num_properties": num_properties
+                "desired_props":  desired_props,
+                "lower_bounds":   lower_bounds,
+                "upper_bounds":   upper_bounds,
+                "num_properties": num_properties,
+                "num_materials":  num_materials
             })
         
         return values
-
 
     #------ Load property docs from MP ------# 
     @staticmethod
@@ -129,15 +170,16 @@ class HashinShtrikman(BaseModel):
             property_categories = []
             try:
                 property_docs = loadfn(filename)
-                
+
                 # Flatten the user input to get a list of all properties defined by the user
                 user_defined_properties = []
 
-                for material_props in user_input.values():
-                    for props in material_props.keys():
-                        user_defined_properties.append(props)
-                        #only keep the unique entries of the list
-                        user_defined_properties = list(set(user_defined_properties))
+                for entity in user_input.values():
+                    for property in entity:
+                        user_defined_properties.append(property)
+
+                # Only keep the unique entries of the list
+                user_defined_properties = list(set(user_defined_properties))
 
                 # Iterate through property categories to check which are present in the user input
                 for category, properties in property_docs.items():
@@ -151,47 +193,38 @@ class HashinShtrikman(BaseModel):
             
             logger.info(f"property_categories = {property_categories}")
             return property_categories, property_docs
-
-    
-    def get_headers(self, include_mpids=False, file_name = f"{MODULE_DIR}/../io/inputs/display_table_headers.yaml"):
         
+    #------ Getter Methods ------#
+    def get_headers(self, include_mpids=False, file_name = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}"):
+
         with open(file_name, 'r') as stream:
             try:
                 data = yaml.safe_load(stream)
                 headers = []
 
+                # Add headers for mp-ids
                 if include_mpids:
-                    headers.extend(["Material 1 MP-ID", "Material 2 MP-ID"])
+                    for m in range(1, self.num_materials + 1):
+                        headers.append(f"Material {m} MP-ID")
 
-                # Temporarily store headers by category to ensure phase grouping
-                temp_headers = {}
+                # Add headers for material properties
+                for category, properties in data["Per Material"].items():
+                    if category in self.property_categories:
+                        for property in properties.values():                            
+                            for m in range(1, self.num_materials + 1):
+                                headers.append(f"Phase {m} " + property)
 
-                # Exclude 'Common' initially and handle it at the end
-                categories_to_exclude = ["Common"]
+                # Add headers for volume fractions
+                for m in range(1, self.num_materials + 1):
+                    headers.append(f"Phase {m} Volume Fraction")
 
-                for material_key, categories in data.items():
-                    if material_key in categories_to_exclude:
-                        continue
-
-                    for category, properties in categories.items():
-                        if category in self.property_categories:
-                            if category not in temp_headers:
-                                temp_headers[category] = []
-
-                            for prop_key, prop_value in properties.items():
-                                temp_headers[category].append(prop_value)
-
-                # Add the consolidated headers from temp_headers to the final list, ensuring proper order
-                for category in temp_headers:
-                    headers.extend(temp_headers[category])
-
-                # Handle 'Common' properties if present
+                # Add headers for "Common" properties if present
                 if "Common" in data:
                     for common_key in data["Common"].keys():
                         headers.append(common_key)
 
             except yaml.YAMLError as exc:
-                logger.error(exc)
+                print(exc)
         
         return headers
         
@@ -199,7 +232,7 @@ class HashinShtrikman(BaseModel):
 
         # Costs are often equal to >10 decimal points, truncate to obtain a richer set of suggestions
         self.final_population.set_costs()
-        final_costs = self.final_population.get_costs()
+        final_costs = self.final_population.costs
         rounded_costs = np.round(final_costs, decimals=3)
     
         # Obtain unique members and costs
@@ -218,140 +251,169 @@ class HashinShtrikman(BaseModel):
     def get_dict_of_best_designs(self):
 
         # Initialize dictionaries for each material based on selected property categories
-        best_designs_dict = {"mat1": {}, 
-                             "mat2": {}}
+        best_designs_dict = {}
+        for m in range(1, self.num_materials + 1):
+            best_designs_dict[f"mat{m}"] = {}
         
         # Initialize the structure for each category
         for category in self.property_categories:
             for mat in best_designs_dict.keys():
                 best_designs_dict[mat][category] = {}
-                for prop in self.property_docs[category]:
-                    best_designs_dict[mat][category][prop] = []
+                for property in self.property_docs[category]:
+                    best_designs_dict[mat][category][property] = []
 
         [unique_members, unique_costs] = self.get_unique_designs()
 
         # Populate the dictionary with unique design values
+        stop = -self.num_materials     # the last num_materials entries are volume fractions, not material properties
+        step = self.num_properties - 1 # subtract 1 so as not to include volume fraction
+
         for i, _ in enumerate(unique_costs):
             idx = 0
-            for category in self.property_categories:
-                for mat in best_designs_dict.keys():
-                    for prop in self.property_docs[category]:
-                        best_designs_dict[mat][category][prop].append(unique_members[i][idx])
-                        idx += 1
+            for category in self.property_categories:                
+                for property in self.property_docs[category]:
+                    all_phase_props = unique_members[i][idx:stop:step] 
+                    for m, mat in enumerate(best_designs_dict.keys()):
+                        best_designs_dict[mat][category][property].append(all_phase_props[m])
+                    idx += 1
 
         return best_designs_dict
     
     def get_material_matches(self, consolidated_dict: dict = {}): 
 
-        best_designs_dict = self.get_dict_of_best_designs()
-        logger.info(f"best_designs_dict = {best_designs_dict}")
-        
-        # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
-        if consolidated_dict == {}:
-            with open("test_final_dict") as f:
+        best_designs_dict = self.get_dict_of_best_designs()       
+        if consolidated_dict == {}:  # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
+            with open("consolidated_dict_02_11_2024_23_45_58") as f:
                 consolidated_dict = json.load(f)
 
-        # Initialize sets for matching indices
-        mat1_matches = set(range(len(consolidated_dict["material_id"])))
-        mat2_matches = set(range(len(consolidated_dict["material_id"])))
+        # Initialize list of sets for matching indices
+        matches = []
+        for _ in range(self.num_materials):
+            matches.append(set(range(len(consolidated_dict["material_id"]))))
 
         # Helper function to get matching indices based on property extrema
-        def get_matching_indices(prop_name, bounds_dict, mat_key):
-            lower_bound = min(bounds_dict[mat_key][prop_name])
-            logger.info(f"lower_bound_{prop_name} = {lower_bound}")
-            upper_bound = max(bounds_dict[mat_key][prop_name])
-            logger.info(f"upper_bound_{prop_name} = {upper_bound}")
-            return {i for i, value in enumerate(consolidated_dict[prop_name]) if lower_bound <= value <= upper_bound}
+        def get_matching_indices(property, bounds_dict, mat_key):
+            lower_bound = min(bounds_dict[mat_key][property])
+            upper_bound = max(bounds_dict[mat_key][property])
+            return {i for i, value in enumerate(consolidated_dict[property]) if lower_bound <= value <= upper_bound}
 
         # Iterate over categories and properties
         for category in self.property_categories:
             if category in self.property_docs:
-                for prop in self.property_docs[category]:
-                    if prop in consolidated_dict:  # Ensure property exists in consolidated_dict
-                        mat1_matches &= get_matching_indices(prop, best_designs_dict["mat1"], category)
-                        logger.info(f"mat1_match_index_{prop} = {get_matching_indices(prop, best_designs_dict['mat1'], category)}")
-                        mat2_matches &= get_matching_indices(prop, best_designs_dict["mat2"], category)
-                        logger.info(f"mat2_match_index_{prop} = {get_matching_indices(prop, best_designs_dict['mat2'], category)}")
+                for property in self.property_docs[category]:
+                    if property in consolidated_dict:  # Ensure property exists in consolidated_dict
+                        for m in range(self.num_materials):
+                            matches[m] &= get_matching_indices(property, best_designs_dict[f"mat{m+1}"], category)                        
 
         # Extract mp-ids based on matching indices
-        mat_1_ids = [consolidated_dict["material_id"][i] for i in mat1_matches]
-        mat_2_ids = [consolidated_dict["material_id"][i] for i in mat2_matches]
+        matches_dict = {}
+        for m in range(self.num_materials):
+            matches_dict[f"mat{m+1}"] = [consolidated_dict["material_id"][i] for i in matches[m]]
 
-        return mat_1_ids, mat_2_ids     
-
-
-    def get_material_match_costs(self, 
-                                 mat_1_ids, 
-                                 mat_2_ids, 
-                                 consolidated_dict: dict = {}):
-
-        for m1 in mat_1_ids:
-            for m2 in mat_2_ids:
-                m1_idx = consolidated_dict["material_id"].index(m1)
-                m2_idx = consolidated_dict["material_id"].index(m2)
-                material_values: List = []
-                # Iterate through each property category of interest
-                for category in self.property_categories:
-                    if category in self.property_docs:
-                        # Append material 1 properties
-                        self.append_property_values(self.property_docs[category], m1_idx, material_values, consolidated_dict)
-                        # Append material 2 properties
-                        self.append_property_values(self.property_docs[category], m2_idx, material_values, consolidated_dict)
-
-                # Create population of same properties for all members based on material match pair
-                values = np.reshape(material_values*self.ga_params.get_num_members(), (self.ga_params.get_num_members(), len(material_values))) 
-                population = np.reshape(values, (self.ga_params.get_num_members(), len(material_values)))
-
-                # Only the vary the mixing parameter and volume fraction across the population
-                # create uniform mixing params from 0 to 1 with a spacing of 0.02 but with a shape of self.ga_params.get_num_members() & 1
-                mixing_param = np.linspace(0.01, 0.99, self.ga_params.get_num_members()).reshape(self.ga_params.get_num_members(), 1)
-                phase1_vol_frac = np.linspace(0.01, 0.99, self.ga_params.get_num_members()).reshape(self.ga_params.get_num_members(), 1)
-
-                # Include the random mixing parameters and volume fractions in the population
-                values = np.c_[population, mixing_param, phase1_vol_frac]    
-
-                # Instantiate the population and find the best performers
-                population_obj = Population(num_properties=self.num_properties, 
-                                        values=values, 
-                                        property_categories=self.property_categories, 
-                                        desired_props=self.desired_props, 
-                                        ga_params=self.ga_params, 
-                                        calc_guide=self.calc_guide, 
-                                        property_docs=self.property_docs)
-                population_obj.set_costs()
-                sorted_costs, sorted_indices = population_obj.sort_costs()
-                population_obj.set_order_by_costs(sorted_indices)
-                sorted_costs = np.reshape(sorted_costs, (len(sorted_costs), 1))
-
-                # Assemble a table for printing
-                mat1_id = np.reshape([m1]*self.ga_params.get_num_members(), 
-                                     (self.ga_params.get_num_members(),1))
-                mat2_id = np.reshape([m2]*self.ga_params.get_num_members(), 
-                                     (self.ga_params.get_num_members(),1))
-                table_data = np.c_[mat1_id, mat2_id, population_obj.values, sorted_costs] 
-                
-                print("\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION")
-                print(tabulate(table_data[0:5, :], headers=self.get_headers())) # hardcoded to be 5 rows, could change
-                
-                # with open("table_data.csv", "w") as f:
-                #     f.write(",".join(self.get_headers()) + "\n")
-                #     # np.savetxt(f, table_data, delimiter=",")
-                #     np.savetxt(f, table_data, delimiter=",", fmt="%s")
+        return matches_dict     
     
-    def append_property_values(self, properties, m_idx, material_values, consolidated_dict):
-        for prop in properties:
-            if prop in consolidated_dict:
-                material_values.append(consolidated_dict[prop][m_idx])
+    def get_all_possible_vol_frac_combos(self):
+        all_vol_frac_ranges = []
+        for m in range(self.num_materials - 1):
+            all_vol_frac_ranges.append(list(np.linspace(0.01, 0.99, 30))) # hardcoded to 30 to save memory
 
+        all_vol_frac_combos = []
+        all_vol_frac_combo_tups = list(itertools.product(*all_vol_frac_ranges))
+        for vol_frac_tup in all_vol_frac_combo_tups:
+            new_combo = []
+            new_element = 1.0
+            for element in vol_frac_tup:
+                new_combo.append(element)
+                new_element = new_element - element
+            new_combo.append(new_element)
+            all_vol_frac_combos.append(new_combo)
+
+        return all_vol_frac_combos
+
+    def get_material_match_costs(self, matches_dict, consolidated_dict: dict = {}):
+
+        if consolidated_dict == {}:
+            with open("consolidated_dict_02_11_2024_23_45_58") as f: # TODO change to get most recent consolidated dict
+                consolidated_dict = json.load(f)
+
+        all_vol_frac_combos = self.get_all_possible_vol_frac_combos()
+        
+        materials = list(matches_dict.values())
+        material_combinations = list(itertools.product(*materials))
+        
+        for combo in material_combinations:
+
+            material_values = []
+            mat_ids = np.zeros((len(material_combinations), self.num_materials))
+
+            for category in self.property_categories:
+                for property in self.property_docs[category]:
+                    for material in combo:
+                        if property in consolidated_dict.keys(): # TODO carrier-transport not registering ??
+                            m = consolidated_dict["material_id"].index(material)               
+                            material_values.append(consolidated_dict[property][m])
+                        else:
+                            material_values.append(1.0) # TODO remove later, this is for debugging
+
+            # Create population of same properties for all members based on material match combination
+            population_values = np.tile(material_values, (len(all_vol_frac_combos),1))
+
+            # Only the vary the volume fractions across the population
+            # Create uniform volume fractions from 0 to 1 with a spacing of 0.02 but with a shape of self.ga_params.get_num_members() & 1
+            volume_fractions = np.array(all_vol_frac_combos).reshape(len(all_vol_frac_combos), self.num_materials)
+
+            # Include the random mixing parameters and volume fractions in the population
+            values = np.c_[population_values, volume_fractions] 
+
+            # Instantiate the population and find the best performers
+            population = Population(num_materials=self.num_materials,
+                                    num_properties=self.num_properties, 
+                                    values=values, 
+                                    property_categories=self.property_categories,
+                                    property_docs=self.property_docs, 
+                                    desired_props=self.desired_props, 
+                                    ga_params=self.ga_params,
+                                    calc_guide=self.calc_guide)
+            population.set_costs()
+            [sorted_costs, sorted_indices] = population.sort_costs()
+            population.set_order_by_costs(sorted_indices)
+            sorted_costs = np.reshape(sorted_costs, (len(sorted_costs), 1))
+
+            # Assemble a table for printing
+            mat_ids = []
+            for material in combo:
+                mat_ids.append(np.reshape([material]*self.ga_params.num_members, (self.ga_params.num_members,1)))
+            mat_ids = np.column_stack(mat_ids)
+            table_data = np.c_[mat_ids, population.values, sorted_costs] 
+            print("\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION")
+            print(tabulate(table_data[0:5, :], headers=self.get_headers(include_mpids=True))) # hardcoded to be 5 rows, could change
 
     #------ Setter Methods ------#
+    @staticmethod
+    def set_num_materials_from_user_input(user_input):
+        num_materials = len(user_input) - 1
+        return num_materials
     
     @staticmethod
-    def set_bounds_from_user_input(user_input: Dict, bound_key: str, property_docs: Dict[str, List[str]]):
+    def set_num_properties_from_desired_props(desired_props):
+        num_properties = 0
+
+        # Iterate through property categories to count the total number of properties
+        for _, properties in desired_props.items():
+            num_properties += len(properties)  # Add the number of properties in each category
+
+        # Account for volume fractions
+        num_properties += 1
+
+        return num_properties
+    
+    @staticmethod
+    def set_bounds_from_user_input(user_input: Dict, bound_key: str, property_docs: Dict[str, List[str]], num_materials: int):
         if bound_key not in ['upper_bound', 'lower_bound']:
             raise ValueError("bound_key must be either 'upper_bound' or 'lower_bound'.")
         
-        bounds: Dict[str, Dict[str, List[float]]] = {}
+        # Get bounds for material properties from user_input
+        bounds = {}
         for material, properties in user_input.items():
             if material == 'mixture':  # Skip 'mixture' as it's not a material
                 continue
@@ -368,8 +430,14 @@ class HashinShtrikman(BaseModel):
                 if category_bounds:
                     bounds[material][category] = category_bounds
 
+        # Add bounds for volume fractions, then set self
+        if bound_key == 'upper_bound':
+            bounds["volume-fractions"] = [0.99] * num_materials
+        else:
+            bounds["volume-fractions"] = [0.01] * num_materials
+
         return bounds
-    
+
     @staticmethod
     def set_desired_props_from_user_input(user_input: Dict, property_categories: List[str], property_docs: Dict):
 
@@ -387,38 +455,21 @@ class HashinShtrikman(BaseModel):
                 if prop in mixture_props:
                     desired_props[category].append(mixture_props[prop]['desired_prop'])
 
-        return desired_props
-    
+        return desired_props  
+
     def set_fields(self, fields):
         self.fields = fields
-        return self
-    
-    @staticmethod
-    def set_num_properties_from_desired_props(desired_props, lower_bounds):
-        num_properties = 0
-
-        # Iterate through property categories to count the total number of properties
-        for _, properties in desired_props.items():
-            num_properties += len(properties)  # Add the number of properties in each category
-
-        # Multiply by the number of materials in the composite
-        num_materials = len(lower_bounds)  # Assuming self.lower_bounds is correctly structured
-        num_properties = num_properties * num_materials
-
-        # Add variables for mixing parameter and volume fraction
-        num_properties += 2
-
-        return num_properties
+        return self 
     
     def set_HS_optim_params(self):
         
-        # MAIN OPTIMIZATION FUNCTION
+        """ MAIN OPTIMIZATION FUNCTION """
 
         # Unpack necessary attributes from self
-        num_parents = self.ga_params.get_num_parents()
-        num_kids = self.ga_params.get_num_kids()
-        num_generations = self.ga_params.get_num_generations()
-        num_members = self.ga_params.get_num_members()
+        num_parents     = self.ga_params.num_parents
+        num_kids        = self.ga_params.num_kids
+        num_generations = self.ga_params.num_generations
+        num_members     = self.ga_params.num_members
         
         # Initialize arrays to store the cost and original indices of each generation
         all_costs = np.ones((num_generations, num_members))
@@ -432,17 +483,21 @@ class HashinShtrikman(BaseModel):
 
         # Initialize array to store costs for current generation
         costs = np.zeros(num_members)
+
         # Randomly populate first generation  
-        population = Population(num_properties=self.num_properties, 
+        population = Population(num_materials=self.num_materials, 
+                                num_properties=self.num_properties, 
                                 property_categories=self.property_categories, 
+                                property_docs=self.property_docs,
                                 desired_props=self.desired_props, 
-                                ga_params=self.ga_params, 
-                                property_docs=self.property_docs, 
-                                calc_guide=self.calc_guide)
-        population.set_initial_random(self.lower_bounds, self.upper_bounds)
+                                ga_params=self.ga_params,
+                                 calc_guide=self.calc_guide)
+        population.set_random_values(lower_bounds=self.lower_bounds, 
+                                     upper_bounds=self.upper_bounds, 
+                                     num_members=self.ga_params.num_members)
 
         # Calculate the costs of the first generation
-        population.set_costs()    
+        population.set_costs()   
 
         # Sort the costs of the first generation
         [sorted_costs, sorted_indices] = population.sort_costs()  
@@ -458,7 +513,7 @@ class HashinShtrikman(BaseModel):
         # Perform all later generations    
         while g < num_generations:
 
-            logger.info(f"Generation {g} of {num_generations}")
+            print(f"Generation {g} of {num_generations}")
             costs[0:num_parents] = sorted_costs[0:num_parents] # retain the parents from the previous generation
             
             # Select top parents from population to be breeders
@@ -470,27 +525,32 @@ class HashinShtrikman(BaseModel):
                 # Append offspring to population, overwriting old population members 
                 population.values[num_parents+p,   :] = kid1
                 population.values[num_parents+p+1, :] = kid2
+            
                 # Cast offspring to members and evaluate costs
-                kid1 = Member(num_properties=self.num_properties, 
+                kid1 = Member(num_materials=self.num_materials,
+                              num_properties=self.num_properties, 
                               values=kid1, 
-                              property_categories=self.property_categories, 
+                              property_categories=self.property_categories,
+                              property_docs=self.property_docs, 
                               desired_props=self.desired_props, 
-                              ga_params=self.ga_params, 
-                              calc_guide=self.calc_guide, 
-                              property_docs=self.property_docs)
-                kid2 = Member(num_properties=self.num_properties, 
+                              ga_params=self.ga_params,
+                              calc_guide=self.calc_guide)
+                kid2 = Member(num_materials=self.num_materials,
+                              num_properties=self.num_properties, 
                               values=kid2, 
                               property_categories=self.property_categories, 
+                              property_docs=self.property_docs, 
                               desired_props=self.desired_props, 
-                              ga_params=self.ga_params, 
-                              calc_guide=self.calc_guide, 
-                              property_docs=self.property_docs)
+                              ga_params=self.ga_params,
+                              calc_guide=self.calc_guide)
                 costs[num_parents+p]   = kid1.get_cost()
                 costs[num_parents+p+1] = kid2.get_cost()
                         
             # Randomly generate new members to fill the rest of the population
             members_minus_parents_minus_kids = num_members - num_parents - num_kids
-            population.set_new_random(members_minus_parents_minus_kids, self.lower_bounds, self.upper_bounds)
+            population.set_random_values(lower_bounds=self.lower_bounds, 
+                                         upper_bounds=self.upper_bounds, 
+                                         num_members=members_minus_parents_minus_kids)
 
             # Calculate the costs of the gth generation
             population.set_costs()
@@ -511,14 +571,12 @@ class HashinShtrikman(BaseModel):
 
         # Update self attributes following optimization
         self.final_population = population
-        self.cost_history = all_costs
         self.lowest_costs = lowest_costs
         self.avg_parent_costs = avg_parent_costs     
         
-        return self         
+        return self                
 
     #------ Other Methods ------#
-
     def print_table_of_best_designs(self):
 
         table_data = self.get_table_of_best_designs()
@@ -527,13 +585,13 @@ class HashinShtrikman(BaseModel):
     
     def plot_optimization_results(self):
         fig, ax = plt.subplots(figsize=(10,6))
-        ax.plot(range(self.ga_params.get_num_generations()), self.avg_parent_costs, label="Avg. of top 10 performers")
-        ax.plot(range(self.ga_params.get_num_generations()), self.lowest_costs, label="Best costs")
+        ax.plot(range(self.ga_params.num_generations), self.avg_parent_costs, label="Avg. of top 10 performers")
+        ax.plot(range(self.ga_params.num_generations), self.lowest_costs, label="Best costs")
         plt.xlabel("Generation", fontsize= 20)
         plt.ylabel("Cost", fontsize=20)
         plt.title("Genetic Algorithm Results", fontsize = 24)
         plt.legend(fontsize = 14)
-        plt.show()  
+        plt.show()   
     
     def generate_consolidated_dict(self, total_docs = None):
 
