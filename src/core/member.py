@@ -1,6 +1,6 @@
 import numpy as np
-from core.genetic_algo import GAParams
-from log.custom_logger import logger
+from genetic_algo import GAParams
+from custom_logger import logger
 from pydantic import BaseModel, root_validator, Field
 from typing import List, Dict, Optional, Any
 import warnings
@@ -157,7 +157,13 @@ class Member(BaseModel):
         effective_prop = mixing_param * effective_prop_max + (1 - mixing_param) * effective_prop_min
         effective_properties.append(effective_prop)
 
-        if phase1 == phase2:
+        if phase1_vol_frac == 0:
+            cf_response1_cf_load1 = (1/phase2_vol_frac)**2
+            cf_response2_cf_load2 = (1/phase2_vol_frac)**2
+        elif phase2_vol_frac == 0:
+            cf_response1_cf_load1 = (1/phase1_vol_frac)**2
+            cf_response2_cf_load2 = (1/phase1_vol_frac)**2
+        elif phase1 == phase2:
             cf_response1_cf_load1 = (1/phase1_vol_frac)**2 
             cf_response2_cf_load2 = (1/phase2_vol_frac)**2 
         else:
@@ -181,7 +187,7 @@ class Member(BaseModel):
         step = self.num_properties - 1 # subtract 1 so as not to include volume fraction
 
         # Extract bulk moduli and shear moduli from member 
-        bulk_mods = self.values[idx:stop:step]            
+        bulk_mods = self.values[idx:stop:step]         
         phase1_bulk = np.min(bulk_mods)
         phase2_bulk = np.max(bulk_mods)
         phase1_bulk_idx = np.argmin(bulk_mods)
@@ -222,14 +228,30 @@ class Member(BaseModel):
         effective_properties.append(bulk_mod_eff)
         effective_properties.append(shear_mod_eff)
 
-        if phase1_bulk == phase2_bulk:
+        if phase1_vol_frac == 0:
+            cf_phase2_bulk  = 1/phase2_vol_frac
+            cf_phase1_bulk  = 1/phase2_vol_frac
+            cf_phase2_shear = 1/phase2_vol_frac
+            cf_phase1_shear = 1/phase2_vol_frac
+        elif phase2_vol_frac == 0:
+            cf_phase2_bulk  = 1/phase1_vol_frac
+            cf_phase1_bulk  = 1/phase1_vol_frac
+            cf_phase2_shear = 1/phase1_vol_frac
+            cf_phase1_shear = 1/phase1_vol_frac
+        elif phase1_bulk == phase2_bulk:
             cf_phase2_bulk = 1/phase2_vol_frac
             cf_phase1_bulk = 1/phase1_vol_frac
         else:
             cf_phase2_bulk = eval(self.calc_guide['concentration_factors']['cf_2_elastic'].format(phase2_vol_frac=phase2_vol_frac, phase1=phase1_bulk, phase2=phase2_bulk, effective_property=bulk_mod_eff))
             cf_phase1_bulk = eval(self.calc_guide['concentration_factors']['cf_1_elastic'].format(phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac, cf_2_elastic=cf_phase2_bulk))
-            
-        if phase1_shear == phase2_shear:
+  
+        if phase1_vol_frac == 0:
+            cf_phase2_shear = 1/phase2_vol_frac
+            cf_phase1_shear = 1/phase2_vol_frac
+        elif phase2_vol_frac == 0:
+            cf_phase2_shear = 1/phase1_vol_frac
+            cf_phase1_shear = 1/phase1_vol_frac
+        elif phase1_shear == phase2_shear:
             cf_phase2_shear = 1/phase2_vol_frac
             cf_phase1_shear = 1/phase1_vol_frac
         else:
@@ -240,7 +262,7 @@ class Member(BaseModel):
         concentration_factors.append(cf_phase1_bulk)
         concentration_factors.append(cf_phase1_shear)
         concentration_factors.append(cf_phase2_bulk)
-        concentration_factors.append(cf_phase2_shear)       
+        concentration_factors.append(cf_phase2_shear)      
 
         return effective_properties, concentration_factors
             

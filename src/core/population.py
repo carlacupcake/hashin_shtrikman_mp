@@ -1,7 +1,7 @@
 import numpy as np
-from core.member import Member
-from core.genetic_algo import GAParams
-from log.custom_logger import logger
+from member import Member
+from genetic_algo import GAParams
+from custom_logger import logger
 from typing import List, Dict, Optional, Any
 from pydantic import BaseModel, Field, root_validator
 
@@ -88,7 +88,6 @@ class Population(BaseModel):
         return [unique_members, unique_costs] 
     
     #------ Setter Methods ------# 
-
     def set_random_values(self, lower_bounds = {}, upper_bounds = {}, num_members = 0):
 
         # Initialize bounds lists
@@ -110,19 +109,29 @@ class Population(BaseModel):
                         for property in properties:                            
                             upper_bounds_list.append(property)
 
-        # Include volume fractions
-        for vf in lower_bounds["volume-fractions"]:                           
-            lower_bounds_list.append(vf)
-
-        for vf in upper_bounds["volume-fractions"]:                           
-            upper_bounds_list.append(vf)
-
-        # Cast lists to ndarrays
+        # Cast lists to numpy arrays
         lower_bounds_array = np.array(lower_bounds_list)
         upper_bounds_array = np.array(upper_bounds_list)
-        for i in range(num_members):
-            self.values[i, :] = np.random.uniform(lower_bounds_array, upper_bounds_array)
 
+        # Fill in the population, not including the volume fractions
+        num_materials = len(lower_bounds.keys()) - 1 # subtract the entry for the mixture properties
+        population_size = len(self.values)
+        for i in range(population_size - num_members, population_size):
+            self.values[i, :-num_materials] = np.random.uniform(lower_bounds_array, upper_bounds_array)
+
+        # Include volume fractions
+        for i in range(population_size - num_members, population_size):
+            sum_vf = 0
+            for v in range(num_materials - 1):
+                lb = lower_bounds["volume-fractions"][v]
+                ub = min(1 - sum_vf, upper_bounds["volume-fractions"][v])
+                this_vf = np.random.uniform(lb, ub)
+                self.values[i, -num_materials + v] = this_vf
+                sum_vf += this_vf
+            
+            # Final volume fraction not random b/c must sum to 1
+            self.values[i, -1] = 1 - sum_vf
+      
         return self 
     
     def set_costs(self):

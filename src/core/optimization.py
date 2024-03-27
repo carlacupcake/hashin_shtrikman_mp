@@ -4,7 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 import itertools
+import sys
 import yaml
+
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, root_validator
 from monty.serialization import loadfn
@@ -12,12 +14,14 @@ from datetime import datetime
 from mp_api.client import MPRester
 from mpcontribs.client import Client
 from tabulate import tabulate
-from log.custom_logger import logger
+
+sys.path.insert(1, '../log')
+from custom_logger import logger
 from pathlib import Path
 
-from core.genetic_algo import GAParams
-from core.member import Member
-from core.population import Population
+from genetic_algo import GAParams
+from member import Member
+from population import Population
 
 # HashinShtrikman class defaults
 DEFAULT_FIELDS: dict    = {"material_id": [], 
@@ -28,6 +32,7 @@ DEFAULT_FIELDS: dict    = {"material_id": [],
 MODULE_DIR = Path(__file__).resolve().parent
 
 # YAML files
+sys.path.insert(1, '../io')
 CALC_GUIDE = "cost_calculation_formulas.yaml"
 MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
 HS_HEADERS_YAML = "display_table_headers.yaml"
@@ -165,15 +170,16 @@ class HashinShtrikman(BaseModel):
             property_categories = []
             try:
                 property_docs = loadfn(filename)
-                
+
                 # Flatten the user input to get a list of all properties defined by the user
                 user_defined_properties = []
 
-                for material_props in user_input.values():
-                    for props in material_props.keys():
-                        user_defined_properties.append(props)
-                        #only keep the unique entries of the list
-                        user_defined_properties = list(set(user_defined_properties))
+                for entity in user_input.values():
+                    for property in entity:
+                        user_defined_properties.append(property)
+
+                # Only keep the unique entries of the list
+                user_defined_properties = list(set(user_defined_properties))
 
                 # Iterate through property categories to check which are present in the user input
                 for category, properties in property_docs.items():
@@ -189,7 +195,6 @@ class HashinShtrikman(BaseModel):
             return property_categories, property_docs
         
     #------ Getter Methods ------#
-    
     def get_headers(self, include_mpids=False, file_name = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}"):
 
         with open(file_name, 'r') as stream:
@@ -278,7 +283,7 @@ class HashinShtrikman(BaseModel):
 
         best_designs_dict = self.get_dict_of_best_designs()       
         if consolidated_dict == {}:  # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
-            with open("test_final_dict") as f:
+            with open("consolidated_dict_02_11_2024_23_45_58") as f:
                 consolidated_dict = json.load(f)
 
         # Initialize list of sets for matching indices
@@ -328,7 +333,7 @@ class HashinShtrikman(BaseModel):
     def get_material_match_costs(self, matches_dict, consolidated_dict: dict = {}):
 
         if consolidated_dict == {}:
-            with open("test_final_dict") as f: # TODO change to get most recent consolidated dict
+            with open("consolidated_dict_02_11_2024_23_45_58") as f: # TODO change to get most recent consolidated dict
                 consolidated_dict = json.load(f)
 
         all_vol_frac_combos = self.get_all_possible_vol_frac_combos()
@@ -377,7 +382,7 @@ class HashinShtrikman(BaseModel):
             # Assemble a table for printing
             mat_ids = []
             for material in combo:
-                mat_ids.append(np.reshape([material]*self.ga_params.get_num_members(), (self.ga_params.get_num_members(),1)))
+                mat_ids.append(np.reshape([material]*self.ga_params.num_members, (self.ga_params.num_members,1)))
             mat_ids = np.column_stack(mat_ids)
             table_data = np.c_[mat_ids, population.values, sorted_costs] 
             print("\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION")
@@ -486,14 +491,13 @@ class HashinShtrikman(BaseModel):
                                 property_docs=self.property_docs,
                                 desired_props=self.desired_props, 
                                 ga_params=self.ga_params,
-                                calc_guide=self.calc_guide)
-        logger.info(f"num_materials = {self.num_materials}")
+                                 calc_guide=self.calc_guide)
         population.set_random_values(lower_bounds=self.lower_bounds, 
                                      upper_bounds=self.upper_bounds, 
                                      num_members=self.ga_params.num_members)
 
         # Calculate the costs of the first generation
-        population.set_costs()    
+        population.set_costs()   
 
         # Sort the costs of the first generation
         [sorted_costs, sorted_indices] = population.sort_costs()  
@@ -573,7 +577,6 @@ class HashinShtrikman(BaseModel):
         return self                
 
     #------ Other Methods ------#
-
     def print_table_of_best_designs(self):
 
         table_data = self.get_table_of_best_designs()
