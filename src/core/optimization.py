@@ -13,6 +13,7 @@ from monty.serialization import loadfn
 from datetime import datetime
 from mp_api.client import MPRester
 from mpcontribs.client import Client
+from scipy import optimize as sciop
 from tabulate import tabulate
 
 sys.path.insert(1, '../log')
@@ -460,6 +461,49 @@ class HashinShtrikman(BaseModel):
     def set_fields(self, fields):
         self.fields = fields
         return self 
+    
+    # UNDER CONSTRUCTION #
+    def set_HS_optim_diff_evolution(self):
+        popsize  = self.ga_params.num_members
+        maxiter = self.ga_params.num_generations
+        
+        # Initialize bounds lists
+        lower_bounds_list = []
+        upper_bounds_list = []
+
+        # Unpack bounds from dictionaries, include bounds for all materials
+        for material in self.lower_bounds.keys():
+            if material != "volume-fractions":
+                for category, properties in self.lower_bounds[material].items():
+                    if category in self.property_categories:
+                        for property in properties:                         
+                            lower_bounds_list.append(property)
+                            
+        for material in self.upper_bounds.keys():
+            if material != "volume-fractions":
+                for category, properties in self.upper_bounds[material].items():
+                    if category in self.property_categories:
+                        for property in properties:                            
+                            upper_bounds_list.append(property)
+
+        # Initialize sciop Bounds object
+        bounds = sciop.Bounds(lb=lower_bounds_list, ub=upper_bounds_list)
+
+        optim_result = sciop.differential_evolution(
+            func=self._evaluate,
+            bounds=bounds,
+            strategy='rand2exp', 
+            maxiter=maxiter,
+            popsize=popsize,
+            seed=1,
+            disp=False,
+            init='latinhypercube') 
+        
+        return optim_result
+    
+    def _evaluate(self, x):
+        self.x = x
+        return self.get_cost()
     
     def set_HS_optim_params(self):
         
