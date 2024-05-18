@@ -1,5 +1,6 @@
 import numpy as np
 from member import Member
+from cmember import CMember
 from genetic_algo import GAParams
 from custom_logger import logger
 from typing import List, Dict, Optional, Any
@@ -139,7 +140,7 @@ class Population(BaseModel):
         num_members = self.ga_params.num_members
         costs = np.zeros(num_members)
         for i in range(num_members):
-            this_member = Member(num_materials=self.num_materials, 
+            this_member = CMember(num_materials=self.num_materials, 
                                  num_properties=self.num_properties,
                                  values=population_values[i, :], 
                                  property_categories=self.property_categories,

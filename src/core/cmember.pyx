@@ -1,132 +1,93 @@
+# cmember.pyx
+
 import numpy as np
+cimport numpy as cnp
 from genetic_algo import GAParams
-from custom_logger import logger
+import warnings
 from pydantic import BaseModel, root_validator, Field
 from typing import List, Dict, Optional, Any
-import warnings
-import Cython
+# Assuming you have the required imports for GAParams
 
-class Member(BaseModel):
-    """
-    Class to represent a member of the population in genetic algorithm optimization.
-    Stores the properties and configuration for genetic algorithm operations.
-    """
+# Remove Pydantic imports for Cython compatibility
+# from pydantic import BaseModel, root_validator, Field
+# from typing import List, Dict, Optional, Any
 
-    num_materials: int = Field(
-        default=0,
-        description="Number of materials in the ultimate composite."
-    )
-    num_properties: int = Field(
-        default=0,
-        description="Number of properties that each member of the population has."
-    )
-    values: Optional[np.ndarray] = Field(
-        default=None,
-        description="Values array representing the member's properties."
-    )
-    property_categories: List[str] = Field(
-        default=[],
-        description="List of property categories considered for optimization."
-    )
-    property_docs: Dict[str, Dict[str, Any]] = Field(
-        default={},
-        description="A hard coded yaml file containing property categories "
-                    "and their individual properties."
-    )
-    desired_props: Dict[str, Any] = Field(
-        default={},
-        description="Dictionary mapping individual properties to their desired "
-                    "properties."
-    )
-    ga_params: Optional[GAParams] = Field(
-        default=None,
-        description="Parameter initilization class for the genetic algorithm."
-    )
-    calc_guide: Dict[str, Any] = Field(
-        default={},
-        description="Calculation guide for property evaluation. This is a "
-                    "hard coded yaml file."
-    )    
 
-    # To use np.ndarray or other arbitrary types in your Pydantic models
-    class Config:
-        arbitrary_types_allowed = True
+cdef class CMember:
 
-    @root_validator(pre=True)
-    def check_and_initialize_arrays(cls, values):
-        # Initialize 'values' with zeros if not provided or if it is np.empty
-        if values.get('values') is None or (isinstance(values.get('values'), np.ndarray) and values.get('values').size == 0):
-            num_properties = values.get('num_properties', 0)
-            # Assuming you want a 2D array shape based on your original code
-            values['values'] = np.zeros(shape=(num_properties, 1))  
-        return values
-    
-    #------ Getter Methods ------#
+    cdef int num_materials
+    cdef int num_properties
+    cdef cnp.ndarray values
+    cdef list property_categories
+    cdef dict property_docs
+    cdef dict desired_props
+    #cdef GAParams ga_params
+    cdef dict calc_guide
+
+    def __init__(self, num_materials, num_properties, values, property_categories, property_docs, desired_props, ga_params, calc_guide):
+        self.num_materials = num_materials
+        self.num_properties = num_properties
+        self.values = values if values is not None else np.zeros((num_properties, 1))
+        self.property_categories = property_categories
+        self.property_docs = property_docs
+        self.desired_props = desired_props
+        self.ga_params = ga_params
+        self.calc_guide = calc_guide
+
     def get_cost(self):
+        # Typedef for numpy arrays
+        #cdef cnp.ndarray[double] np_darray
 
-        """ MAIN COST FUNCTION """
-        
-        # Extract attributes from self
-        tolerance          = self.ga_params.tolerance
-        weight_eff_prop    = self.ga_params.weight_eff_prop
-        weight_conc_factor = self.ga_params.weight_conc_factor
+        cdef double tolerance = self.ga_params.tolerance
+        cdef double weight_eff_prop = self.ga_params.weight_eff_prop
+        cdef double weight_conc_factor = self.ga_params.weight_conc_factor
 
-        # Initialize effective property, concentration factor, and weight arrays
-        # Initialize to zero so as not to contribute to cost if unchanged
-        effective_properties  = []
-        concentration_factors = [] 
-        cost_func_weights     = []  
+        cdef list effective_properties = []
+        cdef list concentration_factors = []
+        cdef list cost_func_weights = []
 
-        # Get Hashin-Shtrikman effective properties for all properties           
-        idx = 0
+        cdef int idx = 0
+        cdef int p
 
         for category in self.property_categories:
-                
             if category == "elastic":
                 moduli_eff_props, moduli_cfs = self.get_elastic_eff_props_and_cfs(idx=idx)
                 effective_properties.extend(moduli_eff_props)
                 concentration_factors.extend(moduli_cfs)
-
-                eff_univ_aniso, cfs_univ_aniso = self.get_general_eff_prop_and_cfs(idx=idx+2)
+                eff_univ_aniso, cfs_univ_aniso = self.get_general_eff_prop_and_cfs(idx=idx + 2)
                 effective_properties.extend(eff_univ_aniso)
                 concentration_factors.extend(cfs_univ_aniso)
-
             else:
-                for p in range(idx, idx + len(self.property_docs[category])): # loop through all properties in the category
+                for p in range(idx, idx + len(self.property_docs[category])):
                     new_eff_props, new_cfs = self.get_general_eff_prop_and_cfs(idx=p)
                     effective_properties.extend(new_eff_props)
                     concentration_factors.extend(new_cfs)
-            
             idx += len(self.property_docs[category])
-                    
-        # Determine weights based on concentration factor magnitudes
+
         for factor in concentration_factors:
             if (factor - tolerance) / tolerance > 0:
                 cost_func_weights.append(weight_conc_factor)
             else:
                 cost_func_weights.append(0)
 
-        # Cast concentration factors, effective properties and weights to numpy arrays
-        concentration_factors = np.array(concentration_factors)
-        effective_properties  = np.array(effective_properties)
-        cost_func_weights     = np.array(cost_func_weights)
+        cdef cnp.ndarray[double] concentration_factors_np = np.array(concentration_factors, dtype=np.double)
+        cdef cnp.ndarray[double] effective_properties_np = np.array(effective_properties, dtype=np.double)
+        cdef cnp.ndarray[double] cost_func_weights_np = np.array(cost_func_weights, dtype=np.double)
 
-        # Extract desired properties from dictionary
-        des_props = []
-        for category, properties in self.desired_props.items():
-            des_props.extend(properties)
-        des_props = np.array(des_props)
+        des_props = [prop for cat in self.desired_props.values() for prop in cat]
+        cdef cnp.ndarray[double] des_props_np = np.array(des_props, dtype=np.double)
 
-        # Assemble the cost function
-        domains = len(self.property_categories)
-        W = 1/domains
-        cost = weight_eff_prop*W * np.sum(abs(np.divide(des_props - effective_properties, effective_properties))) + np.sum(np.multiply(cost_func_weights, abs(np.divide(concentration_factors - tolerance, tolerance))))
+        cdef int domains = len(self.property_categories)
+        cdef double W = 1.0 / domains
+        cdef double cost
+
+        cost = (weight_eff_prop * W * np.sum(np.abs(np.divide(des_props_np - effective_properties_np, effective_properties_np))) +
+                np.sum(np.multiply(cost_func_weights_np, np.abs(np.divide(concentration_factors_np - tolerance, tolerance)))))
 
         return cost
-    
-    def get_general_eff_prop_and_cfs(self, idx = 0): # idx is the index in self.values where category properties begin
 
-        # Initialize effective property, concentration factor, and weight arrays
+    def get_general_eff_prop_and_cfs(self, idx = 0): # idx is the index in self.values where category properties begin
+         # Initialize effective property, concentration factor, and weight arrays
         # Initialize to zero so as not to contribute to cost if unchanged
         effective_properties  = []
         concentration_factors = [] 
@@ -174,7 +135,7 @@ class Member(BaseModel):
         concentration_factors.append(cf_response2_cf_load2)
 
         return effective_properties, concentration_factors
-    
+
     def get_elastic_eff_props_and_cfs(self, idx = 0): # idx is the index in self.values where elastic properties begin
 
         # Initialize effective property and concentration factor arrays
@@ -265,9 +226,4 @@ class Member(BaseModel):
         concentration_factors.append(cf_phase2_shear)      
 
         return effective_properties, concentration_factors
-            
-    
 
-        
-
-    

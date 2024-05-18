@@ -6,6 +6,7 @@ import copy
 import itertools
 import sys
 import yaml
+import Cython
 
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, root_validator
@@ -21,7 +22,7 @@ from custom_logger import logger
 from pathlib import Path
 
 from genetic_algo import GAParams
-from member import Member
+from cmember import CMember
 from population import Population
 
 # HashinShtrikman class defaults
@@ -528,7 +529,7 @@ class HashinShtrikman(BaseModel):
                 population.values[num_parents+p+1, :] = kid2
             
                 # Cast offspring to members and evaluate costs
-                kid1 = Member(num_materials=self.num_materials,
+                kid1 = CMember(num_materials=self.num_materials,
                               num_properties=self.num_properties, 
                               values=kid1, 
                               property_categories=self.property_categories,
@@ -536,7 +537,7 @@ class HashinShtrikman(BaseModel):
                               desired_props=self.desired_props, 
                               ga_params=self.ga_params,
                               calc_guide=self.calc_guide)
-                kid2 = Member(num_materials=self.num_materials,
+                kid2 = CMember(num_materials=self.num_materials,
                               num_properties=self.num_properties, 
                               values=kid2, 
                               property_categories=self.property_categories, 
