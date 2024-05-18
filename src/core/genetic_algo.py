@@ -13,7 +13,7 @@ class GAParams(BaseModel):
         description="Number of children to produce from the parent members."
     )
     num_generations: int = Field(
-        default=100,
+        default=500, 
         description="Total number of generations to simulate in the genetic algorithm."
     )
     num_members: int = Field(

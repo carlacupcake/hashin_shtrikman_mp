@@ -21,7 +21,7 @@ from custom_logger import logger
 from pathlib import Path
 
 from genetic_algo import GAParams
-from member import Member
+from member import *
 from population import Population
 
 # HashinShtrikman class defaults
@@ -280,9 +280,42 @@ class HashinShtrikman(BaseModel):
 
         return best_designs_dict
     
+    ## UNDER CONSTRUCTION
+    def get_material_matches_diff_evolution(self, best_designs_dict, consolidated_dict: dict = {}): 
+
+        if consolidated_dict == {}:  # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
+            with open("consolidated_dict_02_11_2024_23_45_58") as f:
+                consolidated_dict = json.load(f)
+
+        # Initialize list of sets for matching indices
+        matches = []
+        for _ in range(self.num_materials):
+            matches.append(set(range(len(consolidated_dict["material_id"]))))
+
+        # Helper function to get matching indices based on property extrema
+        def get_matching_indices(property, bounds_dict, mat_key):
+            lower_bound = min(bounds_dict[mat_key][property])
+            upper_bound = max(bounds_dict[mat_key][property])
+            return {i for i, value in enumerate(consolidated_dict[property]) if lower_bound <= value <= upper_bound}
+
+        # Iterate over categories and properties
+        for category in self.property_categories:
+            if category in self.property_docs:
+                for property in self.property_docs[category]:
+                    if property in consolidated_dict:  # Ensure property exists in consolidated_dict
+                        for m in range(self.num_materials):
+                            matches[m] &= get_matching_indices(property, best_designs_dict[f"mat{m+1}"], category)                        
+
+        # Extract mp-ids based on matching indices
+        matches_dict = {}
+        for m in range(self.num_materials):
+            matches_dict[f"mat{m+1}"] = [consolidated_dict["material_id"][i] for i in matches[m]]
+
+        return matches_dict  
+    
     def get_material_matches(self, consolidated_dict: dict = {}): 
 
-        best_designs_dict = self.get_dict_of_best_designs()       
+        best_designs_dict = self.get_dict_of_best_designs()  
         if consolidated_dict == {}:  # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
             with open("consolidated_dict_02_11_2024_23_45_58") as f:
                 consolidated_dict = json.load(f)
@@ -463,6 +496,19 @@ class HashinShtrikman(BaseModel):
         return self 
     
     # UNDER CONSTRUCTION #
+    def get_member_cost(values, *args):
+        values, num_materials, num_properties, property_categories, property_docs, desired_props, calc_guide = args
+        ga_params = GAParams()
+        member = Member(num_materials=num_materials, 
+                        num_properties=num_properties,
+                        values=values, 
+                        property_categories=property_categories,
+                        property_docs=property_docs, 
+                        desired_props=desired_props, 
+                        ga_params=ga_params,
+                        calc_guide=calc_guide)
+        return member.get_cost()
+
     def set_HS_optim_diff_evolution(self):
         popsize  = self.ga_params.num_members
         maxiter = self.ga_params.num_generations
@@ -488,22 +534,25 @@ class HashinShtrikman(BaseModel):
 
         # Initialize sciop Bounds object
         bounds = sciop.Bounds(lb=lower_bounds_list, ub=upper_bounds_list)
+        args = (self.num_materials, 
+                self.num_properties, 
+                self.property_categories, 
+                self.property_docs, 
+                self.desired_props, 
+                self.calc_guide)
 
         optim_result = sciop.differential_evolution(
-            func=self._evaluate,
+            func=self.get_member_cost,
+            args=args,
             bounds=bounds,
             strategy='rand2exp', 
             maxiter=maxiter,
             popsize=popsize,
             seed=1,
             disp=False,
-            init='latinhypercube') 
+            init='latinhypercube') #, workers=1, vectorized=False) 
         
         return optim_result
-    
-    def _evaluate(self, x):
-        self.x = x
-        return self.get_cost()
     
     def set_HS_optim_params(self):
         

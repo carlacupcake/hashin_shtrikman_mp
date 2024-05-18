@@ -124,6 +124,69 @@ class Member(BaseModel):
 
         return cost
     
+    def get_cost_diff_evolution(self, 
+                                tolerance, 
+                                weight_eff_prop, 
+                                weight_conc_factor, 
+                                property_categories, 
+                                property_docs,
+                                desired_props):
+
+        """ MAIN COST FUNCTION FOR DIFFERENTIAL EVOLUTION """
+
+        # Initialize effective property, concentration factor, and weight arrays
+        # Initialize to zero so as not to contribute to cost if unchanged
+        effective_properties  = []
+        concentration_factors = [] 
+        cost_func_weights     = []  
+
+        # Get Hashin-Shtrikman effective properties for all properties           
+        idx = 0
+
+        for category in property_categories:
+                
+            if category == "elastic":
+                moduli_eff_props, moduli_cfs = Member.get_elastic_eff_props_and_cfs(idx=idx)
+                effective_properties.extend(moduli_eff_props)
+                concentration_factors.extend(moduli_cfs)
+
+                eff_univ_aniso, cfs_univ_aniso = Member.get_general_eff_prop_and_cfs(idx=idx+2)
+                effective_properties.extend(eff_univ_aniso)
+                concentration_factors.extend(cfs_univ_aniso)
+
+            else:
+                for p in range(idx, idx + len(property_docs[category])): # loop through all properties in the category
+                    new_eff_props, new_cfs = Member.get_general_eff_prop_and_cfs(idx=p)
+                    effective_properties.extend(new_eff_props)
+                    concentration_factors.extend(new_cfs)
+            
+            idx += len(self.property_docs[category])
+                    
+        # Determine weights based on concentration factor magnitudes
+        for factor in concentration_factors:
+            if (factor - tolerance) / tolerance > 0:
+                cost_func_weights.append(weight_conc_factor)
+            else:
+                cost_func_weights.append(0)
+
+        # Cast concentration factors, effective properties and weights to numpy arrays
+        concentration_factors = np.array(concentration_factors)
+        effective_properties  = np.array(effective_properties)
+        cost_func_weights     = np.array(cost_func_weights)
+
+        # Extract desired properties from dictionary
+        des_props = []
+        for category, properties in desired_props.items():
+            des_props.extend(properties)
+        des_props = np.array(des_props)
+
+        # Assemble the cost function
+        domains = len(property_categories)
+        W = 1/domains
+        cost = weight_eff_prop*W * np.sum(abs(np.divide(des_props - effective_properties, effective_properties))) + np.sum(np.multiply(cost_func_weights, abs(np.divide(concentration_factors - tolerance, tolerance))))
+
+        return cost
+    
     def get_general_eff_prop_and_cfs(self, idx = 0): # idx is the index in self.values where category properties begin
 
         # Initialize effective property, concentration factor, and weight arrays
