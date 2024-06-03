@@ -1,15 +1,14 @@
 from setuptools import setup, Extension
+from Cython.Build import cythonize
 import numpy
 
-ext_modules = [
-    Extension(
-        name="cmember",
-        sources=["cmember.c"],
-        include_dirs=[numpy.get_include()]
-    )
-]
-
 setup(
-    name="cmember",
-    ext_modules=ext_modules
+    ext_modules=cythonize(
+        Extension(
+            "cmember",
+            sources=["cmember.pyx"],
+            include_dirs=[numpy.get_include()]
+        )
+    ),
+    zip_safe=False,
 )

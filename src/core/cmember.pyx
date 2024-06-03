@@ -21,10 +21,19 @@ cdef class CMember:
     cdef list property_categories
     cdef dict property_docs
     cdef dict desired_props
-    #cdef GAParams ga_params
+    cdef object ga_params
     cdef dict calc_guide
 
-    def __init__(self, num_materials, num_properties, values, property_categories, property_docs, desired_props, ga_params, calc_guide):
+    def __init__(self, 
+        int num_materials, 
+        int num_properties, 
+        cnp.ndarray[double, ndim=1] values, # check for ndim
+        list property_categories, 
+        dict property_docs, 
+        dict desired_props, 
+        object ga_params, 
+        dict calc_guide):
+        
         self.num_materials = num_materials
         self.num_properties = num_properties
         self.values = values if values is not None else np.zeros((num_properties, 1))
