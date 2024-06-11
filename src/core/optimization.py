@@ -1,29 +1,31 @@
-import re
-import json
-import numpy as np
-import matplotlib.pyplot as plt
+# optimization.py
 import copy
 import itertools
+import json
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+import re
 import sys
 import yaml
-import Cython
 
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, root_validator
-from monty.serialization import loadfn
 from datetime import datetime
+from monty.serialization import loadfn
 from mp_api.client import MPRester
 from mpcontribs.client import Client
-from scipy import optimize as sciop
+from pathlib import Path
+from pydantic import BaseModel, Field, root_validator
 from tabulate import tabulate
+from typing import Any, Dict, List, Optional
 
+# Custom imports
 sys.path.insert(1, '../log')
 from custom_logger import logger
-from pathlib import Path
-
 from genetic_algo import GAParams
-from cmember import CMember
+from member import Member
 from population import Population
+sys.path.insert(1, './cbuilds')
+from coptimization import cset_HS_optim_params
 
 # HashinShtrikman class defaults
 DEFAULT_FIELDS: dict    = {"material_id": [], 
@@ -42,9 +44,11 @@ HS_HEADERS_YAML = "display_table_headers.yaml"
 class HashinShtrikman(BaseModel):
     """
     Hashin-Shtrikman optimization class. 
-
-    Class to integrate Hashin-Shtrikman (HS) bounds with a genetic algorithm, 
-    leveraging the Materials Project (MP) database.
+    Class to leverage the Materials Project (MP) database 
+    and use the Hashin-Shtrikman material property estimates
+    for composite materials, along with a genetic algorithm,
+    to identify real materials which can be used to form 
+    desireable composites.
     """
 
     api_key: Optional[str] = Field(
@@ -60,7 +64,7 @@ class HashinShtrikman(BaseModel):
     user_input: Dict = Field(
         default_factory=dict, 
         description="User input specifications for the "
-        "optimization process."
+                    "optimization process."
         )
     fields: Dict[str, List[Any]] = Field(
         default_factory=lambda: DEFAULT_FIELDS.copy(), 
@@ -95,7 +99,8 @@ class HashinShtrikman(BaseModel):
         )
     num_materials: int = Field(
         default=0, 
-        description="TODO"
+        description="Number of materials to include in the "
+                    "resulting composite."
         )
     num_properties: int = Field(
         default=0, 
@@ -128,7 +133,7 @@ class HashinShtrikman(BaseModel):
                     "evaluation. This is a hard coded yaml file."
     )
     
-    # To use np.ndarray or other arbitrary types in your Pydantic models
+    # To use np.ndarray or other arbitrary types in the Pydantic models
     class Config:
         arbitrary_types_allowed = True
 
@@ -233,7 +238,7 @@ class HashinShtrikman(BaseModel):
     def get_unique_designs(self):
 
         # Costs are often equal to >10 decimal points, truncate to obtain a richer set of suggestions
-        self.final_population.set_costs()
+        self.final_population.cset_costs()
         final_costs = self.final_population.costs
         rounded_costs = np.round(final_costs, decimals=3)
     
@@ -351,11 +356,11 @@ class HashinShtrikman(BaseModel):
             for category in self.property_categories:
                 for property in self.property_docs[category]:
                     for material in combo:
-                        if property in consolidated_dict.keys(): # TODO carrier-transport not registering ??
+                        if property in consolidated_dict.keys(): 
                             m = consolidated_dict["material_id"].index(material)               
                             material_values.append(consolidated_dict[property][m])
                         else:
-                            material_values.append(1.0) # TODO remove later, this is for debugging
+                            material_values.append(1.0) # should not enter this case
 
             # Create population of same properties for all members based on material match combination
             population_values = np.tile(material_values, (len(all_vol_frac_combos),1))
@@ -376,7 +381,7 @@ class HashinShtrikman(BaseModel):
                                     desired_props=self.desired_props, 
                                     ga_params=self.ga_params,
                                     calc_guide=self.calc_guide)
-            population.set_costs()
+            population.cset_costs()
             [sorted_costs, sorted_indices] = population.sort_costs()
             population.set_order_by_costs(sorted_indices)
             sorted_costs = np.reshape(sorted_costs, (len(sorted_costs), 1))
@@ -461,11 +466,32 @@ class HashinShtrikman(BaseModel):
 
     def set_fields(self, fields):
         self.fields = fields
-        return self 
-    
+        return self       
+
+    def set_HS_optim_params_cython(self):
+        """
+        MAIN OPTIMIZATION FUNCTION - CYTHONIZED
+        """
+        # Use cythonized optimization function for speed, see coptimization.pyx
+        population, lowest_costs, avg_parent_costs = cset_HS_optim_params(self.property_categories,
+                                                                          self.property_docs,
+                                                                          self.lower_bounds,
+                                                                          self.upper_bounds,
+                                                                          self.desired_props,
+                                                                          self.num_materials,
+                                                                          self.num_properties,
+                                                                          self.ga_params,
+                                                                          self.calc_guide)
+        self.final_population = population
+        self.lowest_costs = lowest_costs
+        self.avg_parent_costs = avg_parent_costs 
+        return self  
+
     def set_HS_optim_params(self):
         
-        """ MAIN OPTIMIZATION FUNCTION """
+        """
+        MAIN OPTIMIZATION FUNCTION
+        """
 
         # Unpack necessary attributes from self
         num_parents     = self.ga_params.num_parents
@@ -499,7 +525,7 @@ class HashinShtrikman(BaseModel):
                                      num_members=self.ga_params.num_members)
 
         # Calculate the costs of the first generation
-        population.set_costs()   
+        population.cset_costs()   
 
         # Sort the costs of the first generation
         [sorted_costs, sorted_indices] = population.sort_costs()  
@@ -522,14 +548,14 @@ class HashinShtrikman(BaseModel):
             for p in range(0, num_parents, 2):
                 phi1, phi2 = np.random.rand(2)
                 kid1 = phi1 * population.values[p, :] + (1-phi1) * population.values[p+1, :]
-                kid2 = phi2 * population.values[p, :] + (1-phi2) * population.values[p+1, :]
-                
-                # Append offspring to population, overwriting old population members 
+                kid2 = phi2 * population.values[p, :] + (1-phi2) * population.values[p+1, :] 
+
+                                # Append offspring to population, overwriting old population members 
                 population.values[num_parents+p,   :] = kid1
                 population.values[num_parents+p+1, :] = kid2
             
                 # Cast offspring to members and evaluate costs
-                kid1 = CMember(num_materials=self.num_materials,
+                kid1 = Member(num_materials=self.num_materials,
                               num_properties=self.num_properties, 
                               values=kid1, 
                               property_categories=self.property_categories,
@@ -537,7 +563,7 @@ class HashinShtrikman(BaseModel):
                               desired_props=self.desired_props, 
                               ga_params=self.ga_params,
                               calc_guide=self.calc_guide)
-                kid2 = CMember(num_materials=self.num_materials,
+                kid2 = Member(num_materials=self.num_materials,
                               num_properties=self.num_properties, 
                               values=kid2, 
                               property_categories=self.property_categories, 
@@ -555,7 +581,7 @@ class HashinShtrikman(BaseModel):
                                          num_members=members_minus_parents_minus_kids)
 
             # Calculate the costs of the gth generation
-            population.set_costs()
+            population.cset_costs()
 
             # Sort the costs for the gth generation
             [sorted_costs, sorted_indices] = population.sort_costs()  
@@ -576,7 +602,7 @@ class HashinShtrikman(BaseModel):
         self.lowest_costs = lowest_costs
         self.avg_parent_costs = avg_parent_costs     
         
-        return self                
+        return self  
 
     #------ Other Methods ------#
     def print_table_of_best_designs(self):
@@ -596,9 +622,9 @@ class HashinShtrikman(BaseModel):
         plt.show()   
     
     def generate_consolidated_dict(self, total_docs = None):
-
-        # MAIN FUNCTION USED TO GENERATE MATRIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
-
+        """
+        MAIN FUNCTION USED TO GENERATE MATRIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
+        """
         if "carrier-transport" in self.property_categories:
             client = Client(apikey=self.api_key, project=self.mp_contribs_project)
         else:
@@ -673,8 +699,6 @@ class HashinShtrikman(BaseModel):
                                 # For other categories, just append the property name for now
                                 prop_value = getattr(doc, prop, None)
                                 required_fields.append(prop_value)
-                
-                # logger.info(f"required_fields = {required_fields}")
 
                 if all(field is not None for field in required_fields):
 

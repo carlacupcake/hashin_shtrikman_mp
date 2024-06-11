@@ -1,2 +1,8 @@
 ## How to use the cython code
 1. Use python3.9
+2. Make sure you have `cmember.pyx` in your working directory.
+3. Run `python setup.py build_ext --build-lib cbuilds`
+4. This will create `cmember.c` and `cmember.cpython-39-darwin.so`
+5. Make sure to include `from cmember import CMember` in sny files that require the cythonized member class
+
+We'll move the methods that should be cythonized outside of the Pydantic model, and use composition to call these methods from the Pydantic model. This way, the performance-critical methods can still be cythonized while keeping the Pydantic model intact.
