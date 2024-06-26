@@ -1,10 +1,105 @@
 import numpy as np
-from genetic_algo import GAParams
-from custom_logger import logger
+from genetic_algo import GAParams, CGAParams
+from hash_table import CHashEntry, CHashTable
+import ctypes
 from pydantic import BaseModel, root_validator, Field
 from typing import List, Dict, Optional, Any
 import warnings
 
+# Load the C code
+cmember = ctypes.CDLL('./cbuilds/member.so')
+
+# Define the argument types and return type for the C function
+cmember.get_cost.argtypes = [ctypes.c_int, 
+                             ctypes.c_int, 
+                             ctypes.POINTER(ctypes.c_double), 
+                             ctypes.POINTER(ctypes.c_char_p), 
+                             ctypes.c_int, 
+                             CHashTable,
+                             ctypes.POINTER(ctypes.c_double), 
+                             CGAParams, 
+                             CHashTable]  
+cmember.get_cost.restype = ctypes.c_double
+
+#------  Helper Functions ------#
+def dict_to_hash(dict):
+    # Create a CHashTable object
+    size = len(dict)
+    hash_table = CHashTable()
+    hash_table.size = size
+    hash_table.buckets = (ctypes.POINTER(CHashEntry) * size)()
+
+    # Helper function to create a linked list of CHashEntry's for a given Python list of (key, value) tuples
+    def create_chain(entries):
+        head = None
+        for key, value in entries:
+            entry = CHashEntry()
+            entry.key = ctypes.create_string_buffer(key.encode('utf-8'))
+            entry.value = ctypes.create_string_buffer(value.encode('utf-8'))
+            entry.next = head
+            head = entry
+        return ctypes.pointer(head) if head else None
+
+    # Populate the CHashTable buckets with the corresponding CHashEntry linked lists
+    for i, (key, value) in enumerate(dict.items()):
+        hash_table.buckets[i] = create_chain([(key, value)])
+
+    return hash_table
+
+def numpy_to_double_array(np_array):
+    # Ensure the input is a numpy array
+    if not isinstance(np_array, np.ndarray):
+        raise ValueError("Input must be a numpy array")
+    
+    # Ensure the numpy array is of type float64 (double in C)
+    if np_array.dtype != np.float64:
+        np_array = np_array.astype(np.float64)
+    
+    # Get a pointer to the numpy array's data as a double pointer
+    double_array = np_array.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    
+    return double_array
+
+def list_to_char_array(py_list):
+    # Ensure the input is a list of strings
+    if not all(isinstance(item, str) for item in py_list):
+        raise ValueError("Input must be a list of strings")
+    
+    # Create a ctypes array of c_char_p
+    char_array = (ctypes.c_char_p * len(py_list))()
+    
+    # Populate the ctypes array with the strings converted to bytes
+    for i, string in enumerate(py_list):
+        char_array[i] = ctypes.create_string_buffer(string.encode('utf-8'))
+    
+    # Cast to a POINTER(c_char_p), which represents char**
+    return ctypes.cast(char_array, ctypes.POINTER(ctypes.c_char_p))
+
+def desired_props_to_double_array(desired_props):
+    
+    des_props_list = []
+    for _, (_, value) in enumerate(desired_props.items()):
+        des_props_list.append(value)
+    des_props_numpy = np.array(des_props_list)
+    des_props_double_array = numpy_to_double_array(des_props_numpy)
+    
+    return des_props_double_array
+
+def ga_params_to_c(ga_params):
+
+    cga_params = CGAParams()
+    cga_params.num_parents = ctypes.cast(ga_params.num_parents, ctypes.c_int)
+    cga_params.num_kids = ctypes.cast(ga_params.num_kids, ctypes.c_int)
+    cga_params.num_generations = ctypes.cast(ga_params.num_generations, ctypes.c_int)
+    cga_params.num_members = ctypes.cast(ga_params.num_members, ctypes.c_int)
+    cga_params.mixing_param = ctypes.cast(ga_params.mixing_param, ctypes.c_double)
+    cga_params.tolerance = ctypes.cast(ga_params.tolerance, ctypes.c_double)
+    cga_params.weight_eff_props = ctypes.cast(ga_params.weight_eff_props, ctypes.c_double)
+    cga_params.weight_conc_factor = ctypes.cast(ga_params.weight_conc_factor, ctypes.c_double)
+
+    return cga_params
+        
+#------  Member Class ------#
 class Member(BaseModel):
     """
     Class to represent a member of the population in genetic algorithm optimization.
@@ -61,6 +156,27 @@ class Member(BaseModel):
         return values
     
     #------ Getter Methods ------#
+    def cget_cost(self):
+
+        num_materials = self.num_materials
+        num_properties = self.num_properties
+        values = numpy_to_double_array(self.values)
+        property_categories = list_to_char_array(self.property_categories)
+        num_property_categories = len(self.property_categories)
+        property_docs = dict_to_hash(self.property_docs)
+        desired_props = desired_props_to_double_array(self.desired_props)
+        ga_params = ga_params_to_c(self.ga_params)
+        calc_guide = dict_to_hash(self.calc_guide)
+
+        return cmember.get_cost(num_materials,
+                                num_properties,
+                                values,
+                                property_categories,
+                                num_property_categories,
+                                property_docs,
+                                desired_props,
+                                ga_params,
+                                calc_guide)
    
     def get_cost(self):
 

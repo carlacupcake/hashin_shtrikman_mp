@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <limits.h>
+#include <Python.h>
 #include "hash_table.h"
 
 // Hash Function

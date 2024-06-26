@@ -10,6 +10,7 @@
 #include "member.h"
 #include "tinyexpr.h"
 #include "yaml_parser.h"
+#include <Python.h>
 
 #define MAX_PROPERTIES 100
 
@@ -406,40 +407,58 @@ double* get_elastic_cfs(Member* self, int idx, int* num_cfs) {
     return concentration_factors;
 }
 
-// MAIN
-int main() {
-    // Create the hash table
-    HashTable *calc_guide = create_table(100);
+// FOR PYTHON INTEGRATION
+static PyObject *py_get_cost(PyObject *self, PyObject *args) {
 
-    // Parse the YAML file and populate the hash table
-    parse_yaml_to_hash_table("cost_calculation_formulas.yaml", calc_guide);
+    int num_materials;           
+    int num_properties;          
+    double* values;              
+    char** property_categories;  
+    int num_property_categories; 
+    HashTable* property_docs;    
+    double* desired_props;       
+    GAParams* ga_params;         
+    HashTable* calc_guide;       
 
-    // Assuming Member struct definition and initialization
-    Member member;
-    member.calc_guide = calc_guide;
+    if (!PyArg_ParseTuple(args, "di", &num_materials, 
+                                      &num_properties, 
+                                      &values, 
+                                      &property_categories, 
+                                      &num_property_categories,
+                                      &property_docs,
+                                      &desired_props,
+                                      &ga_params,
+                                      &calc_guide)) {
+        return NULL;
+    }
 
-    // Define your variables
-    double phase1_bulk = 1.0;
-    double phase2_bulk = 2.0;
-    double phase1_shear = 3.0;
-    double phase2_shear = 4.0;
-    double phase1_vol_frac = 0.5;
-    double phase2_vol_frac = 0.5;
+    Member member = {num_materials, 
+                     num_properties, 
+                     values, 
+                     property_categories, 
+                     num_property_categories,
+                     property_docs,
+                     desired_props,
+                     ga_params,
+                     calc_guide};
+    double cost = get_cost(&member);
 
-    // Evaluate a formula from the hash table
-    double result = evaluate_formula(
-        member.calc_guide, "effective_props.bulk_mod_min",
-        "{phase1_bulk}", phase1_bulk,
-        "{phase2_bulk}", phase2_bulk,
-        "{phase1_shear}", phase1_shear,
-        "{phase2_shear}", phase2_shear,
-        "{phase1_vol_frac}", phase1_vol_frac,
-        "{phase2_vol_frac}", phase2_vol_frac,
-        NULL  // Terminate the variable list
-    );
+    return PyFloat_FromDouble(cost);
+}
 
-    printf("Result: %f\n", result);
+static PyMethodDef methods[] = {
+    {"get_cost", py_get_cost, METH_VARARGS, "Calculate cost using C function."},
+    {NULL, NULL, 0, NULL}
+};
 
-    // Free resources (not shown here, but remember to free allocated memory)
-    return 0;
+static struct PyModuleDef module = {
+    PyModuleDef_HEAD_INIT,
+    "mymodule",
+    NULL,
+    -1,
+    methods
+};
+
+PyMODINIT_FUNC PyInit_mymodule(void) {
+    return PyModule_Create(&module);
 }

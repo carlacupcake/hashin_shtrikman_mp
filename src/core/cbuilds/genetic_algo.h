@@ -5,7 +5,7 @@
 Struct to hold the parameters used for the genetic algorithm.
 */
 typedef struct {
-    double num_parents;  // Number of parent members to retain in each generation. 
+    int num_parents;     // Number of parent members to retain in each generation. 
     int num_kids;        // Number of children to produce from the parent members.
     int num_generations; // Total number of generations to simulate in the genetic algorithm.
     int num_members;     // Total number of members in each generation of the population.

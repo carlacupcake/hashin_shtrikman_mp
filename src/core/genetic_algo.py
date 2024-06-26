@@ -1,3 +1,4 @@
+import ctypes
 from pydantic import BaseModel, Field
 
 class GAParams(BaseModel):
@@ -57,6 +58,16 @@ class GAParams(BaseModel):
                     "desired concentration balance between the composite's "
                     "constituents is more critical to minimizing the overall cost."
     )
+
+class CGAParams(ctypes.Structure):
+    _fields_ = [("num_parents", ctypes.c_int),
+                ("num_kids", ctypes.c_int),
+                ("num_generations", ctypes.c_int),
+                ("num_members", ctypes.c_int),
+                ("mixing_param", ctypes.c_double),
+                ("tolerance", ctypes.c_double),
+                ("weight_eff_props", ctypes.c_double),
+                ("weight_conc_factor", ctypes.c_double)]
 
 
     
