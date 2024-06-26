@@ -5,9 +5,9 @@
 #include <limits.h>
 #include <yaml.h>
 #include <float.h>
-#include "genetic_algo.h"
-#include "hash_table.h"
-#include "member.h"
+#include "cgenetic_algo.h"
+#include "chash_table.h"
+#include "cmember.h"
 #include "tinyexpr.h"
 #include "yaml_parser.h"
 #include <Python.h>
@@ -15,7 +15,7 @@
 #define MAX_PROPERTIES 100
 
 // Pure C version of get_cost for member
-double get_cost(Member *self) {
+double get_cost(CMember *self) {
     double tolerance = self->ga_params->tolerance;
     double weight_conc_factor = self->ga_params->weight_conc_factor;
     double weight_eff_prop = self->ga_params->weight_eff_prop;
@@ -59,7 +59,7 @@ double get_cost(Member *self) {
 
         } else {
             int num_docs = 0; // Placeholder for the number of documents in category
-            HashTable *docs = (HashTable *)lookup(self->property_docs, category); // Assuming property_docs is a HashTable
+            CHashTable *docs = (CHashTable *)lookup(self->property_docs, category); // Assuming property_docs is a HashTable
 
             for (int p = idx; p < idx + num_docs; p++) {
                 double *new_eff_props;
@@ -103,7 +103,7 @@ double get_cost(Member *self) {
     return cost;
 }
 
-double* get_general_eff_props(Member* self, int idx, int* num_eff_props) {
+double* get_general_eff_props(CMember* self, int idx, int* num_eff_props) {
     // Initialize effective properties array
     double* effective_properties = (double*)calloc(1, sizeof(double)); // Only one effective property is returned
     if (!effective_properties) {
@@ -158,7 +158,7 @@ double* get_general_eff_props(Member* self, int idx, int* num_eff_props) {
     return effective_properties;
 }
 
-double* get_general_cfs(Member* self, int idx, int* num_cfs) {
+double* get_general_cfs(CMember* self, int idx, int* num_cfs) {
     // Initialize concentration factors array
     double* concentration_factors = (double*)calloc(2, sizeof(double)); // We need to store 2 concentration factors
     if (!concentration_factors) {
@@ -217,7 +217,7 @@ double* get_general_cfs(Member* self, int idx, int* num_cfs) {
     return concentration_factors;
 }
 
-double* get_elastic_eff_props(Member* self, int idx, int* num_props) {
+double* get_elastic_eff_props(CMember* self, int idx, int* num_props) {
     
     // Initialize effective property array
     double* effective_properties = (double*)calloc(2, sizeof(double)); // Assuming we only need to store 2 properties
@@ -305,7 +305,7 @@ double* get_elastic_eff_props(Member* self, int idx, int* num_props) {
     return effective_properties;
 }
 
-double* get_elastic_cfs(Member* self, int idx, int* num_cfs) {
+double* get_elastic_cfs(CMember* self, int idx, int* num_cfs) {
     // Initialize concentration factors array
     double* concentration_factors = (double*)calloc(4, sizeof(double)); // We need to store 4 concentration factors
     if (!concentration_factors) {
@@ -423,11 +423,11 @@ static PyObject *py_get_cost(PyObject *self, PyObject *args) {
     double* values;              
     char** property_categories;  
     int num_property_categories; 
-    HashTable* property_docs;    
+    CHashTable* property_docs;    
     double* flat_des_props;       
     int* lengths_des_props;
-    GAParams* ga_params;         
-    HashTable* calc_guide;       
+    CGAParams* ga_params;         
+    CHashTable* calc_guide;       
 
     if (!PyArg_ParseTuple(args, "di", &num_materials, 
                                       &num_properties, 
@@ -442,16 +442,16 @@ static PyObject *py_get_cost(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    Member member = {num_materials, 
-                     num_properties, 
-                     values, 
-                     property_categories, 
-                     num_property_categories,
-                     property_docs,
-                     flat_des_props,
-                     lengths_des_props,
-                     ga_params,
-                     calc_guide};
+    CMember member = {num_materials, 
+                      num_properties, 
+                      values, 
+                      property_categories, 
+                      num_property_categories,
+                      property_docs,
+                      flat_des_props,
+                      lengths_des_props,
+                      ga_params,
+                      calc_guide};
     double cost = get_cost(&member);
 
     return PyFloat_FromDouble(cost);

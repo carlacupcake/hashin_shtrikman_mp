@@ -7,20 +7,24 @@ from pydantic import BaseModel, root_validator, Field
 from typing import List, Dict, Optional, Any
 import warnings
 
-# Load the C code
-cmember = ctypes.CDLL(os.path.abspath('../core/cbuilds/member.so'))
+#------  For Linkage to C Code ------#
+from memory_profiler import profile
+cmember = ctypes.CDLL(os.path.abspath('../core/cbuilds/cmodule.so')) # Load the C code
+
+class CMember(ctypes.Structure):
+    _fields_ = [("num_materials", ctypes.c_int),
+                ("num_properties", ctypes.c_int),
+                ("values", ctypes.POINTER(ctypes.c_double)),
+                ("property_categories", ctypes.POINTER(ctypes.c_char_p)),
+                ("num_property_categories", ctypes.c_int),
+                ("property_docs", CHashTable),
+                ("flat_des_props", ctypes.POINTER(ctypes.c_double)),
+                ("lengths_des_props", ctypes.POINTER(ctypes.c_int)),
+                ("ga_params", CGAParams),
+                ("calc_guide", CHashTable)]
 
 # Define the argument types and return type for the C function
-cmember.get_cost.argtypes = [ctypes.c_int, 
-                             ctypes.c_int, 
-                             ctypes.POINTER(ctypes.c_double), 
-                             ctypes.POINTER(ctypes.c_char_p), 
-                             ctypes.c_int, 
-                             CHashTable,
-                             ctypes.POINTER(ctypes.c_double), 
-                             ctypes.POINTER(ctypes.c_int),
-                             CGAParams, 
-                             CHashTable]  
+cmember.get_cost.argtypes = [CMember]
 cmember.get_cost.restype = ctypes.c_double
 
 #------  Helper Functions ------#
@@ -105,24 +109,17 @@ def desired_props_to_double_array(desired_props):
 
 def ga_params_to_c(ga_params):
     cga_params = CGAParams()
-    
-    # List of attribute names to copy
-    attrs = [
-        "num_parents",
-        "num_kids",
-        "num_generations",
-        "num_members",
-        "mixing_param",
-        "tolerance",
-        "weight_eff_prop",
-        "weight_conc_factor"
-    ]
-    
-    # Copy attributes from ga_params to cga_params
-    for attr in attrs:
-        setattr(cga_params, attr, getattr(ga_params, attr))
-    
+    cga_params.num_parents        = ga_params.num_parents
+    cga_params.num_kids           = ga_params.num_kids
+    cga_params.num_generations    = ga_params.num_generations
+    cga_params.num_members        = ga_params.num_members
+    cga_params.mixing_param       = ga_params.mixing_param
+    cga_params.tolerance          = ga_params.tolerance
+    cga_params.weight_eff_prop    = ga_params.weight_eff_prop
+    cga_params.weight_conc_factor = ga_params.weight_conc_factor
+
     return cga_params
+
         
 #------  Member Class ------#
 class Member(BaseModel):
@@ -181,28 +178,24 @@ class Member(BaseModel):
         return values
     
     #------ Getter Methods ------#
+    @profile
     def get_cost(self):
 
-        num_materials = self.num_materials
-        num_properties = self.num_properties
-        values = numpy_to_double_array(self.values)
-        property_categories = list_to_char_array(self.property_categories)
-        num_property_categories = len(self.property_categories)
-        property_docs = dict_to_hash(self.property_docs)
+        # Convert from Python types to C types
+        member = CMember()
+        member.num_materials = self.num_materials
+        member.num_properties = self.num_properties
+        member.values = numpy_to_double_array(self.values)
+        member.property_categories = list_to_char_array(self.property_categories)
+        member.num_property_categories = len(self.property_categories)
+        member.property_docs = dict_to_hash(self.property_docs)
         flat_des_props, lengths_des_props = desired_props_to_double_array(self.desired_props)
-        ga_params = ga_params_to_c(self.ga_params)
-        calc_guide = dict_to_hash(self.calc_guide)
+        member.flat_des_props = flat_des_props
+        member.lengths_des_props = lengths_des_props
+        member.ga_params = ga_params_to_c(self.ga_params)
+        member.calc_guide = dict_to_hash(self.calc_guide)
 
-        return cmember.get_cost(num_materials,
-                                num_properties,
-                                values,
-                                property_categories,
-                                num_property_categories,
-                                property_docs,
-                                flat_des_props,
-                                lengths_des_props,
-                                ga_params,
-                                calc_guide)
+        return cmember.get_cost(member)
    
     '''
     def get_cost(self):

@@ -498,6 +498,7 @@ class HashinShtrikman(BaseModel):
                                      num_members=self.ga_params.num_members)
 
         # Calculate the costs of the first generation
+        print('Right before first call to any cost function')
         population.set_costs()   
 
         # Sort the costs of the first generation

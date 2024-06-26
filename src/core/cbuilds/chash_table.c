@@ -4,7 +4,7 @@
 #include <math.h>
 #include <limits.h>
 #include <Python.h>
-#include "hash_table.h"
+#include "chash_table.h"
 
 // Hash Function
 unsigned int hash(const char* key, int size) {
@@ -19,9 +19,9 @@ unsigned int hash(const char* key, int size) {
 }
 
 // Initialize the hash table
-HashTable *create_table(int size) {
-    HashTable *table = malloc(sizeof(HashTable));
-    table->buckets = malloc(sizeof(HashEntry *) * size);
+CHashTable *create_table(int size) {
+    CHashTable *table = malloc(sizeof(CHashTable));
+    table->buckets = malloc(sizeof(CHashEntry *) * size);
     for (int i = 0; i < size; i++) {
         table->buckets[i] = NULL;
     }
@@ -30,9 +30,9 @@ HashTable *create_table(int size) {
 }
 
 // Define insertion function for adding key-value pairs to the hash table
-void insert(HashTable *table, const char *key, void *value) {
+void insert(CHashTable *table, const char *key, void *value) {
     unsigned int bucket = hash(key, table->size);
-    HashEntry *new_HashEntry = malloc(sizeof(HashEntry));
+    CHashEntry *new_HashEntry = malloc(sizeof(CHashEntry));
     new_HashEntry->key = strdup(key);
     new_HashEntry->value = value;
     new_HashEntry->next = table->buckets[bucket];
@@ -40,23 +40,23 @@ void insert(HashTable *table, const char *key, void *value) {
 }
 
 // Define lookup function for retrieving a value from a key
-void *lookup(HashTable *table, const char *key) {
+void *lookup(CHashTable *table, const char *key) {
     unsigned int bucket = hash(key, table->size);
-    HashEntry *HashEntry = table->buckets[bucket];
-    while (HashEntry != NULL) {
-        if (strcmp(HashEntry->key, key) == 0) {
-            return HashEntry->value;
+    CHashEntry *CHashEntry = table->buckets[bucket];
+    while (CHashEntry != NULL) {
+        if (strcmp(CHashEntry->key, key) == 0) {
+            return CHashEntry->value;
         }
-        HashEntry = HashEntry->next;
+        CHashEntry = CHashEntry->next;
     }
     return NULL;
 }
 
 // Define a deletion function for removing key-value pairs from the hash table
-void delete_table(HashTable *table, const char *key) {
+void delete_table(CHashTable *table, const char *key) {
     unsigned int bucket = hash(key, table->size);
-    HashEntry *entry = table->buckets[bucket];
-    HashEntry *prev = NULL;
+    CHashEntry *entry = table->buckets[bucket];
+    CHashEntry *prev = NULL;
     
     while (entry != NULL && strcmp(entry->key, key) != 0) {
         prev = entry;
@@ -77,15 +77,15 @@ void delete_table(HashTable *table, const char *key) {
 }
 
 // Free memory when done using the hash table
-void free_table(HashTable *table) {
+void free_table(CHashTable *table) {
     for (int i = 0; i < table->size; i++) {
-        HashEntry *entry = table->buckets[i];
+        CHashEntry *entry = table->buckets[i];
         while (entry != NULL) {
-            HashEntry *temp = entry;  // Define temp as a pointer to the current entry
-            entry = entry->next;      // Move to the next entry in the bucket
-            free((char *)temp->key);  // Free the memory allocated for the key
-            free(temp->value);        // Free the memory allocated for the value
-            free(temp);               // Free the memory allocated for the entry itself
+            CHashEntry *temp = entry;  // Define temp as a pointer to the current entry
+            entry = entry->next;       // Move to the next entry in the bucket
+            free((char *)temp->key);   // Free the memory allocated for the key
+            free(temp->value);         // Free the memory allocated for the value
+            free(temp);                // Free the memory allocated for the entry itself
         }
     }
     free(table->buckets);  // Free the memory allocated for the buckets array

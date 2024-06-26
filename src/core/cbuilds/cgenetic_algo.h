@@ -1,5 +1,5 @@
-#ifndef GENETIC_ALGO_H
-#define GENETIC_ALGO_H
+#ifndef CGENETIC_ALGO_H
+#define CGENETIC_ALGO_H
 
 /*
 Struct to hold the parameters used for the genetic algorithm.
@@ -40,9 +40,9 @@ typedef struct {
         desired concentration balance between the composite's 
         constituents is more critical to minimizing the overall cost.
         */
-} GAParams;
+} CGAParams;
 
-#endif // GENETIC_ALGO_H
+#endif // CGENETIC_ALGO_H
 
 
     

@@ -6,11 +6,11 @@
 #include <limits.h>
 #include <yaml.h>
 #include <float.h>
-#include "hash_table.h"
+#include "chash_table.h"
 #include "tinyexpr.h"
 
 // YAML parsing function
-void parse_yaml_to_hash_table(const char *filename, HashTable *table) {
+void parse_yaml_to_hash_table(const char *filename, CHashTable *table) {
     FILE *file = fopen(filename, "r");
     if (!file) {
         fprintf(stderr, "Could not open file: %s\n", filename);
@@ -81,7 +81,7 @@ cleanup:
 }
 
 // YAML evaluate function
-double evaluate_formula(HashTable *table, const char *key, ... ) {
+double evaluate_formula(CHashTable *table, const char *key, ... ) {
     char *formula = (char *)lookup(table, key);
     if (!formula) {
         fprintf(stderr, "Formula for key %s not found.\n", key);
