@@ -12,7 +12,8 @@ typedef struct {
     char** property_categories;  // List of property categories considered for optimization.
     int num_property_categories; // Number of property categories, needed for iteration. Not included in python Member class
     HashTable* property_docs;    // A hard coded yaml file containing property categories
-    double* desired_props;       // List of desired properties, converted from python dictionary
+    double* flat_des_props;      // Flattened list of lists of desired properties, converted from python dictionary
+    int* lengths_des_props;      // Lengths of the sublists in the original list of lists of desired properties
     GAParams* ga_params;         // Parameter initilization class for the genetic algorithm.
     HashTable* calc_guide;       // Calculation guide for property evaluation from a hard coded yaml file.
 } Member;

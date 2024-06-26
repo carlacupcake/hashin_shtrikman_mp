@@ -36,7 +36,7 @@ double get_cost(Member *self) {
             // Assuming get_elastic_eff_props_and_cfs returns arrays of properties and factors
             int num_props = 2;
             int num_cfs = 4;
-            moduli_eff_props = get_elastic_eff_props(self, idx, &num_props);
+            moduli_eff_props = get_elastic_eff_props(self, idx, &num_props); // idx is the index in self.values where category properties begin
             moduli_cfs = get_elastic_cfs(self, idx, &num_cfs);
 
             for (int j = 0; j < num_props; j++) {
@@ -96,7 +96,7 @@ double get_cost(Member *self) {
     // Compute cost function in C
     double cost = 0.0;
     for (int i = 0; i < idx; i++) {
-        cost += weight_eff_prop * W * fabs((self->desired_props[i] - effective_properties[i]) / effective_properties[i]);
+        cost += weight_eff_prop * W * fabs((self->flat_des_props[i] - effective_properties[i]) / effective_properties[i]);
         cost += cost_func_weights[i] * fabs((concentration_factors[i] - tolerance) / tolerance);
     }
 
@@ -227,13 +227,13 @@ double* get_elastic_eff_props(Member* self, int idx, int* num_props) {
     }
 
     // Prepare indices for looping over properties
-    int stop = -self->num_materials;
-    int step = self->num_properties - 1;
+    int stop = -self->num_materials;     // the last num_materials entries are volume fractions, not material properties
+    int step = self->num_properties - 1; // subtract 1 so as not to include volume fraction
 
-    // Extract bulk moduli and shear moduli from member
-    double phase1_bulk = DBL_MAX, phase2_bulk = -DBL_MAX;
+    // Extract bulk moduli and shear moduli from member, initialize first
+    double phase1_bulk  = DBL_MAX, phase2_bulk  = -DBL_MAX;
     double phase1_shear = DBL_MAX, phase2_shear = -DBL_MAX;
-    int phase1_bulk_idx = 0, phase2_bulk_idx = 0;
+    int phase1_bulk_idx  = 0, phase2_bulk_idx  = 0;
     int phase1_shear_idx = 0, phase2_shear_idx = 0;
 
     // Loop to find min and max bulk moduli
@@ -264,8 +264,8 @@ double* get_elastic_eff_props(Member* self, int idx, int* num_props) {
 
     // Check index consistency
     if ((phase1_bulk_idx != phase1_shear_idx) || (phase2_bulk_idx != phase2_shear_idx)) {
-        fprintf(stderr, "Cannot perform optimization when phase indices are inconsistent.\n");
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Cannot perform optimization when for bulk modulus phase 1 > phase 2 and for shear modulus phase 2 > phase 1 or vice versa.\n");
+        //exit(EXIT_FAILURE);
     }
 
     // Extract volume fractions
@@ -317,10 +317,10 @@ double* get_elastic_cfs(Member* self, int idx, int* num_cfs) {
     int stop = self->num_properties - self->num_materials;
     int step = self->num_properties - 1;
 
-    // Extract bulk moduli and shear moduli from member
-    double phase1_bulk = DBL_MAX, phase2_bulk = -DBL_MAX;
+    // Extract bulk moduli and shear moduli from member, initialize first
+    double phase1_bulk  = DBL_MAX, phase2_bulk  = -DBL_MAX;
     double phase1_shear = DBL_MAX, phase2_shear = -DBL_MAX;
-    int phase1_bulk_idx = 0, phase2_bulk_idx = 0;
+    int phase1_bulk_idx  = 0, phase2_bulk_idx  = 0;
     int phase1_shear_idx = 0, phase2_shear_idx = 0;
 
     // Loop to find min and max bulk moduli
@@ -351,15 +351,15 @@ double* get_elastic_cfs(Member* self, int idx, int* num_cfs) {
 
     // Check index consistency
     if ((phase1_bulk_idx != phase1_shear_idx) || (phase2_bulk_idx != phase2_shear_idx)) {
-        fprintf(stderr, "Cannot perform optimization when phase indices are inconsistent.\n");
-        exit(EXIT_FAILURE);
+        fprintf(stderr, "Cannot perform optimization when for bulk modulus phase 1 > phase 2 and for shear modulus phase 2 > phase 1 or vice versa.\n");
+        //exit(EXIT_FAILURE);
     }
 
     // Extract volume fractions
     double phase1_vol_frac = self->values[self->num_properties - self->num_materials + phase1_bulk_idx];
     double phase2_vol_frac = self->values[self->num_properties - self->num_materials + phase2_bulk_idx];
 
-    double bulk_mod_eff = 0.0;  // effective bulk modulus
+    double bulk_mod_eff  = 0.0;  // effective bulk modulus
     double shear_mod_eff = 0.0; // effective shear modulus
 
     double cf_phase1_bulk, cf_phase2_bulk, cf_phase1_shear, cf_phase2_shear;
@@ -378,8 +378,12 @@ double* get_elastic_cfs(Member* self, int idx, int* num_cfs) {
         cf_phase2_bulk = 1 / phase2_vol_frac;
         cf_phase1_bulk = 1 / phase1_vol_frac;
     } else {
-        cf_phase2_bulk = evaluate_formula(self->calc_guide, "concentration_factors.cf_2_elastic", phase2_vol_frac, phase1_bulk, phase2_bulk, bulk_mod_eff, 0);
-        cf_phase1_bulk = evaluate_formula(self->calc_guide, "concentration_factors.cf_1_elastic", phase1_vol_frac, phase2_vol_frac, 0, 0, cf_phase2_bulk);
+        double effective_property = bulk_mod_eff;
+        double phase1 = phase1_bulk;
+        double phase2 = phase2_bulk;
+        cf_phase2_bulk = evaluate_formula(self->calc_guide, "concentration_factors.cf_2_elastic", phase2_vol_frac, effective_property, phase1, phase2);
+        double cf_2_elastic = cf_phase2_bulk;
+        cf_phase1_bulk = evaluate_formula(self->calc_guide, "concentration_factors.cf_1_elastic", phase1_vol_frac, phase2_vol_frac, cf_2_elastic);
     }
 
     if (phase1_vol_frac == 0) {
@@ -392,8 +396,12 @@ double* get_elastic_cfs(Member* self, int idx, int* num_cfs) {
         cf_phase2_shear = 1 / phase2_vol_frac;
         cf_phase1_shear = 1 / phase1_vol_frac;
     } else {
-        cf_phase2_shear = evaluate_formula(self->calc_guide, "concentration_factors.cf_2_elastic", phase2_vol_frac, phase1_shear, phase2_shear, shear_mod_eff, 0);
-        cf_phase1_shear = evaluate_formula(self->calc_guide, "concentration_factors.cf_1_elastic", phase1_vol_frac, phase2_vol_frac, 0, 0, cf_phase2_shear);
+        double effective_property = shear_mod_eff;
+        double phase1 = phase1_shear;
+        double phase2 = phase2_shear;
+        cf_phase2_shear = evaluate_formula(self->calc_guide, "concentration_factors.cf_2_elastic", phase2_vol_frac, effective_property, phase1, phase2);
+        double cf_2_elastic = cf_phase2_shear;
+        cf_phase1_shear = evaluate_formula(self->calc_guide, "concentration_factors.cf_1_elastic", phase1_vol_frac, phase2_vol_frac, cf_2_elastic);
     }
 
     // Write over default calculation for concentration factor
@@ -416,7 +424,8 @@ static PyObject *py_get_cost(PyObject *self, PyObject *args) {
     char** property_categories;  
     int num_property_categories; 
     HashTable* property_docs;    
-    double* desired_props;       
+    double* flat_des_props;       
+    int* lengths_des_props;
     GAParams* ga_params;         
     HashTable* calc_guide;       
 
@@ -426,7 +435,8 @@ static PyObject *py_get_cost(PyObject *self, PyObject *args) {
                                       &property_categories, 
                                       &num_property_categories,
                                       &property_docs,
-                                      &desired_props,
+                                      &flat_des_props,
+                                      &lengths_des_props,
                                       &ga_params,
                                       &calc_guide)) {
         return NULL;
@@ -438,7 +448,8 @@ static PyObject *py_get_cost(PyObject *self, PyObject *args) {
                      property_categories, 
                      num_property_categories,
                      property_docs,
-                     desired_props,
+                     flat_des_props,
+                     lengths_des_props,
                      ga_params,
                      calc_guide};
     double cost = get_cost(&member);

@@ -66,7 +66,7 @@ class CGAParams(ctypes.Structure):
                 ("num_members", ctypes.c_int),
                 ("mixing_param", ctypes.c_double),
                 ("tolerance", ctypes.c_double),
-                ("weight_eff_props", ctypes.c_double),
+                ("weight_eff_prop", ctypes.c_double),
                 ("weight_conc_factor", ctypes.c_double)]
 
 

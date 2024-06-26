@@ -2,12 +2,13 @@ import numpy as np
 from genetic_algo import GAParams, CGAParams
 from hash_table import CHashEntry, CHashTable
 import ctypes
+import os
 from pydantic import BaseModel, root_validator, Field
 from typing import List, Dict, Optional, Any
 import warnings
 
 # Load the C code
-cmember = ctypes.CDLL('./cbuilds/member.so')
+cmember = ctypes.CDLL(os.path.abspath('../core/cbuilds/member.so'))
 
 # Define the argument types and return type for the C function
 cmember.get_cost.argtypes = [ctypes.c_int, 
@@ -17,14 +18,15 @@ cmember.get_cost.argtypes = [ctypes.c_int,
                              ctypes.c_int, 
                              CHashTable,
                              ctypes.POINTER(ctypes.c_double), 
+                             ctypes.POINTER(ctypes.c_int),
                              CGAParams, 
                              CHashTable]  
 cmember.get_cost.restype = ctypes.c_double
 
 #------  Helper Functions ------#
-def dict_to_hash(dict):
+def dict_to_hash(py_dict):
     # Create a CHashTable object
-    size = len(dict)
+    size = len(py_dict)
     hash_table = CHashTable()
     hash_table.size = size
     hash_table.buckets = (ctypes.POINTER(CHashEntry) * size)()
@@ -34,15 +36,15 @@ def dict_to_hash(dict):
         head = None
         for key, value in entries:
             entry = CHashEntry()
-            entry.key = ctypes.create_string_buffer(key.encode('utf-8'))
-            entry.value = ctypes.create_string_buffer(value.encode('utf-8'))
+            entry.key = ctypes.c_char_p(key.encode('utf-8'))
+            entry.value = ctypes.c_char_p(str(value).encode('utf-8'))
             entry.next = head
             head = entry
         return ctypes.pointer(head) if head else None
 
     # Populate the CHashTable buckets with the corresponding CHashEntry linked lists
-    for i, (key, value) in enumerate(dict.items()):
-        hash_table.buckets[i] = create_chain([(key, value)])
+    for i, (key, value) in enumerate(py_dict.items()):
+        hash_table.buckets[i] = create_chain([(key, str(value))])
 
     return hash_table
 
@@ -60,6 +62,9 @@ def numpy_to_double_array(np_array):
     
     return double_array
 
+def numpy_to_int_array(np_array):
+    return np_array.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
+
 def list_to_char_array(py_list):
     # Ensure the input is a list of strings
     if not all(isinstance(item, str) for item in py_list):
@@ -70,33 +75,53 @@ def list_to_char_array(py_list):
     
     # Populate the ctypes array with the strings converted to bytes
     for i, string in enumerate(py_list):
-        char_array[i] = ctypes.create_string_buffer(string.encode('utf-8'))
+        char_array[i] = ctypes.c_char_p(string.encode('utf-8'))
     
     # Cast to a POINTER(c_char_p), which represents char**
     return ctypes.cast(char_array, ctypes.POINTER(ctypes.c_char_p))
 
+def flatten_list_of_lists(list_of_lists):
+    flat_list = []
+    lengths = []
+    for sublist in list_of_lists:
+        flat_list.extend(sublist)
+        lengths.append(len(sublist))
+    return flat_list, lengths
+
 def desired_props_to_double_array(desired_props):
-    
     des_props_list = []
     for _, (_, value) in enumerate(desired_props.items()):
         des_props_list.append(value)
-    des_props_numpy = np.array(des_props_list)
-    des_props_double_array = numpy_to_double_array(des_props_numpy)
     
-    return des_props_double_array
+    flat_list, lengths = flatten_list_of_lists(des_props_list)
+
+    flat_array = np.array(flat_list, dtype=float)
+    lengths_array = np.array(lengths, dtype=int)
+    
+    flat_double_array = numpy_to_double_array(flat_array)
+    lengths_int_array = numpy_to_int_array(lengths_array)
+    
+    return flat_double_array, lengths_int_array
 
 def ga_params_to_c(ga_params):
-
     cga_params = CGAParams()
-    cga_params.num_parents = ctypes.cast(ga_params.num_parents, ctypes.c_int)
-    cga_params.num_kids = ctypes.cast(ga_params.num_kids, ctypes.c_int)
-    cga_params.num_generations = ctypes.cast(ga_params.num_generations, ctypes.c_int)
-    cga_params.num_members = ctypes.cast(ga_params.num_members, ctypes.c_int)
-    cga_params.mixing_param = ctypes.cast(ga_params.mixing_param, ctypes.c_double)
-    cga_params.tolerance = ctypes.cast(ga_params.tolerance, ctypes.c_double)
-    cga_params.weight_eff_props = ctypes.cast(ga_params.weight_eff_props, ctypes.c_double)
-    cga_params.weight_conc_factor = ctypes.cast(ga_params.weight_conc_factor, ctypes.c_double)
-
+    
+    # List of attribute names to copy
+    attrs = [
+        "num_parents",
+        "num_kids",
+        "num_generations",
+        "num_members",
+        "mixing_param",
+        "tolerance",
+        "weight_eff_prop",
+        "weight_conc_factor"
+    ]
+    
+    # Copy attributes from ga_params to cga_params
+    for attr in attrs:
+        setattr(cga_params, attr, getattr(ga_params, attr))
+    
     return cga_params
         
 #------  Member Class ------#
@@ -156,7 +181,7 @@ class Member(BaseModel):
         return values
     
     #------ Getter Methods ------#
-    def cget_cost(self):
+    def get_cost(self):
 
         num_materials = self.num_materials
         num_properties = self.num_properties
@@ -164,7 +189,7 @@ class Member(BaseModel):
         property_categories = list_to_char_array(self.property_categories)
         num_property_categories = len(self.property_categories)
         property_docs = dict_to_hash(self.property_docs)
-        desired_props = desired_props_to_double_array(self.desired_props)
+        flat_des_props, lengths_des_props = desired_props_to_double_array(self.desired_props)
         ga_params = ga_params_to_c(self.ga_params)
         calc_guide = dict_to_hash(self.calc_guide)
 
@@ -174,10 +199,12 @@ class Member(BaseModel):
                                 property_categories,
                                 num_property_categories,
                                 property_docs,
-                                desired_props,
+                                flat_des_props,
+                                lengths_des_props,
                                 ga_params,
                                 calc_guide)
    
+    '''
     def get_cost(self):
 
         """ MAIN COST FUNCTION """
@@ -239,6 +266,7 @@ class Member(BaseModel):
         cost = weight_eff_prop*W * np.sum(abs(np.divide(des_props - effective_properties, effective_properties))) + np.sum(np.multiply(cost_func_weights, abs(np.divide(concentration_factors - tolerance, tolerance))))
 
         return cost
+    '''
     
     def get_general_eff_prop_and_cfs(self, idx = 0): # idx is the index in self.values where category properties begin
 
