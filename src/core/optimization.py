@@ -462,6 +462,7 @@ class HashinShtrikman(BaseModel):
         self.fields = fields
         return self 
     
+    @profile
     def set_HS_optim_params(self):
         
         """ MAIN OPTIMIZATION FUNCTION """
