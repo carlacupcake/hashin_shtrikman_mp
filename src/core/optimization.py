@@ -7,7 +7,7 @@ import itertools
 import sys
 import yaml
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Union, Optional
 from pydantic import BaseModel, Field, root_validator
 from monty.serialization import loadfn
 from datetime import datetime
@@ -24,19 +24,24 @@ from genetic_algo import GAParams
 from member import Member
 from population import Population
 
-# HashinShtrikman class defaults
-DEFAULT_FIELDS: dict    = {"material_id": [], 
-                           "is_stable": [], 
-                           "band_gap": [], 
-                           "is_metal": [],
-                           "formula_pretty": [],}
-MODULE_DIR = Path(__file__).resolve().parent
-
 # YAML files
-sys.path.insert(1, '../io')
+sys.path.insert(1, '../io/inputs')
 CALC_GUIDE = "cost_calculation_formulas.yaml"
 MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
 HS_HEADERS_YAML = "display_table_headers.yaml"
+
+# HashinShtrikman class defaults
+DEFAULT_FIELDS: dict = {"material_id": [], 
+                        "is_stable": [], 
+                        "band_gap": [], 
+                        "is_metal": [],
+                        "formula_pretty": [],}
+MODULE_DIR = Path(__file__).resolve().parent
+
+
+# Load and compile cost calculation formulas
+from compile_cost_calculation_formulas import compile_expressions
+COMPILED_CALC_GUIDE = compile_expressions(loadfn(f"{MODULE_DIR}/../io/inputs/{CALC_GUIDE}"))
 
 class HashinShtrikman(BaseModel):
     """
@@ -48,53 +53,43 @@ class HashinShtrikman(BaseModel):
 
     api_key: Optional[str] = Field(
         default=None, 
-        description="API key for accessing Materials "
-                    "Project database."
+        description="API key for accessing Materials Project database."
         )
     mp_contribs_project: Optional[str] = Field(
         default=None, 
-        description="MPContribs project name "
-                    "for querying project-specific data."
+        description="MPContribs project name for querying project-specific data."
         )
     user_input: Dict = Field(
         default_factory=dict, 
-        description="User input specifications for the "
-        "optimization process."
+        description="User input specifications for the optimization process."
         )
     fields: Dict[str, List[Any]] = Field(
         default_factory=lambda: DEFAULT_FIELDS.copy(), 
-        description="Fields to query from the "
-                    "Materials Project database."
+        description="Fields to query from the Materials Project database."
         )
     property_categories: List[str] = Field(
         default_factory=list, 
-        description="List of property categories "
-                    "considered for optimization."
+        description="List of property categories considered for optimization."
         )
     property_docs: Dict[str, Dict[str, Any]] = Field(
         default_factory=dict, 
-        description="A hard coded yaml file containing property "
-                    "categories and their individual properties."
+        description="A hard coded yaml file containing property categories and their individual properties."
         )
     lower_bounds: Dict[str, Any] = Field(
         default_factory=dict, 
-        description="Lower bounds for properties of "
-                    "materials considered in the optimization."
+        description="Lower bounds for properties of materials considered in the optimization."
         )
     upper_bounds: Dict[str, Any] = Field(
         default_factory=dict, 
-        description="Upper bounds for properties of "
-                    "materials considered in the optimization."
+        description="Upper bounds for properties of materials considered in the optimization."
         )
     desired_props: Dict[str, List[float]] = Field(
         default_factory=dict, 
-        description="Dictionary mapping "
-                    "individual properties to their "
-                    "desired properties."
+        description="Dictionary mapping individual properties to their desired properties."
         )
     num_materials: int = Field(
         default=0, 
-        description="TODO"
+        description="Number of materials to comprise the composite."
         )
     num_properties: int = Field(
         default=0, 
@@ -102,29 +97,23 @@ class HashinShtrikman(BaseModel):
         )
     ga_params: GAParams = Field(
         default_factory=GAParams, 
-        description="Parameter initilization class for the "
-                    "genetic algorithm."
+        description="Parameter initilization class for the genetic algorithm."
         )
     final_population: Population = Field(
         default_factory=Population, 
-        description="Final population object after "
-                    "optimization."
+        description="Final population object after optimization."
         )
     lowest_costs: np.ndarray = Field(
         default_factory=lambda: np.empty(0), 
-        description="Lowest cost values across "
-                    "generations."
+        description="Lowest cost values across generations."
         )
     avg_parent_costs: np.ndarray = Field(
         default_factory=lambda: np.empty(0), 
-        description="Average cost of the "
-                    "top-performing parents across generations."
+        description="Average cost of the top-performing parents across generations."
         )   
-    calc_guide: Dict[str, Any] = Field(
-        default_factory=lambda: 
-        loadfn(CALC_GUIDE), 
-        description="Calculation guide for property "
-                    "evaluation. This is a hard coded yaml file."
+    calc_guide: Union[Dict[str, Any], Any] = Field(
+        default_factory=lambda: COMPILED_CALC_GUIDE,
+        description="Calculation guide for property evaluation with compiled expressions."
     )
     
     # To use np.ndarray or other arbitrary types in your Pydantic models
@@ -137,10 +126,6 @@ class HashinShtrikman(BaseModel):
         property_categories, property_docs = cls.load_property_categories(f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input=values.get("user_input", {}))
         values["property_categories"] = property_categories
         values["property_docs"] = property_docs
-        
-        # Load calculation guide, if necessary
-        calc_guide = loadfn(values.get("calc_guide", f"{MODULE_DIR}/../io/inputs/cost_calculation_formulas.yaml"))
-        values["calc_guide"] = calc_guide
         
         # Since user_input is required to set desired props and bounds, ensure it's processed last
         user_input = values.get("user_input", {})

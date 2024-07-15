@@ -1,8 +1,7 @@
 import numpy as np
 from member import Member
 from genetic_algo import GAParams
-from custom_logger import logger
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Union, Optional
 from pydantic import BaseModel, Field, root_validator
 
 class Population(BaseModel):
@@ -26,8 +25,7 @@ class Population(BaseModel):
     )
     property_docs: Dict[str, Dict[str, Any]] = Field(
         default={},
-        description="A hard coded yaml file containing property categories "
-                    "and their individual properties."
+        description="A hard coded yaml file containing property categories and their individual properties."
     )
     desired_props: Dict[str, List[float]] = Field(
         default={},
@@ -46,10 +44,9 @@ class Population(BaseModel):
         default_factory=GAParams,
         description="Parameter initilization class for the genetic algorithm."
     )
-    calc_guide: Dict[str, Dict[str, str]] = Field(
-        default={},
-        description="Calculation guide for property evaluation. This is a "
-                    "hard coded yaml file."
+    calc_guide: Union[Dict[str, Any], Any] = Field(
+        default_factory=lambda: None,
+        description="Calculation guide for property evaluation with compiled expressions."
     )   
 
     # To use np.ndarray or other arbitrary types in your Pydantic models
