@@ -28,28 +28,31 @@ calc_guide = yaml.safe_load(yaml_content)
 def compile_expressions(expressions_dict):
     compiled_expressions = {}
     for key, formula in expressions_dict.items():
-        # Replace placeholders with variables names (assuming variables will be provided in context)
-        compiled_formula = formula.format(
-            phase1='phase1', 
-            phase2='phase2', 
-            phase1_vol_frac='phase1_vol_frac', 
-            phase2_vol_frac='phase2_vol_frac',
-            mixing_param='mixing_param', 
-            phase1_bulk='phase1_bulk', 
-            phase2_bulk='phase2_bulk',
-            phase1_shear='phase1_shear', 
-            phase2_shear='phase2_shear', 
-            effective_property='effective_property',
-            eff_max='eff_max', 
-            eff_min='eff_min', 
-            cf_2_elastic='cf_2_elastic'
-        )
-        # Compile the formula
-        compiled_expressions[key] = compile(compiled_formula, '<string>', 'eval')
+        if isinstance(formula, str):
+            # Replace placeholders with valid Python variable names
+            compiled_formula = formula.format(
+                phase1='phase1', 
+                phase2='phase2', 
+                phase1_vol_frac='phase1_vol_frac', 
+                phase2_vol_frac='phase2_vol_frac',
+                mixing_param='mixing_param', 
+                phase1_bulk='phase1_bulk', 
+                phase2_bulk='phase2_bulk',
+                phase1_shear='phase1_shear', 
+                phase2_shear='phase2_shear', 
+                effective_property='effective_property',
+                eff_max='eff_max', 
+                eff_min='eff_min', 
+                cf_2_elastic='cf_2_elastic'
+            )
+            # Compile the formula
+            compiled_expressions[key] = compile(compiled_formula, '<string>', 'eval')
+        elif isinstance(formula, dict):
+            # Recursively compile nested dictionaries
+            compiled_expressions[key] = compile_expressions(formula)
     return compiled_expressions
 
-compiled_eff_props = compile_expressions(calc_guide['effective_props'])
-compiled_cfs = compile_expressions(calc_guide['concentration_factors'])
+compiled_calc_guide = compile_expressions(calc_guide)
 
 class Member(BaseModel):
     """
@@ -207,8 +210,8 @@ class Member(BaseModel):
             effective_prop_min = evaluate_yaml_formula(calc_guide['effective_props']['eff_min'], **{'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
             effective_prop_max = evaluate_yaml_formula(calc_guide['effective_props']['eff_max'], **{'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
             '''
-            effective_prop_min = eval(compiled_eff_props['eff_min'], {'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
-            effective_prop_max = eval(compiled_eff_props['eff_max'], {'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            effective_prop_min = eval(compiled_calc_guide['effective_props']['eff_min'], {}, {'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            effective_prop_max = eval(compiled_calc_guide['effective_props']['eff_max'], {}, {'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
             
         # Compute concentration factors for electrical load sharing
         mixing_param = self.ga_params.mixing_param
@@ -237,8 +240,8 @@ class Member(BaseModel):
             cf_response1_cf_load1 = evaluate_yaml_formula(calc_guide['concentration_factors']['cf_1'], **{'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'effective_property': effective_prop})
             cf_response2_cf_load2 = evaluate_yaml_formula(calc_guide['concentration_factors']['cf_2'], **{'phase1': phase1, 'phase2': phase2, 'phase2_vol_frac': phase2_vol_frac, 'effective_property': effective_prop})
             '''
-            cf_response1_cf_load1 = eval(compiled_cfs['cf_1'], {'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'effective_property': effective_prop})
-            cf_response2_cf_load2 = eval(compiled_cfs['cf_2'], {'phase1': phase1, 'phase2': phase2, 'phase2_vol_frac': phase2_vol_frac, 'effective_property': effective_prop})
+            cf_response1_cf_load1 = eval(compiled_calc_guide['concentration_factors']['cf_1'], {}, {'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'effective_property': effective_prop})
+            cf_response2_cf_load2 = eval(compiled_calc_guide['concentration_factors']['cf_2'], {}, {'phase1': phase1, 'phase2': phase2, 'phase2_vol_frac': phase2_vol_frac, 'effective_property': effective_prop})
 
         concentration_factors.append(cf_response1_cf_load1)
         concentration_factors.append(cf_response2_cf_load2)
@@ -292,8 +295,8 @@ class Member(BaseModel):
             effective_bulk_mod_min = evaluate_yaml_formula(calc_guide['effective_props']['bulk_mod_min'], **{'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
             effective_bulk_mod_max = evaluate_yaml_formula(calc_guide['effective_props']['bulk_mod_max'], **{'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
             '''
-            effective_bulk_mod_min = eval(compiled_eff_props['bulk_mod_min'], {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
-            effective_bulk_mod_max = eval(compiled_eff_props['bulk_mod_max'], {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            effective_bulk_mod_min = eval(compiled_calc_guide['effective_props']['bulk_mod_min'], {}, {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            effective_bulk_mod_max = eval(compiled_calc_guide['effective_props']['bulk_mod_max'], {}, {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
 
 
         if phase1_shear == phase2_shear:
@@ -312,8 +315,8 @@ class Member(BaseModel):
             effective_shear_mod_min = evaluate_yaml_formula(calc_guide['effective_props']['shear_mod_min'], **{'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
             effective_shear_mod_max = evaluate_yaml_formula(calc_guide['effective_props']['shear_mod_max'], **{'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
             '''
-            effective_shear_mod_min = eval(compiled_eff_props['shear_mod_min'], {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
-            effective_shear_mod_max = eval(compiled_eff_props['shear_mod_max'], {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            effective_shear_mod_min = eval(compiled_calc_guide['effective_props']['shear_mod_min'], {}, {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            effective_shear_mod_max = eval(compiled_calc_guide['effective_props']['shear_mod_max'], {}, {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
 
         # Compute concentration factors for mechanical load sharing
         mixing_param = self.ga_params.mixing_param
@@ -329,8 +332,8 @@ class Member(BaseModel):
         bulk_mod_eff  = evaluate_yaml_formula(calc_guide['effective_props']['eff_prop'], **{'mixing_param': mixing_param, 'eff_min': effective_bulk_mod_min, 'eff_max': effective_bulk_mod_max})        
         shear_mod_eff = evaluate_yaml_formula(calc_guide['effective_props']['eff_prop'], **{'mixing_param': mixing_param, 'eff_min': effective_shear_mod_min, 'eff_max': effective_shear_mod_max})
         '''
-        bulk_mod_eff  = eval(compiled_eff_props['eff_prop'], {'mixing_param': mixing_param, 'eff_min': effective_bulk_mod_min, 'eff_max': effective_bulk_mod_max})        
-        shear_mod_eff = eval(compiled_eff_props['eff_prop'], {'mixing_param': mixing_param, 'eff_min': effective_shear_mod_min, 'eff_max': effective_shear_mod_max})
+        bulk_mod_eff  = eval(compiled_calc_guide['effective_props']['eff_prop'], {}, {'mixing_param': mixing_param, 'eff_min': effective_bulk_mod_min, 'eff_max': effective_bulk_mod_max})        
+        shear_mod_eff = eval(compiled_calc_guide['effective_props']['eff_prop'], {}, {'mixing_param': mixing_param, 'eff_min': effective_shear_mod_min, 'eff_max': effective_shear_mod_max})
 
         effective_properties.append(bulk_mod_eff)
         effective_properties.append(shear_mod_eff)
@@ -361,8 +364,8 @@ class Member(BaseModel):
             cf_phase2_bulk = evaluate_yaml_formula(calc_guide['concentration_factors']['cf_2_elastic'], **{'phase2_vol_frac': phase2_vol_frac, 'phase1': phase1_bulk, 'phase2': phase2_bulk, 'effective_property': bulk_mod_eff})
             cf_phase1_bulk = evaluate_yaml_formula(calc_guide['concentration_factors']['cf_1_elastic'], **{'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac, 'cf_2_elastic': cf_phase2_bulk})
             '''
-            cf_phase2_bulk = eval(compiled_cfs['cf_2_elastic'], {'phase2_vol_frac': phase2_vol_frac, 'phase1': phase1_bulk, 'phase2': phase2_bulk, 'effective_property': bulk_mod_eff})
-            cf_phase1_bulk = eval(compiled_cfs['cf_1_elastic'], {'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac, 'cf_2_elastic': cf_phase2_bulk})
+            cf_phase2_bulk = eval(compiled_calc_guide['concentration_factors']['cf_2_elastic'], {}, {'phase2_vol_frac': phase2_vol_frac, 'phase1': phase1_bulk, 'phase2': phase2_bulk, 'effective_property': bulk_mod_eff})
+            cf_phase1_bulk = eval(compiled_calc_guide['concentration_factors']['cf_1_elastic'], {}, {'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac, 'cf_2_elastic': cf_phase2_bulk})
   
         if phase1_vol_frac == 0:
             cf_phase2_shear = 1/phase2_vol_frac
@@ -386,8 +389,8 @@ class Member(BaseModel):
             cf_phase2_shear = evaluate_yaml_formula(calc_guide['concentration_factors']['cf_2_elastic'], **{'phase2_vol_frac': phase2_vol_frac, 'phase1': phase1_shear, 'phase2': phase2_shear, 'effective_property': shear_mod_eff})
             cf_phase1_shear = evaluate_yaml_formula(calc_guide['concentration_factors']['cf_1_elastic'], **{'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac, 'cf_2_elastic': cf_phase2_shear})
             '''
-            cf_phase2_shear = eval(compiled_cfs['cf_2_elastic'], {'phase2_vol_frac': phase2_vol_frac, 'phase1': phase1_shear, 'phase2': phase2_shear, 'effective_property': shear_mod_eff})
-            cf_phase1_shear = eval(compiled_cfs['cf_1_elastic'], {'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac, 'cf_2_elastic': cf_phase2_shear})
+            cf_phase2_shear = eval(compiled_calc_guide['concentration_factors']['cf_2_elastic'], {}, {'phase2_vol_frac': phase2_vol_frac, 'phase1': phase1_shear, 'phase2': phase2_shear, 'effective_property': shear_mod_eff})
+            cf_phase1_shear = eval(compiled_calc_guide['concentration_factors']['cf_1_elastic'], {}, {'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac, 'cf_2_elastic': cf_phase2_shear})
 
         # Write over default calculation for concentration factor
         concentration_factors.append(cf_phase1_bulk)
