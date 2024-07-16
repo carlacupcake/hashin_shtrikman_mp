@@ -1,42 +1,47 @@
-import re
-import json
-import numpy as np
-import matplotlib.pyplot as plt
 import copy
 import itertools
+import json
+import matplotlib.pyplot as plt
+import numpy as np
+import re
 import sys
 import yaml
 
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, root_validator
-from monty.serialization import loadfn
 from datetime import datetime
+from monty.serialization import loadfn
 from mp_api.client import MPRester
 from mpcontribs.client import Client
-from scipy import optimize as sciop
+from pathlib import Path
+from pydantic import BaseModel, Field, model_validator
 from tabulate import tabulate
+from typing import Any, Dict, List, Union, Optional
 
 sys.path.insert(1, '../log')
 from custom_logger import logger
-from pathlib import Path
 
+# Custom imports
 from genetic_algo import GAParams
 from member import Member
 from population import Population
 
+# YAML files
+sys.path.insert(1, '../io/inputs')
+CALC_GUIDE = "cost_calculation_formulas.yaml"
+HS_HEADERS_YAML = "display_table_headers.yaml"
+MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
+
 # HashinShtrikman class defaults
-DEFAULT_FIELDS: dict    = {"material_id": [], 
-                           "is_stable": [], 
-                           "band_gap": [], 
-                           "is_metal": [],
-                           "formula_pretty": [],}
+DEFAULT_FIELDS: dict = {"material_id": [], 
+                        "is_stable": [], 
+                        "band_gap": [], 
+                        "is_metal": [],
+                        "formula_pretty": [],}
 MODULE_DIR = Path(__file__).resolve().parent
 
-# YAML files
-sys.path.insert(1, '../io')
-CALC_GUIDE = "cost_calculation_formulas.yaml"
-MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
-HS_HEADERS_YAML = "display_table_headers.yaml"
+
+# Load and compile cost calculation formulas
+from compile_cost_calculation_formulas import compile_formulas
+COMPILED_CALC_GUIDE = compile_formulas(loadfn(f"{MODULE_DIR}/../io/inputs/{CALC_GUIDE}"))
 
 class HashinShtrikman(BaseModel):
     """
@@ -48,53 +53,43 @@ class HashinShtrikman(BaseModel):
 
     api_key: Optional[str] = Field(
         default=None, 
-        description="API key for accessing Materials "
-                    "Project database."
+        description="API key for accessing Materials Project database."
         )
     mp_contribs_project: Optional[str] = Field(
         default=None, 
-        description="MPContribs project name "
-                    "for querying project-specific data."
+        description="MPContribs project name for querying project-specific data."
         )
     user_input: Dict = Field(
         default_factory=dict, 
-        description="User input specifications for the "
-        "optimization process."
+        description="User input specifications for the optimization process."
         )
     fields: Dict[str, List[Any]] = Field(
         default_factory=lambda: DEFAULT_FIELDS.copy(), 
-        description="Fields to query from the "
-                    "Materials Project database."
+        description="Fields to query from the Materials Project database."
         )
     property_categories: List[str] = Field(
         default_factory=list, 
-        description="List of property categories "
-                    "considered for optimization."
+        description="List of property categories considered for optimization."
         )
     property_docs: Dict[str, Dict[str, Any]] = Field(
         default_factory=dict, 
-        description="A hard coded yaml file containing property "
-                    "categories and their individual properties."
+        description="A hard coded yaml file containing property categories and their individual properties."
         )
     lower_bounds: Dict[str, Any] = Field(
         default_factory=dict, 
-        description="Lower bounds for properties of "
-                    "materials considered in the optimization."
+        description="Lower bounds for properties of materials considered in the optimization."
         )
     upper_bounds: Dict[str, Any] = Field(
         default_factory=dict, 
-        description="Upper bounds for properties of "
-                    "materials considered in the optimization."
+        description="Upper bounds for properties of materials considered in the optimization."
         )
     desired_props: Dict[str, List[float]] = Field(
         default_factory=dict, 
-        description="Dictionary mapping "
-                    "individual properties to their "
-                    "desired properties."
+        description="Dictionary mapping individual properties to their desired properties."
         )
     num_materials: int = Field(
         default=0, 
-        description="TODO"
+        description="Number of materials to comprise the composite."
         )
     num_properties: int = Field(
         default=0, 
@@ -102,45 +97,35 @@ class HashinShtrikman(BaseModel):
         )
     ga_params: GAParams = Field(
         default_factory=GAParams, 
-        description="Parameter initilization class for the "
-                    "genetic algorithm."
+        description="Parameter initilization class for the genetic algorithm."
         )
     final_population: Population = Field(
         default_factory=Population, 
-        description="Final population object after "
-                    "optimization."
+        description="Final population object after optimization."
         )
     lowest_costs: np.ndarray = Field(
         default_factory=lambda: np.empty(0), 
-        description="Lowest cost values across "
-                    "generations."
+        description="Lowest cost values across generations."
         )
     avg_parent_costs: np.ndarray = Field(
         default_factory=lambda: np.empty(0), 
-        description="Average cost of the "
-                    "top-performing parents across generations."
+        description="Average cost of the top-performing parents across generations."
         )   
-    calc_guide: Dict[str, Any] = Field(
-        default_factory=lambda: 
-        loadfn(CALC_GUIDE), 
-        description="Calculation guide for property "
-                    "evaluation. This is a hard coded yaml file."
+    calc_guide: Union[Dict[str, Any], Any] = Field(
+        default_factory=lambda: COMPILED_CALC_GUIDE,
+        description="Calculation guide for property evaluation with compiled expressions."
     )
     
     # To use np.ndarray or other arbitrary types in your Pydantic models
     class Config:
         arbitrary_types_allowed = True
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def load_and_set_properties(cls, values):
         # Load property categories and docs
-        property_categories, property_docs = cls.load_property_categories(f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input=values.get("user_input", {}))
+        property_categories, property_docs = cls.load_property_categories(f"{MODULE_DIR}/../io/inputs/{MP_PROPERTY_DOCS_YAML}", user_input=values.get("user_input", {}))
         values["property_categories"] = property_categories
         values["property_docs"] = property_docs
-        
-        # Load calculation guide, if necessary
-        calc_guide = loadfn(values.get("calc_guide", f"{MODULE_DIR}/../io/inputs/cost_calculation_formulas.yaml"))
-        values["calc_guide"] = calc_guide
         
         # Since user_input is required to set desired props and bounds, ensure it's processed last
         user_input = values.get("user_input", {})
@@ -242,10 +227,10 @@ class HashinShtrikman(BaseModel):
 
         return [unique_members, unique_costs] 
 
-    def get_table_of_best_designs(self):
+    def get_table_of_best_designs(self, rows: int = 10):
 
         [unique_members, unique_costs] = self.get_unique_designs()
-        table_data = np.hstack((unique_members[0:20, :], unique_costs[0:20].reshape(-1, 1))) 
+        table_data = np.hstack((unique_members[0:rows, :], unique_costs[0:rows].reshape(-1, 1))) 
 
         return table_data
 
@@ -462,7 +447,7 @@ class HashinShtrikman(BaseModel):
         self.fields = fields
         return self 
  
-    def set_HS_optim_params(self):
+    def set_HS_optim_params(self, gen_counter: bool = False):
         
         """ MAIN OPTIMIZATION FUNCTION """
 
@@ -514,7 +499,9 @@ class HashinShtrikman(BaseModel):
         # Perform all later generations    
         while g < num_generations:
 
-            print(f"Generation {g} of {num_generations}")
+            if gen_counter:
+                print(f"Generation {g} of {num_generations}")
+
             costs[0:num_parents] = sorted_costs[0:num_parents] # retain the parents from the previous generation
             
             # Select top parents from population to be breeders
@@ -575,12 +562,12 @@ class HashinShtrikman(BaseModel):
         self.lowest_costs = lowest_costs
         self.avg_parent_costs = avg_parent_costs     
         
-        return self                
+        return                
 
     #------ Other Methods ------#
-    def print_table_of_best_designs(self):
+    def print_table_of_best_designs(self, rows: int = 10):
 
-        table_data = self.get_table_of_best_designs()
+        table_data = self.get_table_of_best_designs(rows)
         print("\nHASHIN-SHTRIKMAN + GENETIC ALGORITHM RECOMMENDED MATERIAL PROPERTIES")
         print(tabulate(table_data, headers=self.get_headers()))
     

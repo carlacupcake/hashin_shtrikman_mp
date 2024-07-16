@@ -1,9 +1,11 @@
 import numpy as np
-from genetic_algo import GAParams
-from custom_logger import logger
-from pydantic import BaseModel, root_validator, Field
-from typing import List, Dict, Optional, Any
 import warnings
+
+from pydantic import BaseModel, model_validator, Field
+from typing import Any, Dict, List, Union, Optional
+
+# Custom imports
+from genetic_algo import GAParams
 
 class Member(BaseModel):
     """
@@ -29,8 +31,7 @@ class Member(BaseModel):
     )
     property_docs: Dict[str, Dict[str, Any]] = Field(
         default={},
-        description="A hard coded yaml file containing property categories "
-                    "and their individual properties."
+        description="A hard coded yaml file containing property categories and their individual properties."
     )
     desired_props: Dict[str, Any] = Field(
         default={},
@@ -41,17 +42,16 @@ class Member(BaseModel):
         default=None,
         description="Parameter initilization class for the genetic algorithm."
     )
-    calc_guide: Dict[str, Any] = Field(
-        default={},
-        description="Calculation guide for property evaluation. This is a "
-                    "hard coded yaml file."
-    )    
+    calc_guide: Union[Dict[str, Any], Any] = Field(
+        default_factory=lambda: None,
+        description="Calculation guide for property evaluation with compiled expressions."
+    )      
 
     # To use np.ndarray or other arbitrary types in your Pydantic models
     class Config:
         arbitrary_types_allowed = True
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def check_and_initialize_arrays(cls, values):
         # Initialize 'values' with zeros if not provided or if it is np.empty
         if values.get('values') is None or (isinstance(values.get('values'), np.ndarray) and values.get('values').size == 0):
@@ -149,9 +149,9 @@ class Member(BaseModel):
             effective_prop_min = phase1
             effective_prop_max = phase2
         else:
-            effective_prop_min = eval(self.calc_guide['effective_props']['eff_min'].format(phase1=phase1, phase2=phase2, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
-            effective_prop_max = eval(self.calc_guide['effective_props']['eff_max'].format(phase1=phase1, phase2=phase2, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
-
+            effective_prop_min = eval(self.calc_guide['effective_props']['eff_min'], {}, {'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            effective_prop_max = eval(self.calc_guide['effective_props']['eff_max'], {}, {'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            
         # Compute concentration factors for electrical load sharing
         mixing_param = self.ga_params.mixing_param
         effective_prop = mixing_param * effective_prop_max + (1 - mixing_param) * effective_prop_min
@@ -167,8 +167,8 @@ class Member(BaseModel):
             cf_response1_cf_load1 = (1/phase1_vol_frac)**2 
             cf_response2_cf_load2 = (1/phase2_vol_frac)**2 
         else:
-            cf_response1_cf_load1 = eval(self.calc_guide['concentration_factors']['cf_1'].format(phase1=phase1, phase2=phase2, phase1_vol_frac=phase1_vol_frac, effective_property=effective_prop))
-            cf_response2_cf_load2 = eval(self.calc_guide['concentration_factors']['cf_2'].format(phase1=phase1, phase2=phase2, phase2_vol_frac=phase2_vol_frac, effective_property=effective_prop))
+            cf_response1_cf_load1 = eval(self.calc_guide['concentration_factors']['cf_1'], {}, {'phase1': phase1, 'phase2': phase2, 'phase1_vol_frac': phase1_vol_frac, 'effective_property': effective_prop})
+            cf_response2_cf_load2 = eval(self.calc_guide['concentration_factors']['cf_2'], {}, {'phase1': phase1, 'phase2': phase2, 'phase2_vol_frac': phase2_vol_frac, 'effective_property': effective_prop})
 
         concentration_factors.append(cf_response1_cf_load1)
         concentration_factors.append(cf_response2_cf_load2)
@@ -199,8 +199,9 @@ class Member(BaseModel):
         phase1_shear_idx = np.argmax(shear_mods)
         phase2_shear_idx = np.argmax(shear_mods)
 
-        if (phase1_bulk_idx != phase1_shear_idx) or (phase2_bulk_idx != phase2_shear_idx):
-            warnings.warn("Cannot perform optimization when for bulk modulus phase 1 > phase 2 and for shear modulus phase 2 > phase 1 or vice versa.")
+        if ((phase1_bulk > phase2_bulk) and (phase1_shear < phase2_shear)) or ((phase1_bulk < phase2_bulk) and (phase1_shear > phase2_shear)):
+            print(f'phase1_bulk: {phase1_bulk}, phase2_bulk: {phase2_bulk}, phase1_shear: {phase1_shear}, phase2_shear: {phase2_shear}')
+            warnings.warn("Cannot perform optimization when bulk modulus phase 1 > phase 2 and shear modulus phase 2 > phase 1, or vice versa.")
 
         phase1_vol_frac = self.values[-self.num_materials + phase1_bulk_idx] # shear should have the same index
         phase2_vol_frac = self.values[-self.num_materials + phase2_bulk_idx]          
@@ -210,20 +211,21 @@ class Member(BaseModel):
             effective_bulk_mod_min  = phase1_bulk
             effective_bulk_mod_max  = phase2_bulk
         else:
-            effective_bulk_mod_min = eval(self.calc_guide['effective_props']['bulk_mod_min'].format(phase1_bulk=phase1_bulk, phase2_bulk=phase2_bulk, phase1_shear=phase1_shear, phase2_shear=phase2_shear, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
-            effective_bulk_mod_max = eval(self.calc_guide['effective_props']['bulk_mod_max'].format(phase1_bulk=phase1_bulk, phase2_bulk=phase2_bulk, phase1_shear=phase1_shear, phase2_shear=phase2_shear, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
+            effective_bulk_mod_min = eval(self.calc_guide['effective_props']['bulk_mod_min'], {}, {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            effective_bulk_mod_max = eval(self.calc_guide['effective_props']['bulk_mod_max'], {}, {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+
 
         if phase1_shear == phase2_shear:
             effective_shear_mod_min = phase1_shear
             effective_shear_mod_max = phase2_shear
         else:
-            effective_shear_mod_min = eval(self.calc_guide['effective_props']['shear_mod_min'].format(phase1_bulk=phase1_bulk, phase2_bulk=phase2_bulk, phase1_shear=phase1_shear, phase2_shear=phase2_shear, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
-            effective_shear_mod_max = eval(self.calc_guide['effective_props']['shear_mod_max'].format(phase1_bulk=phase1_bulk, phase2_bulk=phase2_bulk, phase1_shear=phase1_shear, phase2_shear=phase2_shear, phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac))
+            effective_shear_mod_min = eval(self.calc_guide['effective_props']['shear_mod_min'], {}, {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
+            effective_shear_mod_max = eval(self.calc_guide['effective_props']['shear_mod_max'], {}, {'phase1_bulk': phase1_bulk, 'phase2_bulk': phase2_bulk, 'phase1_shear': phase1_shear, 'phase2_shear': phase2_shear, 'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac})
 
         # Compute concentration factors for mechanical load sharing
         mixing_param = self.ga_params.mixing_param
-        bulk_mod_eff  = eval(self.calc_guide['effective_props']['eff_prop'].format(mixing_param=mixing_param, eff_min=effective_bulk_mod_min, eff_max=effective_bulk_mod_max))         
-        shear_mod_eff = eval(self.calc_guide['effective_props']['eff_prop'].format(mixing_param=mixing_param, eff_min=effective_shear_mod_min, eff_max=effective_shear_mod_max))
+        bulk_mod_eff  = eval(self.calc_guide['effective_props']['eff_prop'], {}, {'mixing_param': mixing_param, 'eff_min': effective_bulk_mod_min, 'eff_max': effective_bulk_mod_max})        
+        shear_mod_eff = eval(self.calc_guide['effective_props']['eff_prop'], {}, {'mixing_param': mixing_param, 'eff_min': effective_shear_mod_min, 'eff_max': effective_shear_mod_max})
 
         effective_properties.append(bulk_mod_eff)
         effective_properties.append(shear_mod_eff)
@@ -242,8 +244,8 @@ class Member(BaseModel):
             cf_phase2_bulk = 1/phase2_vol_frac
             cf_phase1_bulk = 1/phase1_vol_frac
         else:
-            cf_phase2_bulk = eval(self.calc_guide['concentration_factors']['cf_2_elastic'].format(phase2_vol_frac=phase2_vol_frac, phase1=phase1_bulk, phase2=phase2_bulk, effective_property=bulk_mod_eff))
-            cf_phase1_bulk = eval(self.calc_guide['concentration_factors']['cf_1_elastic'].format(phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac, cf_2_elastic=cf_phase2_bulk))
+            cf_phase2_bulk = eval(self.calc_guide['concentration_factors']['cf_2_elastic'], {}, {'phase2_vol_frac': phase2_vol_frac, 'phase1': phase1_bulk, 'phase2': phase2_bulk, 'effective_property': bulk_mod_eff})
+            cf_phase1_bulk = eval(self.calc_guide['concentration_factors']['cf_1_elastic'], {}, {'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac, 'cf_2_elastic': cf_phase2_bulk})
   
         if phase1_vol_frac == 0:
             cf_phase2_shear = 1/phase2_vol_frac
@@ -255,8 +257,8 @@ class Member(BaseModel):
             cf_phase2_shear = 1/phase2_vol_frac
             cf_phase1_shear = 1/phase1_vol_frac
         else:
-            cf_phase2_shear = eval(self.calc_guide['concentration_factors']['cf_2_elastic'].format(phase2_vol_frac=phase2_vol_frac, phase1=phase1_shear, phase2=phase2_shear, effective_property=shear_mod_eff))
-            cf_phase1_shear = eval(self.calc_guide['concentration_factors']['cf_1_elastic'].format(phase1_vol_frac=phase1_vol_frac, phase2_vol_frac=phase2_vol_frac, cf_2_elastic=cf_phase2_shear))
+            cf_phase2_shear = eval(self.calc_guide['concentration_factors']['cf_2_elastic'], {}, {'phase2_vol_frac': phase2_vol_frac, 'phase1': phase1_shear, 'phase2': phase2_shear, 'effective_property': shear_mod_eff})
+            cf_phase1_shear = eval(self.calc_guide['concentration_factors']['cf_1_elastic'], {}, {'phase1_vol_frac': phase1_vol_frac, 'phase2_vol_frac': phase2_vol_frac, 'cf_2_elastic': cf_phase2_shear})
 
         # Write over default calculation for concentration factor
         concentration_factors.append(cf_phase1_bulk)
@@ -265,6 +267,8 @@ class Member(BaseModel):
         concentration_factors.append(cf_phase2_shear)      
 
         return effective_properties, concentration_factors
+    
+    
             
     
 
