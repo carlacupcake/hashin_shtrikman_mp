@@ -12,7 +12,7 @@ from monty.serialization import loadfn
 from mp_api.client import MPRester
 from mpcontribs.client import Client
 from pathlib import Path
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 from tabulate import tabulate
 from typing import Any, Dict, List, Union, Optional
 
@@ -120,7 +120,7 @@ class HashinShtrikman(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def load_and_set_properties(cls, values):
         # Load property categories and docs
         property_categories, property_docs = cls.load_property_categories(f"{MODULE_DIR}/../io/inputs/{MP_PROPERTY_DOCS_YAML}", user_input=values.get("user_input", {}))
@@ -227,10 +227,10 @@ class HashinShtrikman(BaseModel):
 
         return [unique_members, unique_costs] 
 
-    def get_table_of_best_designs(self):
+    def get_table_of_best_designs(self, rows: int = 10):
 
         [unique_members, unique_costs] = self.get_unique_designs()
-        table_data = np.hstack((unique_members[0:20, :], unique_costs[0:20].reshape(-1, 1))) 
+        table_data = np.hstack((unique_members[0:rows, :], unique_costs[0:rows].reshape(-1, 1))) 
 
         return table_data
 
@@ -447,7 +447,7 @@ class HashinShtrikman(BaseModel):
         self.fields = fields
         return self 
  
-    def set_HS_optim_params(self):
+    def set_HS_optim_params(self, gen_counter: bool = False):
         
         """ MAIN OPTIMIZATION FUNCTION """
 
@@ -499,7 +499,9 @@ class HashinShtrikman(BaseModel):
         # Perform all later generations    
         while g < num_generations:
 
-            print(f"Generation {g} of {num_generations}")
+            if gen_counter:
+                print(f"Generation {g} of {num_generations}")
+
             costs[0:num_parents] = sorted_costs[0:num_parents] # retain the parents from the previous generation
             
             # Select top parents from population to be breeders
@@ -560,12 +562,12 @@ class HashinShtrikman(BaseModel):
         self.lowest_costs = lowest_costs
         self.avg_parent_costs = avg_parent_costs     
         
-        return self                
+        return                
 
     #------ Other Methods ------#
-    def print_table_of_best_designs(self):
+    def print_table_of_best_designs(self, rows: int = 10):
 
-        table_data = self.get_table_of_best_designs()
+        table_data = self.get_table_of_best_designs(rows)
         print("\nHASHIN-SHTRIKMAN + GENETIC ALGORITHM RECOMMENDED MATERIAL PROPERTIES")
         print(tabulate(table_data, headers=self.get_headers()))
     

@@ -1,7 +1,7 @@
 import numpy as np
 import warnings
 
-from pydantic import BaseModel, root_validator, Field
+from pydantic import BaseModel, model_validator, Field
 from typing import Any, Dict, List, Union, Optional
 
 # Custom imports
@@ -51,7 +51,7 @@ class Member(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def check_and_initialize_arrays(cls, values):
         # Initialize 'values' with zeros if not provided or if it is np.empty
         if values.get('values') is None or (isinstance(values.get('values'), np.ndarray) and values.get('values').size == 0):
@@ -199,8 +199,9 @@ class Member(BaseModel):
         phase1_shear_idx = np.argmax(shear_mods)
         phase2_shear_idx = np.argmax(shear_mods)
 
-        if (phase1_bulk_idx != phase1_shear_idx) or (phase2_bulk_idx != phase2_shear_idx):
-            warnings.warn("Cannot perform optimization when for bulk modulus phase 1 > phase 2 and for shear modulus phase 2 > phase 1 or vice versa.")
+        if ((phase1_bulk > phase2_bulk) and (phase1_shear < phase2_shear)) or ((phase1_bulk < phase2_bulk) and (phase1_shear > phase2_shear)):
+            print(f'phase1_bulk: {phase1_bulk}, phase2_bulk: {phase2_bulk}, phase1_shear: {phase1_shear}, phase2_shear: {phase2_shear}')
+            warnings.warn("Cannot perform optimization when bulk modulus phase 1 > phase 2 and shear modulus phase 2 > phase 1, or vice versa.")
 
         phase1_vol_frac = self.values[-self.num_materials + phase1_bulk_idx] # shear should have the same index
         phase2_vol_frac = self.values[-self.num_materials + phase2_bulk_idx]          

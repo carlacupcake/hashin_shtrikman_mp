@@ -1,6 +1,6 @@
 import numpy as np
 
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field, model_validator
 from typing import Any, Dict, List, Union, Optional
 
 # Custom imports
@@ -56,7 +56,7 @@ class Population(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
     def set_default_values_and_costs(cls, values):
         # Extract or initialize ga_params
         ga_params = values.get('ga_params', GAParams())
