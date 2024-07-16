@@ -1,25 +1,25 @@
-import re
-import json
-import numpy as np
-import matplotlib.pyplot as plt
 import copy
 import itertools
+import json
+import matplotlib.pyplot as plt
+import numpy as np
+import re
 import sys
 import yaml
 
-from typing import Any, Dict, List, Union, Optional
-from pydantic import BaseModel, Field, root_validator
-from monty.serialization import loadfn
 from datetime import datetime
+from monty.serialization import loadfn
 from mp_api.client import MPRester
 from mpcontribs.client import Client
-from scipy import optimize as sciop
+from pathlib import Path
+from pydantic import BaseModel, Field, root_validator
 from tabulate import tabulate
+from typing import Any, Dict, List, Union, Optional
 
 sys.path.insert(1, '../log')
 from custom_logger import logger
-from pathlib import Path
 
+# Custom imports
 from genetic_algo import GAParams
 from member import Member
 from population import Population
@@ -27,8 +27,8 @@ from population import Population
 # YAML files
 sys.path.insert(1, '../io/inputs')
 CALC_GUIDE = "cost_calculation_formulas.yaml"
-MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
 HS_HEADERS_YAML = "display_table_headers.yaml"
+MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
 
 # HashinShtrikman class defaults
 DEFAULT_FIELDS: dict = {"material_id": [], 
@@ -40,8 +40,8 @@ MODULE_DIR = Path(__file__).resolve().parent
 
 
 # Load and compile cost calculation formulas
-from compile_cost_calculation_formulas import compile_expressions
-COMPILED_CALC_GUIDE = compile_expressions(loadfn(f"{MODULE_DIR}/../io/inputs/{CALC_GUIDE}"))
+from compile_cost_calculation_formulas import compile_formulas
+COMPILED_CALC_GUIDE = compile_formulas(loadfn(f"{MODULE_DIR}/../io/inputs/{CALC_GUIDE}"))
 
 class HashinShtrikman(BaseModel):
     """
@@ -123,7 +123,7 @@ class HashinShtrikman(BaseModel):
     @root_validator(pre=True)
     def load_and_set_properties(cls, values):
         # Load property categories and docs
-        property_categories, property_docs = cls.load_property_categories(f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input=values.get("user_input", {}))
+        property_categories, property_docs = cls.load_property_categories(f"{MODULE_DIR}/../io/inputs/{MP_PROPERTY_DOCS_YAML}", user_input=values.get("user_input", {}))
         values["property_categories"] = property_categories
         values["property_docs"] = property_docs
         

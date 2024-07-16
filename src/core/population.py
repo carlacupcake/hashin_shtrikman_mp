@@ -1,8 +1,11 @@
 import numpy as np
-from member import Member
-from genetic_algo import GAParams
-from typing import Any, Dict, List, Union, Optional
+
 from pydantic import BaseModel, Field, root_validator
+from typing import Any, Dict, List, Union, Optional
+
+# Custom imports
+from genetic_algo import GAParams
+from member import Member
 
 class Population(BaseModel):
     """

@@ -1,9 +1,11 @@
 import numpy as np
 import warnings
-from genetic_algo import GAParams
+
 from pydantic import BaseModel, root_validator, Field
-from string import Template
 from typing import Any, Dict, List, Union, Optional
+
+# Custom imports
+from genetic_algo import GAParams
 
 class Member(BaseModel):
     """

@@ -1,8 +1,8 @@
-def compile_expressions(expressions_dict):
-    compiled_expressions = {}
-    for key, formula in expressions_dict.items():
+def compile_formulas(formulas_dict):
+    compiled_formulas = {}
+    for key, formula in formulas_dict.items():
         if isinstance(formula, str):
-            # Replace placeholders with valid Python variable names
+            # List all variables used in cost_calculation_formulas.yaml as Python variables
             compiled_formula = formula.format(
                 phase1='phase1', 
                 phase2='phase2', 
@@ -19,9 +19,9 @@ def compile_expressions(expressions_dict):
                 cf_2_elastic='cf_2_elastic'
             )
             # Compile the formula
-            compiled_expressions[key] = compile(compiled_formula, '<string>', 'eval')
+            compiled_formulas[key] = compile(compiled_formula, '<string>', 'eval')
         elif isinstance(formula, dict):
             # Recursively compile nested dictionaries
-            compiled_expressions[key] = compile_expressions(formula)
+            compiled_formulas[key] = compile_formulas(formula)
 
-    return compiled_expressions
+    return compiled_formulas
