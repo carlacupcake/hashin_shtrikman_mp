@@ -61,7 +61,6 @@ class Member(BaseModel):
         return values
     
     #------ Getter Methods ------#
-   
     def get_cost(self):
 
         """ MAIN COST FUNCTION """
@@ -267,6 +266,35 @@ class Member(BaseModel):
         concentration_factors.append(cf_phase2_shear)      
 
         return effective_properties, concentration_factors
+    
+    def get_effective_properties(self):
+
+        # Initialize effective property array
+        effective_properties  = [] 
+
+        # Get Hashin-Shtrikman effective properties for all properties           
+        idx = 0
+
+        for category in self.property_categories:
+                
+            if category == "elastic":
+                moduli_eff_props, _ = self.get_elastic_eff_props_and_cfs(idx=idx)
+                effective_properties.extend(moduli_eff_props)
+
+                eff_univ_aniso, _ = self.get_general_eff_prop_and_cfs(idx=idx+2)
+                effective_properties.extend(eff_univ_aniso)
+
+            else:
+                for p in range(idx, idx + len(self.property_docs[category])): # loop through all properties in the category
+                    new_eff_props, _ = self.get_general_eff_prop_and_cfs(idx=p)
+                    effective_properties.extend(new_eff_props)
+            
+            idx += len(self.property_docs[category])
+
+        # Cast effective properties to numpy arrays
+        effective_properties  = np.array(effective_properties)
+
+        return effective_properties
     
     
             

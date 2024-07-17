@@ -87,6 +87,26 @@ class Population(BaseModel):
 
         return [unique_members, unique_costs] 
     
+    def get_effective_properties(self):
+        population_values = self.values
+        num_members = self.ga_params.num_members
+        num_properties = self.num_properties - 1 # do not include volume fraction
+
+        all_effective_properties = np.zeros((num_members, num_properties))
+        for i in range(num_members):
+            this_member = Member(num_materials=self.num_materials, 
+                                 num_properties=self.num_properties,
+                                 values=population_values[i, :], 
+                                 property_categories=self.property_categories,
+                                 property_docs=self.property_docs, 
+                                 desired_props=self.desired_props, 
+                                 ga_params=self.ga_params,
+                                 calc_guide=self.calc_guide)
+            eff_props = this_member.get_effective_properties()
+            all_effective_properties[i, :] = eff_props
+
+        return all_effective_properties
+    
     #------ Setter Methods ------# 
     def set_random_values(self, lower_bounds = {}, upper_bounds = {}, num_members = 0):
 

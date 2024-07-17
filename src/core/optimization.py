@@ -5,12 +5,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import re
 import sys
+import warnings
 import yaml
 
 from datetime import datetime
+from matplotlib import cm
+import matplotlib.gridspec as gridspec
 from monty.serialization import loadfn
 from mp_api.client import MPRester
 from mpcontribs.client import Client
+from mpl_toolkits.mplot3d import Axes3D
 from pathlib import Path
 from pydantic import BaseModel, Field, model_validator
 from tabulate import tabulate
@@ -268,8 +272,8 @@ class HashinShtrikman(BaseModel):
     def get_material_matches(self, consolidated_dict: dict = {}): 
 
         best_designs_dict = self.get_dict_of_best_designs()       
-        if consolidated_dict == {}:  # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
-            with open("consolidated_dict_02_11_2024_23_45_58") as f:
+        if consolidated_dict == {}:  
+            with open("consolidated_dict_02_11_2024_23_45_58") as f: # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
                 consolidated_dict = json.load(f)
 
         # Initialize list of sets for matching indices
@@ -298,10 +302,10 @@ class HashinShtrikman(BaseModel):
 
         return matches_dict     
     
-    def get_all_possible_vol_frac_combos(self):
+    def get_all_possible_vol_frac_combos(self, num_fractions: int = 30):
         all_vol_frac_ranges = []
-        for m in range(self.num_materials - 1):
-            all_vol_frac_ranges.append(list(np.linspace(0.01, 0.99, 30))) # hardcoded to 30 to save memory
+        for _ in range(self.num_materials - 1):
+            all_vol_frac_ranges.append(list(np.linspace(0.01, 0.99, num_fractions))) 
 
         all_vol_frac_combos = []
         all_vol_frac_combo_tups = list(itertools.product(*all_vol_frac_ranges))
@@ -579,11 +583,171 @@ class HashinShtrikman(BaseModel):
         plt.ylabel("Cost", fontsize=20)
         plt.title("Genetic Algorithm Results", fontsize = 24)
         plt.legend(fontsize = 14)
-        plt.show()   
+        plt.show()  
+
+    # IN PROGRESS
+    def visualize_composite_eff_props(self, match, consolidated_dict: dict = {}, num_fractions: int = 99):
+
+        if consolidated_dict == {}:
+            with open("consolidated_dict_02_11_2024_23_45_58") as f: # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
+                consolidated_dict = json.load(f)
+
+        # Too much computation to use the default for 4 phase, so reduce num_fractions
+        if len(match) == 4:
+            num_fractions = 20
+        if len(match) == 1 or len(match) > 4:
+            warnings.warn("No visualizations available for composites with 5 or more phases.")
+            return
+        
+        all_vol_frac_combos = self.get_all_possible_vol_frac_combos(num_fractions=num_fractions)
+        
+        material_values = []
+        for category in self.property_categories:
+            for property in self.property_docs[category]:
+                for material in match:
+                    if property in consolidated_dict.keys(): 
+                        m = consolidated_dict["material_id"].index(material)               
+                        material_values.append(consolidated_dict[property][m])
+
+        # Create population of same properties for all members based on material match combination
+        population_values = np.tile(material_values, (len(all_vol_frac_combos),1))
+
+        # Only the vary the volume fractions across the population
+        # Create uniform volume fractions from 0 to 1 with a spacing of 0.02 but with a shape of self.ga_params.get_num_members() & 1
+        volume_fractions = np.array(all_vol_frac_combos).reshape(len(all_vol_frac_combos), self.num_materials)
+
+        # Include the random mixing parameters and volume fractions in the population
+        values = np.c_[population_values, volume_fractions] 
+
+        # Instantiate the population and find the best performers
+        # For 2 phases and x volume fractions, there are x   possible volume fraction combinations
+        # For 3 phases and x volume fractions, there are x^2 possible volume fraction combinations
+        # for 4 phases and x volume fractions, there are x^3 possible volume fraction combinations
+        this_pop_ga_params = self.ga_params
+        this_pop_ga_params.num_members = num_fractions**(len(match) - 1)
+        population = Population(num_materials=self.num_materials,
+                                num_properties=self.num_properties, 
+                                values=values, 
+                                property_categories=self.property_categories,
+                                property_docs=self.property_docs, 
+                                desired_props=self.desired_props, 
+                                ga_params=this_pop_ga_params,
+                                calc_guide=self.calc_guide)
+        all_effective_properties = population.get_effective_properties()
+        print(f'all_effective_properties.shape: {all_effective_properties.shape}')
+        
+        # Get property strings for labeling the plot(s)
+        file_name = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}"
+        property_strings = []
+        with open(file_name, 'r') as stream:
+            data = yaml.safe_load(stream)
+            for category, properties in data["Per Material"].items():
+                if category in self.property_categories:
+                    for property in properties.values():                            
+                        property_strings.append(property)
+
+        def extract_property(text):
+            match = re.match(r'([^,]+), \[.*\]', text)
+            if match:
+                return match.group(1).strip()
+            return None
+        
+        def extract_units(text):
+            match = re.search(r'\[.*?\]', text)
+            if match:
+                return match.group(0)
+            return None
+        
+        for i, property_string in enumerate(property_strings):
+
+            property = extract_property(property_string)
+            units = extract_units(property_string)
+            effective_properties = all_effective_properties[:, i]
+        
+            if len(match) == 2:
+                self.visualize_composite_eff_props_2_phase(match, property, units, volume_fractions, effective_properties)
+            elif len(match) == 3:
+                self.visualize_composite_eff_props_3_phase(match, property, units, volume_fractions, effective_properties)
+            elif len(match) == 4:
+                self.visualize_composite_eff_props_4_phase(match, property, units, volume_fractions, effective_properties)
+            else:
+                warnings.warn("No visualizations available for composites with 5 or more phases.")
+                return
+
+        return 
+
+    def visualize_composite_eff_props_2_phase(self, match, property, units, volume_fractions, effective_properties):
+
+        fig, ax = plt.subplots(figsize=(10,6))
+        ax.plot(volume_fractions[:, 0], effective_properties)
+        
+        plt.xlabel(f"Volume fraction, {match[0]}", fontsize= 20)
+        plt.ylabel(f"{units}", fontsize=20)
+        plt.title(f"{property}\n{match}", fontsize = 24)
+        plt.show()  
+        
+        return
+
+    def visualize_composite_eff_props_3_phase(self, match, property, units, volume_fractions, effective_properties):
+
+        phase1_vol_fracs = np.unique(volume_fractions[:, 0])
+        phase2_vol_fracs = np.unique(volume_fractions[:, 1])
+        X, Y = np.meshgrid(phase1_vol_fracs, phase2_vol_fracs)
+        Z = effective_properties.reshape(len(phase1_vol_fracs), len(phase2_vol_fracs))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        surface = ax.plot_surface(X, Y, Z, cmap='viridis')
+
+        ax.set_xlabel(f"Volume fraction, {match[0]}", fontsize= 10)
+        ax.set_ylabel(f"Volume fraction, {match[1]}", fontsize= 10)
+        ax.set_zlabel(f"{units}", fontsize=10)
+        ax.set_title(f"{property}\n{match}", fontsize = 14)
+        plt.show()
+        
+        return
+
+    def visualize_composite_eff_props_4_phase(self, match, property, units, volume_fractions, effective_properties):
+
+        phase1_vol_fracs = np.unique(volume_fractions[:, 0])
+        phase2_vol_fracs = np.unique(volume_fractions[:, 1])
+        phase3_vol_fracs = np.unique(volume_fractions[:, 2])
+        X, Y, Z = np.meshgrid(phase1_vol_fracs, phase2_vol_fracs, phase3_vol_fracs)
+        X_flat = X.flatten()
+        Y_flat = Y.flatten()
+        Z_flat = Z.flatten()
+
+        norm = plt.Normalize(effective_properties.min(), 
+                             effective_properties.max()) # normalize the color values for better visualization
+        
+        fig = plt.figure()
+        gs = gridspec.GridSpec(1, 2, width_ratios=[20, 1])
+        ax = fig.add_subplot(gs[0], projection='3d')
+        scatter = ax.scatter(X_flat, 
+                            Y_flat,
+                            Z_flat,
+                            c=effective_properties.reshape(len(phase1_vol_fracs), 
+                                                           len(phase2_vol_fracs),
+                                                           len(phase3_vol_fracs)), 
+                            cmap='viridis', 
+                            norm=norm)
+        cax = fig.add_subplot(gs[1])
+        colorbar = fig.colorbar(cm.ScalarMappable(norm=norm, cmap='viridis'), ax=ax, cax=cax, shrink=0.5, aspect=5)
+        colorbar.set_label(f"{units}")
+
+        ax.set_xlabel(f"Volume fraction, {match[0]}", fontsize=10)
+        ax.set_ylabel(f"Volume fraction, {match[1]}", fontsize=10)
+        ax.set_zlabel(f"Volume fraction, {match[2]}", fontsize=10)
+        ax.set_title(f"{property}\n{match}", fontsize = 14)
+        plt.show()
+
+        return
     
     def generate_consolidated_dict(self, total_docs = None):
 
-        # MAIN FUNCTION USED TO GENERATE MATRIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
+        """
+        MAIN FUNCTION USED TO GENERATE MATRIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
+        """
 
         if "carrier-transport" in self.property_categories:
             client = Client(apikey=self.api_key, project=self.mp_contribs_project)
@@ -659,8 +823,6 @@ class HashinShtrikman(BaseModel):
                                 # For other categories, just append the property name for now
                                 prop_value = getattr(doc, prop, None)
                                 required_fields.append(prop_value)
-                
-                # logger.info(f"required_fields = {required_fields}")
 
                 if all(field is not None for field in required_fields):
 
