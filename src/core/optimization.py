@@ -3,6 +3,7 @@ import itertools
 import json
 import matplotlib.pyplot as plt
 import numpy as np
+import plotly.graph_objects as go
 import re
 import sys
 import warnings
@@ -677,16 +678,21 @@ class HashinShtrikman(BaseModel):
         return 
 
     def visualize_composite_eff_props_2_phase(self, match, property, units, volume_fractions, effective_properties):
-
-        fig, ax = plt.subplots(figsize=(10,6))
-        ax.plot(volume_fractions[:, 0], effective_properties)
+    
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=volume_fractions[:, 0], y=effective_properties, mode='lines'))
         
-        plt.xlabel(f"Volume fraction, {match[0]}", fontsize= 20)
-        plt.ylabel(f"{units}", fontsize=20)
-        plt.title(f"{property}\n{match}", fontsize = 24)
-        plt.show()  
+        fig.update_layout(
+            xaxis_title=f"Volume fraction, {match[0]}",
+            yaxis_title=f"{units}",
+            title=f"{property}\n{match}",
+            title_font_size=24,
+            xaxis_title_font_size=20,
+            yaxis_title_font_size=20
+        )
+        fig.show()
         
-        return
+        return 
 
     def visualize_composite_eff_props_3_phase(self, match, property, units, volume_fractions, effective_properties):
 
@@ -695,17 +701,19 @@ class HashinShtrikman(BaseModel):
         X, Y = np.meshgrid(phase1_vol_fracs, phase2_vol_fracs)
         Z = effective_properties.reshape(len(phase1_vol_fracs), len(phase2_vol_fracs))
 
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        surface = ax.plot_surface(X, Y, Z, cmap='viridis')
-
-        ax.set_xlabel(f"Volume fraction, {match[0]}", fontsize= 10)
-        ax.set_ylabel(f"Volume fraction, {match[1]}", fontsize= 10)
-        ax.set_zlabel(f"{units}", fontsize=10)
-        ax.set_title(f"{property}\n{match}", fontsize = 14)
-        plt.show()
+        fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale='Viridis')])
         
-        return
+        fig.update_layout(
+            scene=dict(
+                xaxis_title=f"Volume fraction, {match[0]}",
+                yaxis_title=f"Volume fraction, {match[1]}",
+                zaxis_title=f"{units}",
+            ),
+            title=f"{property}\n{match}",
+        )
+        fig.show()
+
+        return 
 
     def visualize_composite_eff_props_4_phase(self, match, property, units, volume_fractions, effective_properties):
 
@@ -717,31 +725,32 @@ class HashinShtrikman(BaseModel):
         Y_flat = Y.flatten()
         Z_flat = Z.flatten()
 
-        norm = plt.Normalize(effective_properties.min(), 
-                             effective_properties.max()) # normalize the color values for better visualization
-        
-        fig = plt.figure()
-        gs = gridspec.GridSpec(1, 2, width_ratios=[20, 1])
-        ax = fig.add_subplot(gs[0], projection='3d')
-        scatter = ax.scatter(X_flat, 
-                            Y_flat,
-                            Z_flat,
-                            c=effective_properties.reshape(len(phase1_vol_fracs), 
-                                                           len(phase2_vol_fracs),
-                                                           len(phase3_vol_fracs)), 
-                            cmap='viridis', 
-                            norm=norm)
-        cax = fig.add_subplot(gs[1])
-        colorbar = fig.colorbar(cm.ScalarMappable(norm=norm, cmap='viridis'), ax=ax, cax=cax, shrink=0.5, aspect=5)
-        colorbar.set_label(f"{units}")
+        fig = go.Figure()
 
-        ax.set_xlabel(f"Volume fraction, {match[0]}", fontsize=10)
-        ax.set_ylabel(f"Volume fraction, {match[1]}", fontsize=10)
-        ax.set_zlabel(f"Volume fraction, {match[2]}", fontsize=10)
-        ax.set_title(f"{property}\n{match}", fontsize = 14)
-        plt.show()
+        fig.add_trace(go.Scatter3d(
+            x=X_flat,
+            y=Y_flat,
+            z=Z_flat,
+            mode='markers',
+            marker=dict(
+                size=5,
+                color=effective_properties.flatten(),
+                colorscale='Viridis',
+                colorbar=dict(title=f"{units}"),
+                opacity=0.8
+            )
+        ))
 
-        return
+        fig.update_layout(
+            scene=dict(
+                xaxis_title=f"Volume fraction, {match[0]}",
+                yaxis_title=f"Volume fraction, {match[1]}",
+                zaxis_title=f"Volume fraction, {match[2]}",
+            ),
+            title=f"{property}\n{match}",
+            title_font_size=14
+        )
+        fig.show()
     
     def generate_consolidated_dict(self, total_docs = None):
 
