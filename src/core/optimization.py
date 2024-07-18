@@ -375,9 +375,47 @@ class HashinShtrikman(BaseModel):
             for material in combo:
                 mat_ids.append(np.reshape([material]*self.ga_params.num_members, (self.ga_params.num_members,1)))
             mat_ids = np.column_stack(mat_ids)
+            
+            # Print table
             table_data = np.c_[mat_ids, population.values, sorted_costs] 
-            print("\nMATERIALS PROJECT PAIRS AND HASHIN-SHTRIKMAN RECOMMENDED VOLUME FRACTION")
-            print(tabulate(table_data[0:5, :], headers=self.get_headers(include_mpids=True))) # hardcoded to be 5 rows, could change
+            table_data = table_data[0:5, :] # hardcoded to be 5 rows, could change
+            headers = headers=self.get_headers(include_mpids=True)
+
+            header_color = 'lavender'
+            odd_row_color = 'white'
+            even_row_color = 'lightgrey'
+            cells_color = [[odd_row_color, even_row_color, odd_row_color, even_row_color, odd_row_color]] # hardcoded to be 5 rows, could change
+
+            fig = go.Figure(data=[go.Table(
+                columnwidth = 1000,
+                header = dict(
+                    values=headers,
+                    fill_color=header_color,
+                    align='left',
+                    font=dict(size=12),
+                    height=30
+                ),
+                cells = dict(
+                    values=[table_data[:, i] for i in range(table_data.shape[1])],
+                    fill_color=cells_color,
+                    align='left',
+                    font=dict(size=12),
+                    height=30,
+                )
+            )])
+
+            # Update layout for horizontal scrolling
+            fig.update_layout(
+                title="Optimal Material Combinations to Comprise Desired Composite",
+                title_font_size=20,
+                title_x=0.15,
+                margin=dict(l=0, r=0, t=40, b=0),
+                height=400,
+                autosize=True
+            )
+            fig.show()
+
+        return
 
     #------ Setter Methods ------#
     @staticmethod
@@ -573,18 +611,88 @@ class HashinShtrikman(BaseModel):
     def print_table_of_best_designs(self, rows: int = 10):
 
         table_data = self.get_table_of_best_designs(rows)
-        print("\nHASHIN-SHTRIKMAN + GENETIC ALGORITHM RECOMMENDED MATERIAL PROPERTIES")
-        print(tabulate(table_data, headers=self.get_headers()))
+        headers = self.get_headers()
+
+        header_color = 'lavender'
+        odd_row_color = 'white'
+        even_row_color = 'lightgrey'
+        if rows % 2 == 0:
+            multiplier = int(rows/2)
+            cells_color = [[odd_row_color, even_row_color]*multiplier]
+        else:
+            multiplier = int(np.floor(rows/2))
+            cells_color = [[odd_row_color, even_row_color]*multiplier]
+            cells_color.append(odd_row_color)
+
+        fig = go.Figure(data=[go.Table(
+            columnwidth = 1000,
+            header = dict(
+                values=headers,
+                fill_color=header_color,
+                align='left',
+                font=dict(size=12),
+                height=30
+            ),
+            cells = dict(
+                values=[table_data[:, i] for i in range(table_data.shape[1])],
+                fill_color=cells_color,
+                align='left',
+                font=dict(size=12),
+                height=30,
+            )
+        )])
+
+        # Update layout for horizontal scrolling
+        fig.update_layout(
+            title="Optimal Properties Recommended by Genetic Algorithm",
+            title_font_size=20,
+            title_x=0.2,
+            margin=dict(l=0, r=0, t=40, b=0),
+            height=400,
+            autosize=True
+        )
+        fig.show()
+
+        return
     
     def plot_optimization_results(self):
-        fig, ax = plt.subplots(figsize=(10,6))
-        ax.plot(range(self.ga_params.num_generations), self.avg_parent_costs, label="Avg. of top 10 performers")
-        ax.plot(range(self.ga_params.num_generations), self.lowest_costs, label="Best costs")
-        plt.xlabel("Generation", fontsize= 20)
-        plt.ylabel("Cost", fontsize=20)
-        plt.title("Genetic Algorithm Results", fontsize = 24)
-        plt.legend(fontsize = 14)
-        plt.show()  
+ 
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=list(range(self.ga_params.num_generations)),
+            y=self.avg_parent_costs,
+            mode='lines',
+            name='Avg. of top 10 performers'
+        ))
+
+        fig.add_trace(go.Scatter(
+            x=list(range(self.ga_params.num_generations)),
+            y=self.lowest_costs,
+            mode='lines',
+            name='Best costs'
+        ))
+
+        fig.update_layout(
+            title='Convergence of Genetic Algorithm',
+            title_x=0.25,
+            xaxis_title='Generation',
+            yaxis_title='Cost',
+            legend=dict(
+                font=dict(size=14),
+                x=1,
+                y=1,
+                xanchor='right',
+                yanchor='top',
+                bgcolor='rgba(255, 255, 255, 0.5)'
+            ),
+            title_font_size=24,
+            xaxis_title_font_size=20,
+            yaxis_title_font_size=20
+        )
+        fig.show()
+
+        return
 
     # IN PROGRESS
     def visualize_composite_eff_props(self, match, consolidated_dict: dict = {}, num_fractions: int = 99):
