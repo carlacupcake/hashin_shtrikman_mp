@@ -74,7 +74,7 @@ class Member(BaseModel):
         # Initialize to zero so as not to contribute to cost if unchanged
         effective_properties  = []
         concentration_factors = [] 
-        cost_func_weights     = []  
+        cost_func_weights     = []
 
         # Get Hashin-Shtrikman effective properties for all properties           
         idx = 0

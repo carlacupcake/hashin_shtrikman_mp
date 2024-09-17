@@ -28,6 +28,7 @@ from custom_logger import logger
 from genetic_algo import GAParams
 from member import Member
 from population import Population
+from user_input import UserInput
 
 # YAML files
 sys.path.insert(1, '../io/inputs')
@@ -64,8 +65,8 @@ class HashinShtrikman(BaseModel):
         default=None, 
         description="MPContribs project name for querying project-specific data."
         )
-    user_input: Dict = Field(
-        default_factory=dict, 
+    user_input: UserInput = Field(
+        default_factory=UserInput, 
         description="User input specifications for the optimization process."
         )
     fields: Dict[str, List[Any]] = Field(
@@ -186,9 +187,9 @@ class HashinShtrikman(BaseModel):
             return property_categories, property_docs
         
     #------ Getter Methods ------#
-    def get_headers(self, include_mpids=False, file_name = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}"):
+    def get_headers(self, include_mpids=False, filename = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}"):
 
-        with open(file_name, 'r') as stream:
+        with open(filename, 'r') as stream:
             try:
                 data = yaml.safe_load(stream)
                 headers = []
@@ -420,7 +421,7 @@ class HashinShtrikman(BaseModel):
     #------ Setter Methods ------#
     @staticmethod
     def set_num_materials_from_user_input(user_input):
-        num_materials = len(user_input) - 1
+        num_materials = user_input.len() - 1
         return num_materials
     
     @staticmethod
@@ -485,10 +486,6 @@ class HashinShtrikman(BaseModel):
                     desired_props[category].append(mixture_props[prop]['desired_prop'])
 
         return desired_props  
-
-    def set_fields(self, fields):
-        self.fields = fields
-        return self 
  
     def set_HS_optim_params(self, gen_counter: bool = False):
         
@@ -694,7 +691,6 @@ class HashinShtrikman(BaseModel):
 
         return
 
-    # IN PROGRESS
     def visualize_composite_eff_props(self, match, consolidated_dict: dict = {}, num_fractions: int = 99):
 
         if consolidated_dict == {}:
