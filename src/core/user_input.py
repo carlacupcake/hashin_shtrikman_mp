@@ -36,16 +36,16 @@ class Mixture(BaseModel):
         }
     
 class UserInput(BaseModel):
-    material_properties: List[Material]
-    mixture_properties: List[Mixture]
+    materials: List[Material]
+    mixtures: List[Mixture]
 
     def build_dict(self):
         # Builds the desired dict structure
         result = {}
-        for material in self.material_properties:
+        for material in self.materials:
             result.update(material.custom_dict())
         
-        for mixture in self.mixture_properties:
+        for mixture in self.mixtures:
             result.update(mixture.custom_dict())
         
         return result
