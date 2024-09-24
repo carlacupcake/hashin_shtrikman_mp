@@ -271,38 +271,73 @@ class HashinShtrikman(BaseModel):
 
         return best_designs_dict
     
-    def get_material_matches(self, consolidated_dict: dict = {}): 
+    def get_material_matches(self, overall_bounds_dict: dict = {}, user_input: Dict = {}):
 
-        best_designs_dict = self.get_dict_of_best_designs()       
-        if consolidated_dict == {}:  
-            with open("consolidated_dict_02_11_2024_23_45_58") as f: # TODO get from latest final_dict file: change this to a method that reads from the latest MP database
-                consolidated_dict = json.load(f)
+        best_designs_dict = self.get_dict_of_best_designs()  
+        print(f"best_designs_dict: {best_designs_dict}")
+        print(f"keys of best_designs_dict: {best_designs_dict.keys()}")     
+        print(f"keys of best_designs_dict['mat1']: {best_designs_dict['mat1'].keys()}")
+        print(f"overall_bounds_dict: {overall_bounds_dict}")
+        
+        # Generate the consolidated dict based on overall bounds
+        consolidated_dict = self.generate_consolidated_dict(overall_bounds_dict) # TODO uncomment this line and remove the above lines
+        
+        # save consolidated_dict to file
+        with open(f"consolidated_dict_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}", 'w') as f:
+            json.dump(consolidated_dict, f)
 
-        # Initialize list of sets for matching indices
-        matches = []
-        for _ in range(self.num_materials):
-            matches.append(set(range(len(consolidated_dict["material_id"]))))
 
-        # Helper function to get matching indices based on property extrema
-        def get_matching_indices(property, bounds_dict, mat_key):
-            lower_bound = min(bounds_dict[mat_key][property])
-            upper_bound = max(bounds_dict[mat_key][property])
-            return {i for i, value in enumerate(consolidated_dict[property]) if lower_bound <= value <= upper_bound}
+        # Initialize an empty dictionary to store the output in the required format
+        final_matching_materials = {}
 
-        # Iterate over categories and properties
-        for category in self.property_categories:
-            if category in self.property_docs:
-                for property in self.property_docs[category]:
-                    if property in consolidated_dict:  # Ensure property exists in consolidated_dict
-                        for m in range(self.num_materials):
-                            matches[m] &= get_matching_indices(property, best_designs_dict[f"mat{m+1}"], category)                        
+        # Iterate through each material in best_designs_dict
+        for mat_key, mat_data in best_designs_dict.items():
+            # Extract the property data from best_designs_dict
+            best_design_props = {
+                'elec_cond': mat_data['carrier-transport']['elec_cond_300k_low_doping'],
+                'therm_cond': mat_data['carrier-transport']['therm_cond_300k_low_doping'],
+                'bulk_modulus': mat_data['elastic']['bulk_modulus'],
+                'shear_modulus': mat_data['elastic']['shear_modulus'],
+                'universal_anisotropy': mat_data['elastic']['universal_anisotropy']
+            }
+            
+            # Initialize an empty list to store matching materials for the current mat_key
+            matching_materials_for_current_mat = []
 
-        # Extract mp-ids based on matching indices
-        matches_dict = {}
-        for m in range(self.num_materials):
-            matches_dict[f"mat{m+1}"] = [consolidated_dict["material_id"][i] for i in matches[m]]
+            # Iterate through each material in consolidated_dict
+            for i, material_id in enumerate(consolidated_dict["material_id"]):
+                # Retrieve the properties for this material from consolidated_dict
+                material_props = {
+                    'elec_cond': consolidated_dict['elec_cond_300k_low_doping'][i],
+                    'therm_cond': consolidated_dict['therm_cond_300k_low_doping'][i],
+                    'bulk_modulus': consolidated_dict['bulk_modulus_voigt'][i],
+                    'shear_modulus': consolidated_dict['shear_modulus_voigt'][i],
+                    'universal_anisotropy': consolidated_dict['universal_anisotropy'][i]
+                }
 
-        return matches_dict     
+                # Compare properties with best_designs_dict (within 1% threshold)
+                matching = {}
+                for prop_key, values in best_design_props.items():
+                    if prop_key in material_props:
+                        # Iterate through each value in best_design_props for comparison
+                        for value in values:
+                            if abs(value - material_props[prop_key]) / value < 1:
+                                matching[prop_key] = material_props[prop_key]
+
+                # If all the props are within the threshold, add the material_id to the matching_materials_for_current_mat
+                if len(matching) == len(best_design_props):
+                    matching_materials_for_current_mat.append({material_id: matching})
+
+            # If any matches were found for this mat_key, add them to the final output
+            if matching_materials_for_current_mat:
+                final_matching_materials[mat_key] = matching_materials_for_current_mat
+
+        return final_matching_materials
+
+
+
+
+        # return matches_dict     
     
     def get_all_possible_vol_frac_combos(self, num_fractions: int = 30):
         all_vol_frac_ranges = []
@@ -856,140 +891,304 @@ class HashinShtrikman(BaseModel):
         )
         fig.show()
     
-    def generate_consolidated_dict(self, total_docs = None):
+    # def generate_consolidated_dict(self, total_docs = None): # TODO
+    def generate_consolidated_dict(self, overall_bounds_dict: dict = {}):
 
         """
         MAIN FUNCTION USED TO GENERATE MATRIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST
         """
+        
+        # Base query initialization
+        query = {}
+        print(f"overall_bounds_dict: {overall_bounds_dict}")
+
+        # Iterate over the properties in the overall_bounds_dict and dynamically build the query
+        for prop, bounds in overall_bounds_dict.items():
+            # Skip 'elec_cond_300k_low_doping' and 'therm_cond_300k_low_doping'
+            if prop in ['elec_cond_300k_low_doping', 'therm_cond_300k_low_doping']:
+                continue  # Skip the current iteration
+
+            # Proceed if 'upper_bound' and 'lower_bound' exist for the property
+            if 'upper_bound' in bounds and 'lower_bound' in bounds:
+                query[prop] = (bounds['lower_bound'], bounds['upper_bound'])
+        
+        # Print the query before changes
+        print(f"Initial query: {query}")
+
+        # Add additional fields you want to query, like 'material_id', 'formula_pretty', and all the properties in the initial query
+        fields = ['material_id', 'formula_pretty']  # Fixed fields
+        fields.extend(query.keys())  # Adding all the keys from the query to the fields list
+        print(f"Fields: {fields}")
+
+        # Change 'bulk_modulus' to 'k_voigt'
+        if 'bulk_modulus' in query:
+            query['k_voigt'] = query.pop('bulk_modulus')
+
+        # Change 'shear_modulus' to 'g_voigt'
+        if 'shear_modulus' in query:
+            query['g_voigt'] = query.pop('shear_modulus')
+
+        # Change 'universal_anisotropy' to 'elastic_anisotropy'
+        if 'universal_anisotropy' in query:
+            query['elastic_anisotropy'] = query.pop('universal_anisotropy')
+        
+        # change 'e_ij_max' to 'piezoelectric_modulus'
+        if 'e_ij_max' in query:
+            query['piezoelectric_modulus'] = query.pop('e_ij_max')
+        
+        mpr = MPRester("QePM93qZsMKNPkI4fEYaJfB7dONoQjaM")
+
+        # Perform the query on the Materials Project database using the built query
+        materials = mpr.materials.summary.search(
+            **query,  # Dynamically passing the property bounds as query filters
+            fields=fields,
+            # num_chunks=100
+        )
+
+        # Load the mp_property_docs.yaml file
+        with open(f'{MODULE_DIR}/../io/inputs/mp_property_docs.yaml', 'r') as file:
+            mp_property_docs = yaml.safe_load(file)
+            
+        # Initialize dictionary to hold the desired data format
+        result_dict = {
+            "material_id": [],
+            "formula_pretty": []
+        }
+
+        # Traverse the YAML structure to get all the keys
+        for category, properties in mp_property_docs.items():
+            for prop, subprop in properties.items():
+                # If there's a subproperty (e.g., voigt for bulk_modulus), append the subproperty
+                if isinstance(subprop, str):
+                    result_dict[f"{prop}_{subprop}"] = []
+                else:
+                    # Otherwise, append the main property
+                    result_dict[prop] = []
+
+        # Print the initialized result_dict
+        print(f"Initialized result_dict: {result_dict}")
+
+        # remove all the rows that have None values
+        materials = [material for material in materials if all([getattr(material, field, None) is not None for field in fields])]
+
+        # Extract data and organize it into the result_dict
+        for material in materials:
+            result_dict["material_id"].append(material.material_id)
+            result_dict["formula_pretty"].append(material.formula_pretty)
+
+            # Initialized result_dict: {'material_id': [], 'formula_pretty': [], 'elec_cond_300k_low_doping': [], 'therm_cond_300k_low_doping': [], 'e_electronic': [], 'e_ionic': [], 'e_total': [], 'n': [], 'bulk_modulus_voigt': [], 'shear_modulus_voigt': [], 'universal_anisotropy': [], 'total_magnetization': [], 'total_magnetization_normalized_vol': [], 'e_ij_max': []}
+            # Define a mapping between query keys and result_dict keys and their corresponding material attributes
+            property_map = {
+                "k_voigt": ("bulk_modulus_voigt", "bulk_modulus", "voigt"),
+                "g_voigt": ("shear_modulus_voigt", "shear_modulus", "voigt"),
+                "elastic_anisotropy": ("universal_anisotropy", "universal_anisotropy"),
+                "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping", "elec_cond_300k_low_doping"),
+                "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping", "therm_cond_300k_low_doping"),
+                "e_electronic": ("e_electronic", "e_electronic"),
+                "e_ionic": ("e_ionic", "e_ionic"),
+                "e_total": ("e_total", "e_total"),
+                "n": ("n", "n"),
+                "total_magnetization": ("total_magnetization", "total_magnetization"),
+                "total_magnetization_normalized_vol": ("total_magnetization_normalized_vol", "total_magnetization_normalized_vol"),
+                "e_ij_max": ("e_ij_max", "e_ij_max")
+            }
+
+            # Iterate over the properties in the query and append values to result_dict dynamically
+            for prop, (result_key, material_attr, *sub_attr) in property_map.items():
+                if prop in query:
+                    # Check if there's a sub-attribute (e.g., "voigt" in "bulk_modulus")
+                    if sub_attr:
+                        value = getattr(material, material_attr, {})
+                        result_dict[result_key].append(value.get(sub_attr[0], None))  # Access sub-attribute if it exists
+                    else:
+                        result_dict[result_key].append(getattr(material, material_attr, None))  # Direct access to attribute
+
+
+        # print the len of the result_dict["material_id"]
+        print(f"Length of material_id: {len(result_dict['material_id'])}")
+
+        # print keys of the result_dict
+        print(f"Keys of result_dict: {result_dict.keys()}")
+
 
         if "carrier-transport" in self.property_categories:
-            client = Client(apikey=self.api_key, project=self.mp_contribs_project)
-        else:
-            client = Client(apikey=self.api_key)
-        
-        new_fields = copy.deepcopy(self.fields)
+            print("Carrier transport is in the property categories")
+            from mpcontribs.client import Client
+            client = Client(apikey="QePM93qZsMKNPkI4fEYaJfB7dONoQjaM")
+            client.get_project("carrier_transport")
 
-        # Iterate over the user input to dynamically update self.fields based on requested property categories
-        # Iterate over property categories and update new_fields based on mp_property_docs
-        for category in self.property_categories:
-            if category in self.property_docs:
-                if category == "carrier-transport":
-                    new_fields["mp-ids-contrib"] = []
+            # Iterate over the properties in the overall_bounds_dict and dynamically build the query
+            query_carrier_transport = {}
+            for prop, bounds in overall_bounds_dict.items():
+                # Skip 'elec_cond_300k_low_doping' and 'therm_cond_300k_low_doping'
+                if prop in ['elec_cond_300k_low_doping', 'therm_cond_300k_low_doping']:
+                    # Proceed if 'upper_bound' and 'lower_bound' exist for the property
+                    if 'upper_bound' in bounds and 'lower_bound' in bounds:
+                        query_carrier_transport[prop] = (bounds['lower_bound'], bounds['upper_bound'])
 
-                for prop in self.property_docs[category]:
-                    # Initialize empty list for each property under the category
-                    new_fields[prop] = []
+            print(f"Query for carrier transport: {query_carrier_transport}")
 
-        self.set_fields(new_fields)
-
-        logger.info(f"self.fields: {self.fields}")
-
-        with MPRester(self.api_key) as mpr:
+            tables = client.query_contributions({"project":"carrier_transport",
+                                        "data__sigma__p__value__gt": query_carrier_transport['elec_cond_300k_low_doping'][0] / 1e15 / 1e-14, #1003100.0,
+                                        "data__sigma__p__value__lt": query_carrier_transport['elec_cond_300k_low_doping'][1] / 1e15 / 1e-14, #2093100.0,
+                                        "data__kappa__p__value__gt": query_carrier_transport['therm_cond_300k_low_doping'][0] / 1e9 / 1e-14, #7091050.0,
+                                        "data__kappa__p__value__lt": query_carrier_transport['therm_cond_300k_low_doping'][1] / 1e9 / 1e-14, #8591050.0,
+                                    },
+                                    fields=['identifier', 'data.sigma.p', 'data.kappa.p']) #  'identifier','data.V', 'tables', 'kappa' , 'kappa.p.value', 'sigma.p.value', '_all' (2769600.0, 1093100.0)
             
-            docs = mpr.materials.summary.search(fields=self.fields)
-            from mpi4py import MPI
+            print(f"Tables: {tables}")
+            for table in tables['data']:
+                print(f"Table: {table}")
+                sigma_value = table['data']['sigma']['p']['value']  # Access the electrical conductivity
+                kappa_value = table['data']['kappa']['p']['value']  # Access the thermal conductivity
+                
+                # Convert and append to the result dictionary
+                result_dict['elec_cond_300k_low_doping'].append(sigma_value * 1e15 * 1e-14)
+                result_dict['therm_cond_300k_low_doping'].append(kappa_value * 1e9 * 1e-14)
 
-            comm = MPI.COMM_WORLD
-            rank = comm.Get_rank()
-            size = comm.Get_size()
 
-            # Calculate the size of each chunk
-            if total_docs is None:
-                total_docs = len(docs)
-                chunk_size = len(docs) // size
-            elif isinstance(total_docs, int):
-                chunk_size = total_docs // size
-
-            # Calculate the start and end indices for this process"s chunk
-            start = rank * chunk_size
-            end = start + chunk_size if rank != size - 1 else total_docs  # The last process gets the remainder
-
-            # Each process gets a different chunk
-            chunk = docs[start:end]
-
-            # for i, doc in enumerate(docs):
-            for i, doc in enumerate(chunk[0:total_docs]):
-
-                logger.info(f"Process {rank}: {i} of {len(chunk[0:total_docs])}")
-
-                required_fields = [doc.material_id, doc.is_stable, doc.is_metal]
-
-                for category in self.property_categories:
-                    if category in self.property_docs:
-                        for prop, value in self.property_docs[category].items():
-                            if category == "carrier-transport":
-                                try:
-                                    mp_id = doc.material_id                           
-                                    query = {"identifier": mp_id}
-                                    my_dict = client.download_contributions(query=query, include=["tables"])[0]
-                                    required_fields.append(my_dict["identifier"])
-                                except IndexError:
-                                    continue
-                            elif category == "elastic":
-                                prop_value = getattr(doc, prop, None)
-                                # For "elastic", you expect 'value' to be directly usable
-                                if value is not None:  # 'voigt' or similar
-                                    if prop_value is not None:
-                                        prop_value = prop_value.get(value, None)
-                                required_fields.append(prop_value)
-                            else:
-                                # For other categories, just append the property name for now
-                                prop_value = getattr(doc, prop, None)
-                                required_fields.append(prop_value)
-
-                if all(field is not None for field in required_fields):
-
-                    for c in DEFAULT_FIELDS.keys():
-                        self.fields[c].append(getattr(doc, c, None))
-                    
-                    for category in self.property_categories:
-                        if category in self.property_docs:
-                            if category == "carrier-transport":
-                                self.fields["mp-ids-contrib"].append(my_dict["identifier"])
-                                
-                            for prop, value in self.property_docs[category].items():
-                                
-                                # Carrier transport
-                                if category == "carrier-transport":
-                                    self.mp_contribs_prop(prop, my_dict)
-                                
-                                # Elastic
-                                elif category == "elastic":
-                                    prop_value = getattr(doc, prop, None)
-                                    if value is not None:  # 'voigt' or similar
-                                        if prop_value is not None:
-                                            prop_value = prop_value.get(value, None)
-                                    self.fields[prop].append(prop_value)
-                                
-                                # All other property categories
-                                else:
-                                    for prop in self.property_docs[category]:
-                                        # Dynamically get the property value from the doc
-                                        prop_value = getattr(doc, prop, None)  # Returns None if prop doesn't exist
-                                        # Initialize empty list for each property under the category
-                                        self.fields[prop].append(prop_value)
+        # Save the consolidated results to a JSON file
+        now = datetime.now()
+        my_file_name = f"{MODULE_DIR}/../io/outputs/consolidated_dict_" + now.strftime("%m_%d_%Y_%H_%M_%S")
+        with open(my_file_name, "w") as my_file:
+            json.dump(result_dict, my_file)
         
-            # comm.gather the self.fields data after the for loop
-            gathered_fields = comm.gather(self.fields, root=0)
+        return result_dict
 
-            # On process 0, consolidate self.fields data into a single dictionary -- consolidated_dict
-            if rank == 0:
-                consolidated_dict: Dict[str, List[Any]] = {}
-                if gathered_fields is not None:
-                    for fields in gathered_fields:
-                        for key, value in fields.items():
-                            if key in consolidated_dict:
-                                consolidated_dict[key].extend(value)
-                            else:
-                                consolidated_dict[key] = value
 
-                # Save the consolidated results to a JSON file
-                now = datetime.now()
-                my_file_name = f"{MODULE_DIR}/../io/outputs/consolidated_dict_" + now.strftime("%m_%d_%Y_%H_%M_%S")
-                with open(my_file_name, "w") as my_file:
-                    json.dump(consolidated_dict, my_file)
 
-        return consolidated_dict
+
+
+
+
+        # if "carrier-transport" in self.property_categories:
+        #     client = Client(apikey=self.api_key, project=self.mp_contribs_project)
+        # else:
+        #     client = Client(apikey=self.api_key)
+        
+        # new_fields = copy.deepcopy(self.fields)
+
+        # # Iterate over the user input to dynamically update self.fields based on requested property categories
+        # # Iterate over property categories and update new_fields based on mp_property_docs
+        # for category in self.property_categories:
+        #     if category in self.property_docs:
+        #         if category == "carrier-transport":
+        #             new_fields["mp-ids-contrib"] = []
+
+        #         for prop in self.property_docs[category]:
+        #             # Initialize empty list for each property under the category
+        #             new_fields[prop] = []
+
+        # self.set_fields(new_fields)
+
+        # logger.info(f"self.fields: {self.fields}")
+
+        # with MPRester(self.api_key) as mpr:
+            
+        #     docs = mpr.materials.summary.search(fields=self.fields, num_chunks=100)
+        #     from mpi4py import MPI
+
+        #     comm = MPI.COMM_WORLD
+        #     rank = comm.Get_rank()
+        #     size = comm.Get_size()
+
+        #     # Calculate the size of each chunk
+        #     if total_docs is None:
+        #         total_docs = len(docs)
+        #         chunk_size = len(docs) // size
+        #     elif isinstance(total_docs, int):
+        #         chunk_size = total_docs // size
+
+        #     # Calculate the start and end indices for this process"s chunk
+        #     start = rank * chunk_size
+        #     end = start + chunk_size if rank != size - 1 else total_docs  # The last process gets the remainder
+
+        #     # Each process gets a different chunk
+        #     chunk = docs[start:end]
+
+        #     # for i, doc in enumerate(docs):
+        #     for i, doc in enumerate(chunk[0:total_docs]):
+
+        #         logger.info(f"Process {rank}: {i} of {len(chunk[0:total_docs])}")
+
+        #         required_fields = [doc.material_id, doc.is_stable, doc.is_metal]
+
+        #         for category in self.property_categories:
+        #             if category in self.property_docs:
+        #                 for prop, value in self.property_docs[category].items():
+        #                     if category == "carrier-transport":
+        #                         try:
+        #                             mp_id = doc.material_id                           
+        #                             query = {"identifier": mp_id}
+        #                             my_dict = client.download_contributions(query=query, include=["tables"])[0]
+        #                             required_fields.append(my_dict["identifier"])
+        #                         except IndexError:
+        #                             continue
+        #                     elif category == "elastic":
+        #                         prop_value = getattr(doc, prop, None)
+        #                         # For "elastic", you expect 'value' to be directly usable
+        #                         if value is not None:  # 'voigt' or similar
+        #                             if prop_value is not None:
+        #                                 prop_value = prop_value.get(value, None)
+        #                         required_fields.append(prop_value)
+        #                     else:
+        #                         # For other categories, just append the property name for now
+        #                         prop_value = getattr(doc, prop, None)
+        #                         required_fields.append(prop_value)
+
+        #         if all(field is not None for field in required_fields):
+
+        #             for c in DEFAULT_FIELDS.keys():
+        #                 self.fields[c].append(getattr(doc, c, None))
+                    
+        #             for category in self.property_categories:
+        #                 if category in self.property_docs:
+        #                     if category == "carrier-transport":
+        #                         self.fields["mp-ids-contrib"].append(my_dict["identifier"])
+                                
+        #                     for prop, value in self.property_docs[category].items():
+                                
+        #                         # Carrier transport
+        #                         if category == "carrier-transport":
+        #                             self.mp_contribs_prop(prop, my_dict)
+                                
+        #                         # Elastic
+        #                         elif category == "elastic":
+        #                             prop_value = getattr(doc, prop, None)
+        #                             if value is not None:  # 'voigt' or similar
+        #                                 if prop_value is not None:
+        #                                     prop_value = prop_value.get(value, None)
+        #                             self.fields[prop].append(prop_value)
+                                
+        #                         # All other property categories
+        #                         else:
+        #                             for prop in self.property_docs[category]:
+        #                                 # Dynamically get the property value from the doc
+        #                                 prop_value = getattr(doc, prop, None)  # Returns None if prop doesn't exist
+        #                                 # Initialize empty list for each property under the category
+        #                                 self.fields[prop].append(prop_value)
+        
+        #     # comm.gather the self.fields data after the for loop
+        #     gathered_fields = comm.gather(self.fields, root=0)
+
+        #     # On process 0, consolidate self.fields data into a single dictionary -- consolidated_dict
+        #     if rank == 0:
+        #         consolidated_dict: Dict[str, List[Any]] = {}
+        #         if gathered_fields is not None:
+        #             for fields in gathered_fields:
+        #                 for key, value in fields.items():
+        #                     if key in consolidated_dict:
+        #                         consolidated_dict[key].extend(value)
+        #                     else:
+        #                         consolidated_dict[key] = value
+
+        #         # Save the consolidated results to a JSON file
+        #         now = datetime.now()
+        #         my_file_name = f"{MODULE_DIR}/../io/outputs/consolidated_dict_" + now.strftime("%m_%d_%Y_%H_%M_%S")
+        #         with open(my_file_name, "w") as my_file:
+        #             json.dump(consolidated_dict, my_file)
+
+        # return consolidated_dict
     
     def superscript_to_int(self, superscript_str):
         superscript_to_normal = {
@@ -1004,8 +1203,14 @@ class HashinShtrikman(BaseModel):
             table_column = 7
         elif prop == "elec_cond_300k_low_doping":
             table_column = 5
+        print(f"my_dict[tables] = {my_dict['tables']}")
+        # prop_str = my_dict["tables"][table_column].iloc[2, 0]
+        if table_column < len(my_dict["tables"]):
+            prop_str = my_dict["tables"][table_column].iloc[2, 0]
+        else:
+            print(f"No table available at index {table_column}.")
+            prop_str = 0
 
-        prop_str = my_dict["tables"][table_column].iloc[2, 0]
         if not isinstance(prop_str, str):
             prop_str = str(prop_str)
         prop_str = prop_str.replace(",", "")
