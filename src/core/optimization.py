@@ -364,45 +364,45 @@ class HashinShtrikman(BaseModel):
             all_vol_frac_combos.append(new_combo)
 
         return all_vol_frac_combos
-
+    
     def get_material_match_costs(self, matches_dict, consolidated_dict: dict = {}):
-
+    
         if consolidated_dict == {}:
             with open("consolidated_dict_02_11_2024_23_45_58") as f: # TODO change to get most recent consolidated dict
                 consolidated_dict = json.load(f)
 
         all_vol_frac_combos = self.get_all_possible_vol_frac_combos()
-        
         materials = list(matches_dict.values())
         material_combinations = list(itertools.product(*materials))
         
+        # List to keep track of the lowest 5 costs and their corresponding data
+        top_rows = []
+
         for combo in material_combinations:
+
             material_values = []
-            mat_ids = np.zeros((len(material_combinations), self.num_materials))
+            mat_ids = np.zeros((len(material_combinations), self.num_materials))   
 
             for category in self.property_categories:
                 for property in self.property_docs[category]:
                     for material_dict in combo:
+
                         # Extract the material ID string from the dictionary
                         material_id = list(material_dict.keys())[0]  # Extract the material ID from the dictionary key
 
                         # Ensure material_id is a string (it should already be, but this is to be safe)
                         material_str = str(material_id)
 
-                        if property in consolidated_dict.keys():
-                            try:
-                                m = consolidated_dict["material_id"].index(material_str)
-                                material_values.append(consolidated_dict[property][m])
-                            except ValueError:
-                                material_values.append(None)  # Handle missing values
+                        if property in consolidated_dict.keys(): # TODO carrier-transport not registering ??
+                            m = consolidated_dict["material_id"].index(material_str)               
+                            material_values.append(consolidated_dict[property][m])
                         else:
-                            material_values.append(None)  # Handle missing properties
+                            material_values.append(1.0) # TODO remove later, this is for debugging
 
             # Create population of same properties for all members based on material match combination
             population_values = np.tile(material_values, (len(all_vol_frac_combos),1))
 
-            # Only the vary the volume fractions across the population
-            # Create uniform volume fractions from 0 to 1 with a spacing of 0.02 but with a shape of self.ga_params.get_num_members() & 1
+            # Vary the volume fractions across the population
             volume_fractions = np.array(all_vol_frac_combos).reshape(len(all_vol_frac_combos), self.num_materials)
 
             # Include the random mixing parameters and volume fractions in the population
@@ -424,48 +424,64 @@ class HashinShtrikman(BaseModel):
 
             # Assemble a table for printing
             mat_ids = []
-            for material in combo:
-                mat_ids.append(np.reshape([material]*self.ga_params.num_members, (self.ga_params.num_members,1)))
+            for material_dict in combo:                    
+                material_id = list(material_dict.keys())[0] 
+                material_str = str(material_id)
+                mat_ids.append(np.reshape([material_id]*self.ga_params.num_members, (self.ga_params.num_members,1)))
             mat_ids = np.column_stack(mat_ids)
-            
-            # Print table
+
+            # Combine material IDs, values, and costs into a single table for this combination
             table_data = np.c_[mat_ids, population.values, sorted_costs] 
-            table_data = table_data[0:5, :] # hardcoded to be 5 rows, could change
-            headers = headers=self.get_headers(include_mpids=True)
 
-            header_color = 'lavender'
-            odd_row_color = 'white'
-            even_row_color = 'lightgrey'
-            cells_color = [[odd_row_color, even_row_color, odd_row_color, even_row_color, odd_row_color]] # hardcoded to be 5 rows, could change
+            # Only keep top 5 rows of this combo
+            table_data = table_data[0:5, :]  # hardcoded to be 5 rows, could change
+            
+            # Add these rows to the global top_rows list and sort by cost
+            top_rows.extend(table_data.tolist())  # Convert to list to extend
+            top_rows.sort(key=lambda x: x[-1])  # Sort by the last column (costs)
 
-            fig = go.Figure(data=[go.Table(
-                columnwidth = 1000,
-                header = dict(
-                    values=headers,
-                    fill_color=header_color,
-                    align='left',
-                    font=dict(size=12),
-                    height=30
-                ),
-                cells = dict(
-                    values=[table_data[:, i] for i in range(table_data.shape[1])],
-                    fill_color=cells_color,
-                    align='left',
-                    font=dict(size=12),
-                    height=30,
-                )
-            )])
+            # Keep only the lowest 5 rows across all combinations
+            top_rows = top_rows[:5]
 
-            # Update layout for horizontal scrolling
-            fig.update_layout(
-                title="Optimal Material Combinations to Comprise Desired Composite",
-                title_font_size=20,
-                title_x=0.15,
-                margin=dict(l=0, r=0, t=40, b=0),
-                height=400,
-                autosize=True
+        # At this point, top_rows contains the lowest 5 costs across all combinations
+        # Now prepare the table for final output
+
+        headers = self.get_headers(include_mpids=True)
+
+        header_color = 'lavender'
+        odd_row_color = 'white'
+        even_row_color = 'lightgrey'
+        cells_color = [[odd_row_color, even_row_color, odd_row_color, even_row_color, odd_row_color]]  # Hardcoded to 5 rows
+
+        # Create the final table figure
+        fig = go.Figure(data=[go.Table(
+            columnwidth=1000,
+            header=dict(
+                values=headers,
+                fill_color=header_color,
+                align='left',
+                font=dict(size=12),
+                height=30
+            ),
+            cells=dict(
+                values=[list(col) for col in zip(*top_rows)],  # Transpose top_rows to get columns
+                fill_color=cells_color,
+                align='left',
+                font=dict(size=12),
+                height=30,
             )
-            fig.show()
+        )])
+
+        # Update layout for horizontal scrolling
+        fig.update_layout(
+            title="Optimal Material Combinations to Comprise Desired Composite",
+            title_font_size=20,
+            title_x=0.15,
+            margin=dict(l=0, r=0, t=40, b=0),
+            height=400,
+            autosize=True
+        )
+        fig.show()
 
         return
 
