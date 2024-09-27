@@ -752,7 +752,10 @@ class HashinShtrikman(BaseModel):
             ),
             title_font_size=24,
             xaxis_title_font_size=20,
-            yaxis_title_font_size=20
+            yaxis_title_font_size=20,
+            width=600,  
+            height=400, 
+            margin=dict(l=50, r=50, t=50, b=50) 
         )
         fig.show()
 
@@ -859,7 +862,10 @@ class HashinShtrikman(BaseModel):
             title=f"{property}\n{match}",
             title_font_size=24,
             xaxis_title_font_size=20,
-            yaxis_title_font_size=20
+            yaxis_title_font_size=20,
+            width=600,  
+            height=600, 
+            margin=dict(l=50, r=50, t=50, b=50) 
         )
         fig.show()
         
@@ -881,6 +887,9 @@ class HashinShtrikman(BaseModel):
                 zaxis_title=f"{units}",
             ),
             title=f"{property}\n{match}",
+            width=600,  
+            height=600, 
+            margin=dict(l=50, r=50, t=50, b=50) 
         )
         fig.show()
 
@@ -919,7 +928,10 @@ class HashinShtrikman(BaseModel):
                 zaxis_title=f"Volume fraction, {match[2]}",
             ),
             title=f"{property}\n{match}",
-            title_font_size=14
+            title_font_size=14,
+            width=600,  
+            height=600, 
+            margin=dict(l=50, r=50, t=50, b=50) 
         )
         fig.show()
     
