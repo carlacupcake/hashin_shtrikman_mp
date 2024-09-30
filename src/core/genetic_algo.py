@@ -36,7 +36,7 @@ class GAParams(BaseModel):
                     "material properties from their desired values."
     )
     weight_eff_prop: float = Field(
-        default=10.0,
+        default=1.0,
         description="This weight factor scales the importance of the effective property "
                     "matching component of the cost function. It determines how "
                     "strongly the difference between the calculated effective "
