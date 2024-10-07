@@ -5,24 +5,25 @@ class GAParams(BaseModel):
     Class to hold the parameters used for the genetic algorithm.
     """
     num_parents: int = Field(
-        default=10,
+        default=2,
         description="Number of parent members to retain in each generation."
     )
     num_kids: int = Field(
-        default=10,
+        default=2,
         description="Number of children to produce from the parent members."
     )
     num_generations: int = Field(
-        default=100,
+        default=2,
         description="Total number of generations to simulate in the genetic algorithm."
     )
     num_members: int = Field(
-        default=200,
+        default=10,
         description="Total number of members in each generation of the population."
     )
     mixing_param: float = Field(
         default = 0.5,
-        description = "TODO"
+        description ="For linear scaling between effective min and max."
+                     "It is recommended to use 0.5 in the absence of experimental data"
     )
     tolerance: float = Field(
         default=0.5,

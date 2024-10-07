@@ -44,10 +44,11 @@ DEFAULT_FIELDS: dict = {"material_id": [],
                         "formula_pretty": [],}
 MODULE_DIR = Path(__file__).resolve().parent
 
-
 # Load and compile cost calculation formulas
 from compile_cost_calculation_formulas import compile_formulas
 COMPILED_CALC_GUIDE = compile_formulas(loadfn(f"{MODULE_DIR}/../io/inputs/{CALC_GUIDE}"))
+
+np.seterr(divide='raise')
 
 class HashinShtrikman(BaseModel):
     """
@@ -101,6 +102,13 @@ class HashinShtrikman(BaseModel):
         default=0, 
         description="Number of properties being optimized."
         )
+    indices_elastic_moduli: List[Any] = Field(
+        default=[None, None],
+        description="For handling coupling between bulk & shear moduli"
+                    "List of length 2, first element is index of bulk modulus"
+                    "in list version of the bounds, second element is the"
+                    "shear modulus"
+        )
     ga_params: GAParams = Field(
         default_factory=GAParams, 
         description="Parameter initilization class for the genetic algorithm."
@@ -141,14 +149,16 @@ class HashinShtrikman(BaseModel):
             lower_bounds   = cls.set_bounds_from_user_input(user_input, 'lower_bound', property_docs=property_docs, num_materials=num_materials)
             upper_bounds   = cls.set_bounds_from_user_input(user_input, 'upper_bound', property_docs=property_docs, num_materials=num_materials)
             num_properties = cls.set_num_properties_from_desired_props(desired_props=desired_props)
+            indices_elastic_moduli = cls.set_elastic_idx_from_user_input(upper_bounds=upper_bounds, property_categories=property_categories)
             
             # Update values accordingly
             values.update({
-                "desired_props":  desired_props,
-                "lower_bounds":   lower_bounds,
-                "upper_bounds":   upper_bounds,
-                "num_properties": num_properties,
-                "num_materials":  num_materials
+                "desired_props":       desired_props,
+                "lower_bounds":        lower_bounds,
+                "upper_bounds":        upper_bounds,
+                "num_properties":      num_properties,
+                "num_materials":       num_materials,
+                "indices_elastic_moduli": indices_elastic_moduli
             })
         
         return values
@@ -553,6 +563,23 @@ class HashinShtrikman(BaseModel):
                     desired_props[category].append(mixture_props[prop]['desired_prop'])
 
         return desired_props  
+    
+    @staticmethod
+    def set_elastic_idx_from_user_input(upper_bounds: Dict, property_categories: List[str]):
+        idx = 0
+        indices = [None, None]
+        for material in upper_bounds.keys():
+            if material != "volume-fractions":
+                for category, properties in upper_bounds[material].items():
+                    if category in property_categories: 
+                        for property in properties:      
+                            print(f'material: {material}, category: {category}, property: {property}')               
+                            if category == "elastic":  
+                                indices = [idx, idx+1]                           
+                                return indices 
+                            idx += 1
+                                
+        return indices
  
     def set_HS_optim_params(self, gen_counter: bool = False):
         
@@ -584,10 +611,11 @@ class HashinShtrikman(BaseModel):
                                 property_docs=self.property_docs,
                                 desired_props=self.desired_props, 
                                 ga_params=self.ga_params,
-                                 calc_guide=self.calc_guide)
+                                calc_guide=self.calc_guide)
         population.set_random_values(lower_bounds=self.lower_bounds, 
                                      upper_bounds=self.upper_bounds, 
-                                     num_members=self.ga_params.num_members)
+                                     start_member=0,
+                                     indices_elastic_moduli=self.indices_elastic_moduli)
 
         # Calculate the costs of the first generation
         population.set_costs()   
@@ -642,10 +670,12 @@ class HashinShtrikman(BaseModel):
                 costs[num_parents+p+1] = kid2.get_cost()
                         
             # Randomly generate new members to fill the rest of the population
-            members_minus_parents_minus_kids = num_members - num_parents - num_kids
+            parents_plus_kids = num_parents + num_kids
+            print(f'parents_plus_kids: {parents_plus_kids}')
             population.set_random_values(lower_bounds=self.lower_bounds, 
                                          upper_bounds=self.upper_bounds, 
-                                         num_members=members_minus_parents_minus_kids)
+                                         start_member=parents_plus_kids,
+                                         indices_elastic_moduli=self.indices_elastic_moduli)
 
             # Calculate the costs of the gth generation
             population.set_costs()
@@ -665,7 +695,7 @@ class HashinShtrikman(BaseModel):
             g = g + 1 
 
         # Update self attributes following optimization
-        self.final_population = population
+        self.final_population = population            
         self.lowest_costs = lowest_costs
         self.avg_parent_costs = avg_parent_costs     
         
