@@ -1,5 +1,5 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import plotly.graph_objs as go
 import warnings
 
 from pydantic import BaseModel, model_validator, Field
@@ -65,14 +65,11 @@ class Member(BaseModel):
     def get_cost(self, plot_cost_func_contribs=False):
 
         """ MAIN COST FUNCTION """
-        print(f'member: {self.values}')
         
         # Extract attributes from self
-        tolerance          = self.ga_params.tolerance
-        weight_categories  = 1/len(self.property_categories)
-        weight_eff_prop    = 1/(self.num_properties - 1)
-        weight_conc_factor = 1/(2 * (self.num_properties - 1)) # two concentration factors per property
-        new_weight = 1/(3 * (self.num_properties - 1))
+        tolerance          = self.ga_params.tolerance/self.num_materials
+        weight_eff_prop    = 1/(self.num_materials) # one effective property per property
+        weight_conc_factor = 1/(2 * (self.num_properties - 1) * self.num_materials) # two concentration factors per property per material
 
         # Initialize effective property, concentration factor, and weight arrays
         # Initialize to zero so as not to contribute to cost if unchanged
@@ -121,17 +118,13 @@ class Member(BaseModel):
         des_props = np.array(des_props)
 
         # Assemble the cost function
-        print(f'eff props: {effective_properties}')
-        print(f'cfs: {concentration_factors}')
         costs_eff_props = abs(np.divide(des_props - effective_properties, effective_properties))
         costs_cfs = np.multiply(cost_func_weights, abs(np.divide(concentration_factors - tolerance, tolerance)))
 
-        cost = new_weight * (np.sum(costs_eff_props) + np.sum(costs_cfs))
-
-        #cost = W_categories * [weight_eff_prop * np.sum(abs(np.divide(des_props - effective_properties, effective_properties))) + weight_conc_factor * np.sum(np.multiply(cost_func_weights, abs(np.divide(concentration_factors - tolerance, tolerance))))]
+        cost = 1/2 * (weight_eff_prop * np.sum(costs_eff_props) + weight_conc_factor * np.sum(costs_cfs))
 
         if plot_cost_func_contribs:
-            self.plot_cost_func_contribs(costs_eff_props, costs_cfs)
+            self.plot_cost_func_contribs(1/2 * weight_eff_prop * costs_eff_props, 1/2 * weight_conc_factor * costs_cfs)
 
         return cost
     
@@ -343,10 +336,17 @@ class Member(BaseModel):
                 cf_bulk_i = 0
                 cf_shear_i = 0
             else:
-                cf_bulk_i = eval(self.calc_guide['concentration_factors']['cf_elastic_i'],  {}, {'phase_i_vol_frac': phase_i_vol_frac, 'phase_i_elastic': phase_1_bulk,  'eff_elastic': effective_bulk,  'phase_1': phase_1_bulk,  'phase_i': phase_i_bulk})
-                cf_shear_i = eval(self.calc_guide['concentration_factors']['cf_elastic_i'], {}, {'phase_i_vol_frac': phase_i_vol_frac, 'phase_i_elastic': phase_1_shear, 'eff_elastic': effective_shear, 'phase_1': phase_1_shear, 'phase_i': phase_i_shear})
+                if phase_1_bulk == phase_i_bulk:
+                    cf_bulk_i = 0
+                else:
+                    cf_bulk_i = eval(self.calc_guide['concentration_factors']['cf_elastic_i'],  {}, {'phase_i_vol_frac': phase_i_vol_frac, 'phase_i_elastic': phase_1_bulk,  'eff_elastic': effective_bulk,  'phase_1': phase_1_bulk,  'phase_i': phase_i_bulk})
+                if phase_1_shear == phase_i_shear:
+                    cf_shear_i = 0
+                else:
+                    cf_shear_i = eval(self.calc_guide['concentration_factors']['cf_elastic_i'], {}, {'phase_i_vol_frac': phase_i_vol_frac, 'phase_i_elastic': phase_1_shear, 'eff_elastic': effective_shear, 'phase_1': phase_1_shear, 'phase_i': phase_i_shear})
                 
-            concentration_factors.append(cf_bulk_i * cf_shear_i)
+            concentration_factors.append(cf_bulk_i)
+            concentration_factors.append(cf_shear_i)
             vf_weighted_sum_cf_bulk_i  += phase_i_vol_frac * cf_bulk_i
             vf_weighted_sum_cf_shear_i += phase_i_vol_frac * cf_shear_i
 
@@ -355,7 +355,7 @@ class Member(BaseModel):
             cf_bulk_1 = 0
             cf_shear_1 = 0
         else:
-            cf_bulk_1     = eval(self.calc_guide['concentration_factors']['cf_1'], {}, {'phase_1_vol_frac': phase_1_vol_frac, 'vf_weighted_sum_cfs': vf_weighted_sum_cf_bulk_i})
+            cf_bulk_1  = eval(self.calc_guide['concentration_factors']['cf_1'], {}, {'phase_1_vol_frac': phase_1_vol_frac, 'vf_weighted_sum_cfs': vf_weighted_sum_cf_bulk_i})
             cf_shear_1 = eval(self.calc_guide['concentration_factors']['cf_1'], {}, {'phase_1_vol_frac': phase_1_vol_frac, 'vf_weighted_sum_cfs': vf_weighted_sum_cf_shear_i})
         concentration_factors.insert(0, cf_shear_1)     
         concentration_factors.insert(0, cf_bulk_1)  
@@ -390,36 +390,47 @@ class Member(BaseModel):
         effective_properties  = np.array(effective_properties)
 
         return effective_properties
-    
-    def plot_cost_func_contribs(self, costs_eff_props, costs_cfs):
+
+    def plot_cost_func_contribs(self, scaled_costs_eff_props, scaled_costs_cfs):
 
         # Labels for the pie chart 
-        eff_prop_labels = [f'From effective {property}' for property in self.property_docs]
+        eff_prop_labels = []
         cf_labels = []
-        for property in self.property_docs:
-            if property == 'bulk_modulus':
-                cf_labels.append(f'From hydrostatic conc. factor for {property}')
-            elif property == 'shear_modulus':
-                cf_labels.append(f'From deviatoric conc. factor for {property}')
-            else:
-                cf_labels.append(f'From load conc. factor for {property}')
-                cf_labels.append(f'From response conc. factor for {property}')
+        for category in self.property_categories:
+            for property in self.property_docs[category]:
+                eff_prop_labels.append(f'eff. {property}')
+                if property == 'bulk_modulus':
+                    cf_labels.append(f'cf hydrostatic stress')
+                elif property == 'shear_modulus':
+                    cf_labels.append(f'cf deviatoric stress')
+                else:
+                    cf_labels.append(f'cf load on {property}')
+                    cf_labels.append(f'cf response from {property}')
+        labels = eff_prop_labels + cf_labels
 
         # Combine the data and labels for the eff props and concentration factors
-        cost_func_contribs = np.concatenate(costs_eff_props, costs_cfs) 
-        labels = eff_prop_labels.extend(cf_labels)
+        scaled_costs_eff_props = np.array(scaled_costs_eff_props)
+        scaled_costs_cfs = np.array(scaled_costs_cfs)
+        cost_func_contribs = np.concatenate((scaled_costs_eff_props, scaled_costs_cfs)) 
 
-        # Create the pie chart
-        plt.pie(cost_func_contribs, labels=labels, autopct='%1.1f%%', startangle=90)
+        # Create the pie chart figure 
+        fig = go.Figure(data=[go.Pie(labels=labels, values=cost_func_contribs, 
+                                     textinfo='percent', 
+                                     insidetextorientation='radial', 
+                                     hole=.25)])
 
-        # Ensure the pie is drawn as a circle
-        plt.axis('equal')
+        fig.update_layout(
+            title_text='Cost Function Contributions',
+            showlegend=True
+        )
 
-        # Add a title
-        plt.title('Cost Function Contributions')
+        # Display the chart
+        fig.show()
 
-        # Display the pie chart
-        plt.show()
+    
+
+
+
 
     
     

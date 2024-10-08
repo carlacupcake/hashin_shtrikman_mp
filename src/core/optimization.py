@@ -671,7 +671,6 @@ class HashinShtrikman(BaseModel):
                         
             # Randomly generate new members to fill the rest of the population
             parents_plus_kids = num_parents + num_kids
-            print(f'parents_plus_kids: {parents_plus_kids}')
             population.set_random_values(lower_bounds=self.lower_bounds, 
                                          upper_bounds=self.upper_bounds, 
                                          start_member=parents_plus_kids,

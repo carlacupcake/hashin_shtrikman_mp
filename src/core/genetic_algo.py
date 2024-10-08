@@ -5,19 +5,19 @@ class GAParams(BaseModel):
     Class to hold the parameters used for the genetic algorithm.
     """
     num_parents: int = Field(
-        default=2,
+        default=10,
         description="Number of parent members to retain in each generation."
     )
     num_kids: int = Field(
-        default=2,
+        default=10,
         description="Number of children to produce from the parent members."
     )
     num_generations: int = Field(
-        default=2,
+        default=100,
         description="Total number of generations to simulate in the genetic algorithm."
     )
     num_members: int = Field(
-        default=10,
+        default=200,
         description="Total number of members in each generation of the population."
     )
     mixing_param: float = Field(
@@ -26,7 +26,7 @@ class GAParams(BaseModel):
                      "It is recommended to use 0.5 in the absence of experimental data"
     )
     tolerance: float = Field(
-        default=0.5,
+        default=1.0,
         description="This parameter sets the threshold for considering the deviation of "
                     "concentration factors from their ideal values. It is used to adjust "
                     "the sensitivity of the cost function to variations in material "
@@ -48,7 +48,7 @@ class GAParams(BaseModel):
                     "property targets."
     )
     weight_conc_factor: float = Field(
-        default=0.5,
+        default=1.0,
         description="This weight factor controls the significance of the "
                     "concentration factor matching in the cost function. It scales "
                     "the penalty applied for deviations of concentration factors "

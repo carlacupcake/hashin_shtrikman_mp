@@ -13,5 +13,5 @@ effective_props:
 concentration_factors:
   cf_1: "1/{phase_1_vol_frac} * (1 - {vf_weighted_sum_cfs})"
   cf_load_i: "1/{phase_i_vol_frac} * ({eff_prop} - {phase_1}) / ({phase_i} - {phase_1})"
-  cf_response_i: "{phase_i} * {cf_load_i} * {eff_prop}"
+  cf_response_i: "{phase_i} * {cf_load_i} / {eff_prop}"
   cf_elastic_i: "1/{phase_i_vol_frac} * {phase_i_elastic} / {eff_elastic} * ({eff_elastic} - {phase_1}) / ({phase_i} - {phase_1})"
