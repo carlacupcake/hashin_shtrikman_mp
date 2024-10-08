@@ -993,11 +993,11 @@ class HashinShtrikman(BaseModel):
 
         # Change 'bulk_modulus' to 'k_voigt'
         if 'bulk_modulus' in query:
-            query['k_voigt'] = query.pop('bulk_modulus')
+            query['k_vrh'] = query.pop('bulk_modulus')
 
         # Change 'shear_modulus' to 'g_voigt'
         if 'shear_modulus' in query:
-            query['g_voigt'] = query.pop('shear_modulus')
+            query['g_vrh'] = query.pop('shear_modulus')
 
         # Change 'universal_anisotropy' to 'elastic_anisotropy'
         if 'universal_anisotropy' in query:
@@ -1052,8 +1052,8 @@ class HashinShtrikman(BaseModel):
 
             # Define a mapping between query keys and result_dict keys and their corresponding material attributes
             property_map = {
-                "k_voigt": ("bulk_modulus_voigt", "bulk_modulus", "voigt"),
-                "g_voigt": ("shear_modulus_voigt", "shear_modulus", "voigt"),
+                "k_vrh": ("bulk_modulus", "vrh"),
+                "g_vrh": ("shear_modulus", "vrh"),
                 "elastic_anisotropy": ("universal_anisotropy", "universal_anisotropy"),
                 "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping", "elec_cond_300k_low_doping"),
                 "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping", "therm_cond_300k_low_doping"),
@@ -1166,11 +1166,11 @@ class HashinShtrikman(BaseModel):
                 for key in result_dict:
                     result_dict[key].pop(i)
             
-            # change the key name of bulk_modugus_voigt to bulk_modulus & shear_modulus_voigt to shear_modulus
-            if 'bulk_modulus_voigt' in result_dict:
-                result_dict['bulk_modulus'] = result_dict.pop('bulk_modulus_voigt')
-            if 'shear_modulus_voigt' in result_dict:
-                result_dict['shear_modulus'] = result_dict.pop('shear_modulus_voigt')
+            # change the key name of bulk_modugus_vrh to bulk_modulus & shear_modulus_vrh to shear_modulus
+            if 'bulk_modulus_vrh' in result_dict:
+                result_dict['bulk_modulus'] = result_dict.pop('bulk_modulus_vrh')
+            if 'shear_modulus_vrh' in result_dict:
+                result_dict['shear_modulus'] = result_dict.pop('shear_modulus_vrh')
 
 
         # Save the consolidated results to a JSON file
