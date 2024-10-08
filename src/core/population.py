@@ -140,8 +140,8 @@ class Population(BaseModel):
             self.values[i, :-num_materials] = np.random.uniform(lower_bounds_array, upper_bounds_array)
 
         # Adjust for bulk and shear moduli, if they are present (cannot have bulk_i < bulk_j and shear_i > shear_j simultaneously)
-        stop = self.num_materials * self.num_properties - 1  # the last num_materials entries are volume fractions, not material properties
-        step = self.num_properties - 1                       # subtract 1 so as not to include volume fraction
+        stop = self.num_materials * (self.num_properties - 1) # the last num_materials entries are volume fractions, not material properties
+        step = self.num_properties - 1                        # subtract 1 so as not to include volume fraction
 
         # Extract bulk moduli and shear moduli from population
         [bulk_idx, shear_idx] = indices_elastic_moduli 

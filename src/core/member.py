@@ -70,6 +70,7 @@ class Member(BaseModel):
         tolerance          = self.ga_params.tolerance/self.num_materials
         weight_eff_prop    = 1/(self.num_materials) # one effective property per property
         weight_conc_factor = 1/(2 * (self.num_properties - 1) * self.num_materials) # two concentration factors per property per material
+        weight_domains     = 1/(2 * len(self.property_categories))
 
         # Initialize effective property, concentration factor, and weight arrays
         # Initialize to zero so as not to contribute to cost if unchanged
@@ -121,7 +122,7 @@ class Member(BaseModel):
         costs_eff_props = abs(np.divide(des_props - effective_properties, effective_properties))
         costs_cfs = np.multiply(cost_func_weights, abs(np.divide(concentration_factors - tolerance, tolerance)))
 
-        cost = 1/2 * (weight_eff_prop * np.sum(costs_eff_props) + weight_conc_factor * np.sum(costs_cfs))
+        cost = weight_domains * (weight_eff_prop * np.sum(costs_eff_props) + weight_conc_factor * np.sum(costs_cfs))
 
         if plot_cost_func_contribs:
             self.plot_cost_func_contribs(1/2 * weight_eff_prop * costs_eff_props, 1/2 * weight_conc_factor * costs_cfs)
