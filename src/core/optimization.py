@@ -1051,9 +1051,23 @@ class HashinShtrikman(BaseModel):
             result_dict["formula_pretty"].append(material.formula_pretty)
 
             # Define a mapping between query keys and result_dict keys and their corresponding material attributes
+            # property_map = {
+            #     "k_vrh": ("bulk_modulus", "vrh"),
+            #     "g_vrh": ("shear_modulus", "vrh"),
+            #     "elastic_anisotropy": ("universal_anisotropy", "universal_anisotropy"),
+            #     "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping", "elec_cond_300k_low_doping"),
+            #     "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping", "therm_cond_300k_low_doping"),
+            #     "e_electronic": ("e_electronic", "e_electronic"),
+            #     "e_ionic": ("e_ionic", "e_ionic"),
+            #     "e_total": ("e_total", "e_total"),
+            #     "n": ("n", "n"),
+            #     "total_magnetization": ("total_magnetization", "total_magnetization"),
+            #     "total_magnetization_normalized_vol": ("total_magnetization_normalized_vol", "total_magnetization_normalized_vol"),
+            #     "e_ij_max": ("e_ij_max", "e_ij_max")
+            # }
             property_map = {
-                "k_vrh": ("bulk_modulus", "vrh"),
-                "g_vrh": ("shear_modulus", "vrh"),
+                "k_voigt": ("bulk_modulus_voigt", "bulk_modulus", "voigt"),
+                "g_voigt": ("shear_modulus_voigt", "shear_modulus", "voigt"),
                 "elastic_anisotropy": ("universal_anisotropy", "universal_anisotropy"),
                 "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping", "elec_cond_300k_low_doping"),
                 "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping", "therm_cond_300k_low_doping"),
@@ -1166,11 +1180,17 @@ class HashinShtrikman(BaseModel):
                 for key in result_dict:
                     result_dict[key].pop(i)
             
-            # change the key name of bulk_modugus_vrh to bulk_modulus & shear_modulus_vrh to shear_modulus
-            if 'bulk_modulus_vrh' in result_dict:
-                result_dict['bulk_modulus'] = result_dict.pop('bulk_modulus_vrh')
-            if 'shear_modulus_vrh' in result_dict:
-                result_dict['shear_modulus'] = result_dict.pop('shear_modulus_vrh')
+            # # change the key name of bulk_modugus_vrh to bulk_modulus & shear_modulus_vrh to shear_modulus
+            # if 'bulk_modulus_vrh' in result_dict:
+            #     result_dict['bulk_modulus'] = result_dict.pop('bulk_modulus_vrh')
+            # if 'shear_modulus_vrh' in result_dict:
+            #     result_dict['shear_modulus'] = result_dict.pop('shear_modulus_vrh')
+
+            # change the key name of bulk_modugus_voigt to bulk_modulus & shear_modulus_voigt to shear_modulus
+            if 'bulk_modulus_voigt' in result_dict:
+                result_dict['bulk_modulus'] = result_dict.pop('bulk_modulus_voigt')
+            if 'shear_modulus_voigt' in result_dict:
+                result_dict['shear_modulus'] = result_dict.pop('shear_modulus_voigt')
 
 
         # Save the consolidated results to a JSON file
