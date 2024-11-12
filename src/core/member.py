@@ -201,8 +201,13 @@ class Member(BaseModel):
                 cf_load_i = 0
                 cf_response_i = 0
             else:
-                cf_load_i = eval(self.calc_guide['concentration_factors']['cf_load_i'], {}, {'phase_1': phase_1, 'phase_i': phase_i, 'phase_i_vol_frac': phase_i_vol_frac, 'eff_prop': effective_prop})
-                cf_response_i = eval(self.calc_guide['concentration_factors']['cf_response_i'], {}, {'phase_i': phase_i, 'cf_load_i': cf_load_i, 'eff_prop': effective_prop})
+                # if cf_load_i has div by zero error, then set cf_load_i to 0
+                try:
+                    cf_load_i = eval(self.calc_guide['concentration_factors']['cf_load_i'], {}, {'phase_1': phase_1, 'phase_i': phase_i, 'phase_i_vol_frac': phase_i_vol_frac, 'eff_prop': effective_prop})
+                    cf_response_i = eval(self.calc_guide['concentration_factors']['cf_response_i'], {}, {'phase_i': phase_i, 'cf_load_i': cf_load_i, 'eff_prop': effective_prop})
+                except FloatingPointError:
+                    cf_load_i = 0
+                    cf_response_i = 0
                 
             concentration_factors.append(cf_load_i)
             concentration_factors.append(cf_response_i)
