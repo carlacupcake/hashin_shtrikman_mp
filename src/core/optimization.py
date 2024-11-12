@@ -302,25 +302,56 @@ class HashinShtrikman(BaseModel):
 
         # Iterate through each material in best_designs_dict
         for mat_key, mat_data in best_designs_dict.items():
+
             # Extract the property data from best_designs_dict
-            best_design_props = {
-                'elec_cond': mat_data['carrier-transport']['elec_cond_300k_low_doping'],
-                'therm_cond': mat_data['carrier-transport']['therm_cond_300k_low_doping'],
-                'bulk_modulus': mat_data['elastic']['bulk_modulus'],
-                'shear_modulus': mat_data['elastic']['shear_modulus'],
-                'universal_anisotropy': mat_data['elastic']['universal_anisotropy']
-            }
+            best_design_props = {}
+            if "carrier-transport" in mat_data:
+                best_design_props.update({
+                    'elec_cond': mat_data['carrier-transport'].get('elec_cond_300k_low_doping'),
+                    'therm_cond': mat_data['carrier-transport'].get('therm_cond_300k_low_doping')
+                })
+
+            if "elastic" in mat_data:
+                best_design_props.update({
+                    'bulk_modulus': mat_data['elastic'].get('bulk_modulus'),
+                    'shear_modulus': mat_data['elastic'].get('shear_modulus'),
+                    'universal_anisotropy': mat_data['elastic'].get('universal_anisotropy')
+                })
+
+            if "dielectric" in mat_data:
+                best_design_props.update({
+                    'e_electronic': mat_data['dielectric'].get('e_electronic'),
+                    'e_ionic': mat_data['dielectric'].get('e_ionic'),
+                    'e_total': mat_data['dielectric'].get('e_total'),
+                    'n': mat_data['dielectric'].get('n')
+                })
+            
+            if "magnetic" in mat_data:
+                best_design_props.update({
+                    'total_magnetization': mat_data['magnetic'].get('total_magnetization'),
+                    'total_magnetization_normalized_vol': mat_data['magnetic'].get('total_magnetization_normalized_vol')
+                })
+            
+            if "piezoelectric" in mat_data:
+                best_design_props.update({
+                    'e_ij_max': mat_data['piezoelectric'].get('e_ij_max')
+                })
+
             
             # Initialize an empty list to store matching materials for the current mat_key
             matching_materials_for_current_mat = []
 
             # print len of material_id, elec_cond, therm_cond, bulk_modulus, shear_modulus, universal_anisotropy
+            if "carrier-transport" in mat_data:
+                print(f"len(elec_cond): {len(consolidated_dict['elec_cond_300k_low_doping'])}")
+                print(f"len(therm_cond): {len(consolidated_dict['therm_cond_300k_low_doping'])}")
+            
+            if "elastic" in mat_data:
+                print(f"len(bulk_modulus): {len(consolidated_dict['bulk_modulus_vrh'])}")
+                print(f"len(shear_modulus): {len(consolidated_dict['shear_modulus_vrh'])}")
+                print(f"len(universal_anisotropy): {len(consolidated_dict['universal_anisotropy'])}")
+            
             print(f"len(material_id): {len(consolidated_dict['material_id'])}")
-            print(f"len(elec_cond): {len(consolidated_dict['elec_cond_300k_low_doping'])}")
-            print(f"len(therm_cond): {len(consolidated_dict['therm_cond_300k_low_doping'])}")
-            print(f"len(bulk_modulus): {len(consolidated_dict['bulk_modulus'])}")
-            print(f"len(shear_modulus): {len(consolidated_dict['shear_modulus'])}")
-            print(f"len(universal_anisotropy): {len(consolidated_dict['universal_anisotropy'])}")
             
 
             # Iterate through each material in consolidated_dict
@@ -330,13 +361,38 @@ class HashinShtrikman(BaseModel):
                 material_id_str = str(material_id)
                 
                 # Retrieve the properties for this material from consolidated_dict
-                material_props = {
-                    'elec_cond': consolidated_dict['elec_cond_300k_low_doping'][i],
-                    'therm_cond': consolidated_dict['therm_cond_300k_low_doping'][i],
-                    'bulk_modulus': consolidated_dict['bulk_modulus'][i],
-                    'shear_modulus': consolidated_dict['shear_modulus'][i],
-                    'universal_anisotropy': consolidated_dict['universal_anisotropy'][i]
-                }
+                material_props = {}
+                if "carrier-transport" in mat_data:
+                    material_props.update({
+                        'elec_cond': consolidated_dict['elec_cond_300k_low_doping'][i],
+                        'therm_cond': consolidated_dict['therm_cond_300k_low_doping'][i]
+                    })
+                
+                if "elastic" in mat_data:
+                    material_props.update({
+                        'bulk_modulus': consolidated_dict['bulk_modulus_vrh'][i],
+                        'shear_modulus': consolidated_dict['shear_modulus_vrh'][i],
+                        'universal_anisotropy': consolidated_dict['universal_anisotropy'][i]
+                    })
+
+                if "dielectric" in mat_data:
+                    material_props.update({
+                        'e_electronic': consolidated_dict['e_electronic'][i],
+                        'e_ionic': consolidated_dict['e_ionic'][i],
+                        'e_total': consolidated_dict['e_total'][i],
+                        'n': consolidated_dict['n'][i]
+                    })
+                
+                if "magnetic" in mat_data:
+                    material_props.update({
+                        'total_magnetization': consolidated_dict['total_magnetization'][i],
+                        'total_magnetization_normalized_vol': consolidated_dict['total_magnetization_normalized_vol'][i]
+                    })
+                
+                if "piezoelectric" in mat_data:
+                    material_props.update({
+                        'e_ij_max': consolidated_dict['e_ij_max'][i]
+                    })
 
                 # Compare properties with best_designs_dict (within 1% threshold)
                 matching = {}
@@ -1007,6 +1063,8 @@ class HashinShtrikman(BaseModel):
         if 'e_ij_max' in query:
             query['piezoelectric_modulus'] = query.pop('e_ij_max')
         
+        print(f"Final query: {query}")
+        
         mpr = MPRester("QePM93qZsMKNPkI4fEYaJfB7dONoQjaM")
 
         # Perform the query on the Materials Project database using the built query
@@ -1051,23 +1109,9 @@ class HashinShtrikman(BaseModel):
             result_dict["formula_pretty"].append(material.formula_pretty)
 
             # Define a mapping between query keys and result_dict keys and their corresponding material attributes
-            # property_map = {
-            #     "k_vrh": ("bulk_modulus", "vrh"),
-            #     "g_vrh": ("shear_modulus", "vrh"),
-            #     "elastic_anisotropy": ("universal_anisotropy", "universal_anisotropy"),
-            #     "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping", "elec_cond_300k_low_doping"),
-            #     "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping", "therm_cond_300k_low_doping"),
-            #     "e_electronic": ("e_electronic", "e_electronic"),
-            #     "e_ionic": ("e_ionic", "e_ionic"),
-            #     "e_total": ("e_total", "e_total"),
-            #     "n": ("n", "n"),
-            #     "total_magnetization": ("total_magnetization", "total_magnetization"),
-            #     "total_magnetization_normalized_vol": ("total_magnetization_normalized_vol", "total_magnetization_normalized_vol"),
-            #     "e_ij_max": ("e_ij_max", "e_ij_max")
-            # }
             property_map = {
-                "k_voigt": ("bulk_modulus_voigt", "bulk_modulus", "voigt"),
-                "g_voigt": ("shear_modulus_voigt", "shear_modulus", "voigt"),
+                "k_vrh": ("bulk_modulus_vrh", "bulk_modulus", "vrh"),
+                "g_vrh": ("shear_modulus_vrh", "shear_modulus", "vrh"),
                 "elastic_anisotropy": ("universal_anisotropy", "universal_anisotropy"),
                 "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping", "elec_cond_300k_low_doping"),
                 "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping", "therm_cond_300k_low_doping"),
