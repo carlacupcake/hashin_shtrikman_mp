@@ -146,28 +146,33 @@ class Population(BaseModel):
         # Extract bulk moduli and shear moduli from population
         [bulk_idx, shear_idx] = indices_elastic_moduli 
 
-        # Order the materials in each member according to bulk modulus
-        for i in range(start_member, population_size):
-            member = self.values[i, :]
-            sorted_bulk_indices = np.argsort(member[bulk_idx:stop:step])
-            unsorted_member = np.zeros((self.num_materials, (self.num_properties - 1)))
-            for m in range(self.num_materials):
-                start = m * (self.num_properties - 1)
-                end = start + (self.num_properties - 1)
-                material = member[start:end]
-                unsorted_member[m, :] = material
-            sorted_member = unsorted_member[sorted_bulk_indices]
-            self.values[i, :-self.num_materials] = sorted_member.flatten()
+        # if bulk)idx & shear_idx are None, then just skip the following
+        if bulk_idx is None and shear_idx is None:
+            return self
+        
+        else:
+            # Order the materials in each member according to bulk modulus
+            for i in range(start_member, population_size):
+                member = self.values[i, :]
+                sorted_bulk_indices = np.argsort(member[bulk_idx:stop:step])
+                unsorted_member = np.zeros((self.num_materials, (self.num_properties - 1)))
+                for m in range(self.num_materials):
+                    start = m * (self.num_properties - 1)
+                    end = start + (self.num_properties - 1)
+                    material = member[start:end]
+                    unsorted_member[m, :] = material
+                sorted_member = unsorted_member[sorted_bulk_indices]
+                self.values[i, :-self.num_materials] = sorted_member.flatten()
 
-        # Use sorted bulk moduli values to potentially replace lower bound on shear modulus 
-        # so that random values allow for  bulk_i < bulk_j and shear_i < shear_j simultaneously
-        shear_indices = [idx for idx in range(shear_idx, stop, step)]
-        for i in range(start_member, population_size):
-            member = self.values[i, :]
-            shear_mods = member[shear_idx:stop:step]
-            for m in range(1, self.num_materials):
-                idx = shear_indices[m]
-                self.values[i, idx] = np.random.uniform(max(shear_mods[m-1], lower_bounds_array[idx]), max(shear_mods[m-1], upper_bounds_array[idx]))
+            # Use sorted bulk moduli values to potentially replace lower bound on shear modulus 
+            # so that random values allow for  bulk_i < bulk_j and shear_i < shear_j simultaneously
+            shear_indices = [idx for idx in range(shear_idx, stop, step)]
+            for i in range(start_member, population_size):
+                member = self.values[i, :]
+                shear_mods = member[shear_idx:stop:step]
+                for m in range(1, self.num_materials):
+                    idx = shear_indices[m]
+                    self.values[i, idx] = np.random.uniform(max(shear_mods[m-1], lower_bounds_array[idx]), max(shear_mods[m-1], upper_bounds_array[idx]))
 
         # Include volume fractions
         for i in range(start_member, population_size):
