@@ -7,8 +7,8 @@ dielectric:
     e_total:
     n:
 elastic: 
-    bulk_modulus: voigt
-    shear_modulus: voigt
+    bulk_modulus: vrh
+    shear_modulus: vrh
     universal_anisotropy:
 magnetic: 
     total_magnetization:
