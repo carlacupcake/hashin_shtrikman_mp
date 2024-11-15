@@ -757,9 +757,13 @@ class HashinShtrikman(BaseModel):
         return                
 
     #------ Other Methods ------#
-    def print_table_of_best_designs(self, rows: int = 10):
+    def print_table_of_best_designs(self, rows: int = 10, prec = None):
 
         table_data = self.get_table_of_best_designs(rows)
+
+        if prec is not None:
+            table_data = np.round(table_data, prec)
+            
         headers = self.get_headers()
 
         header_color = 'lavender'
@@ -800,9 +804,8 @@ class HashinShtrikman(BaseModel):
             height=400,
             autosize=True
         )
-        fig.show()
 
-        return
+        return fig
     
     def plot_optimization_results(self):
  
@@ -842,9 +845,8 @@ class HashinShtrikman(BaseModel):
             height=400, 
             margin=dict(l=50, r=50, t=50, b=50) 
         )
-        fig.show()
 
-        return
+        return fig
 
     def visualize_composite_eff_props(self, match, consolidated_dict: dict = {}, num_fractions: int = 99):
 
