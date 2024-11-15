@@ -62,7 +62,7 @@ class Member(BaseModel):
         return values
     
     #------ Getter Methods ------#
-    def get_cost(self, plot_cost_func_contribs=False):
+    def get_cost(self, plot_cost_func_contribs=False, return_plot=False):
 
         """ MAIN COST FUNCTION """
         
@@ -125,9 +125,12 @@ class Member(BaseModel):
         cost = weight_domains * (weight_eff_prop * np.sum(costs_eff_props) + weight_conc_factor * np.sum(costs_cfs))
 
         if plot_cost_func_contribs:
-            self.plot_cost_func_contribs(1/2 * weight_eff_prop * costs_eff_props, 1/2 * weight_conc_factor * costs_cfs)
+            plot = self.plot_cost_func_contribs(1/2 * weight_eff_prop * costs_eff_props, 1/2 * weight_conc_factor * costs_cfs)
 
-        return cost
+        if return_plot:
+            return cost, plot
+        else:
+            return cost
     
     def get_general_eff_prop_and_cfs(self, idx = 0): # idx is the index in self.values where category properties begin
 
@@ -431,7 +434,8 @@ class Member(BaseModel):
         )
 
         # Display the chart
-        fig.show()
+        # fig.show()
+        return fig
 
     
 
