@@ -1,5 +1,7 @@
 README.md
 pyproject.toml
+src/core/optimization.py
+src/core/optimization_temp.py
 src/hashin_shtrikman_mp/__init__.py
 src/hashin_shtrikman_mp.egg-info/PKG-INFO
 src/hashin_shtrikman_mp.egg-info/SOURCES.txt

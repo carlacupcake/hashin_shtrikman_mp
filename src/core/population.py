@@ -58,8 +58,8 @@ class Population(BaseModel):
 
     @model_validator(mode='before')
     def set_default_values_and_costs(cls, values):
-        ga_params = GAParams(**values.get('ga_params', {})) if isinstance(values.get('ga_params'), dict) else values.get('ga_params', GAParams())
-
+        # Extract or initialize ga_params
+        ga_params = values.get('ga_params', GAParams())
         num_members = ga_params.num_members  # Assuming GAParams model has a num_members field directly accessible
         num_properties = values.get('num_properties', 0)
         num_materials = values.get('num_materials', 0)
