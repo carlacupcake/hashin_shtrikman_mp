@@ -14,12 +14,17 @@ dependencies = [
     "monty>=2023.11.3",
     "mp-api>=0.39.1",
     "mpi4py>=3.1.5",
+    "nbformat>=4.2.0",
     "numpy>=1.26.2",
     "pandas>=2.2.0",
     "pydantic>=2.5.0",
     "pydantic-core>=2.14.1",
     "pydantic-settings>=2.1.0"
 ]
+
+# Move the tests section outside the [project] section
+[project.optional-dependencies]
+tests = ["pytest"]
 
 [project.urls]
 repository = "https://github.com/carlacupcake/hashin_shtrikman_mp"
