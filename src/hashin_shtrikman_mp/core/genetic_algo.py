@@ -1,10 +1,10 @@
-""" genetic_algo.py """
+"""genetic_algo.py."""
 from pydantic import BaseModel, Field, PositiveInt, confloat
 
+
 class GAParams(BaseModel):
-    """
-    Class to hold the parameters used for the genetic algorithm.
-    """
+    """Class to hold the parameters used for the genetic algorithm."""
+
     num_parents: PositiveInt = Field(
         default=10,
         description="Number of parent members to retain in each generation."

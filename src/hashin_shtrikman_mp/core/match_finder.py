@@ -1,30 +1,29 @@
-"""match_finder.py"""
+"""match_finder.py."""
 import itertools
 import json
+from datetime import datetime
+
 import numpy as np
 import plotly.graph_objects as go
 
-from datetime import datetime
-from typing import Dict
-
 # Custom imports
 from hashin_shtrikman_mp.core.genetic_algo import GAParams
+from hashin_shtrikman_mp.core.optimizer import Optimizer
 from hashin_shtrikman_mp.core.population import Population
 from hashin_shtrikman_mp.core.user_input import UserInput
-from hashin_shtrikman_mp.core.optimizer import Optimizer
 
-np.seterr(divide='raise')
+np.seterr(divide="raise")
 
 class MatchFinder(Optimizer):
     """
     MatchFinder class for Hashin-Shtrikman optimization.
 
-    This class extends the HashinShtrikman class to include methods 
+    This class extends the HashinShtrikman class to include methods
     for finding real materials in the MP database which match
     (fictitious) materials recommended by the optimization.
     """
 
-    def __init__(self, optimizer: Optimizer):
+    def __init__(self, optimizer: Optimizer) -> None:
         # Dump the optimizer's data into a dictionary
         optimizer_attributes = optimizer.model_dump()
 
@@ -40,16 +39,15 @@ class MatchFinder(Optimizer):
         super().__init__(**optimizer_attributes)
 
     class Config:
-        """ To use np.ndarray or other arbitrary types in your Pydantic models """
+        """To use np.ndarray or other arbitrary types in your Pydantic models."""
+
         arbitrary_types_allowed = True
 
     def get_unique_designs(self):
-
         """
         Genetic algorithms often return identical top performers.
         This function deduplicates the designs in the final population.
         """
-
         # Costs are often equal to >10 decimal points,
         # truncate to obtain a richer set of suggestions
         self.final_population.set_costs()
@@ -62,26 +60,21 @@ class MatchFinder(Optimizer):
         return [unique_members, unique_costs]
 
     def get_table_of_best_designs(self, rows: int = 10):
-
         """
         For tabulating the material properties
         and volume fractions of the best designs.
         """
-
         [unique_members, unique_costs] = self.get_unique_designs()
-        table_data = np.hstack((unique_members[0:rows, :], unique_costs[0:rows].reshape(-1, 1)))
+        return np.hstack((unique_members[0:rows, :], unique_costs[0:rows].reshape(-1, 1)))
 
-        return table_data
 
     def get_dict_of_best_designs(self):
-
         """
         Eventually, we traverse a dictionary of materials from
-        the Materials Project database. We want to traverse the 
+        the Materials Project database. We want to traverse the
         best designs in a similar manner, so we must store the
         best designs as a dictionary with the same structure.
         """
-
         # Initialize dictionaries for each material based on selected property categories
         best_designs_dict = {}
         for m in range(1, self.num_materials + 1):
@@ -89,7 +82,7 @@ class MatchFinder(Optimizer):
 
         # Initialize the structure for each category
         for category in self.property_categories:
-            for mat in best_designs_dict.keys():
+            for mat in best_designs_dict:
                 best_designs_dict[mat][category] = {}
                 for property in self.property_docs[category]:
                     best_designs_dict[mat][category][property] = []
@@ -112,21 +105,21 @@ class MatchFinder(Optimizer):
 
         return best_designs_dict
 
-    def get_material_matches(self, overall_bounds_dict: dict = {}):
-
+    def get_material_matches(self, overall_bounds_dict: dict = None):
         """
         Identifies materials in the MP databse which match those
         recommended by the optimization.
         """
-
         # Generate the consolidated dict based on overall bounds
+        if overall_bounds_dict is None:
+            overall_bounds_dict = {}
         consolidated_dict = self.generate_consolidated_dict(overall_bounds_dict)
 
         # Generate a dictionary of the best designs - same format as consolidated_dict
         best_designs_dict = self.get_dict_of_best_designs()
 
         # save consolidated_dict to file
-        with open(f"consolidated_dict_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}", 'w') as f:
+        with open(f"consolidated_dict_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}", "w") as f:
             json.dump(consolidated_dict, f)
 
 
@@ -138,11 +131,11 @@ class MatchFinder(Optimizer):
 
             # Extract the property data from best_designs_dict
             best_design_props = {
-                'elec_cond': mat_data['carrier-transport']['elec_cond_300k_low_doping'],
-                'therm_cond': mat_data['carrier-transport']['therm_cond_300k_low_doping'],
-                'bulk_modulus': mat_data['elastic']['bulk_modulus'],
-                'shear_modulus': mat_data['elastic']['shear_modulus'],
-                'universal_anisotropy': mat_data['elastic']['universal_anisotropy']
+                "elec_cond": mat_data["carrier-transport"]["elec_cond_300k_low_doping"],
+                "therm_cond": mat_data["carrier-transport"]["therm_cond_300k_low_doping"],
+                "bulk_modulus": mat_data["elastic"]["bulk_modulus"],
+                "shear_modulus": mat_data["elastic"]["shear_modulus"],
+                "universal_anisotropy": mat_data["elastic"]["universal_anisotropy"]
             }
 
             # Initialize an empty list to store matching materials for the current mat_key
@@ -156,11 +149,11 @@ class MatchFinder(Optimizer):
 
                 # Retrieve the properties for this material from consolidated_dict
                 material_props = {
-                    'elec_cond': consolidated_dict['elec_cond_300k_low_doping'][i],
-                    'therm_cond': consolidated_dict['therm_cond_300k_low_doping'][i],
-                    'bulk_modulus': consolidated_dict['bulk_modulus'][i],
-                    'shear_modulus': consolidated_dict['shear_modulus'][i],
-                    'universal_anisotropy': consolidated_dict['universal_anisotropy'][i]
+                    "elec_cond": consolidated_dict["elec_cond_300k_low_doping"][i],
+                    "therm_cond": consolidated_dict["therm_cond_300k_low_doping"][i],
+                    "bulk_modulus": consolidated_dict["bulk_modulus"][i],
+                    "shear_modulus": consolidated_dict["shear_modulus"][i],
+                    "universal_anisotropy": consolidated_dict["universal_anisotropy"][i]
                 }
 
                 # Compare properties with best_designs_dict (within 1% threshold)
@@ -184,12 +177,10 @@ class MatchFinder(Optimizer):
         return final_matching_materials
 
     def get_all_possible_vol_frac_combos(self, num_fractions: int = 30):
-
         """
         Once real materials have been identified, we must calculate
         which volume fraction combinations are 'best' for the composite.
         """
-
         all_vol_frac_ranges = []
         for _ in range(self.num_materials - 1):
             all_vol_frac_ranges.append(list(np.linspace(0.01, 0.99, num_fractions)))
@@ -207,13 +198,13 @@ class MatchFinder(Optimizer):
 
         return all_vol_frac_combos
 
-    def get_material_match_costs(self, matches_dict, consolidated_dict: dict = {}):
-
+    def get_material_match_costs(self, matches_dict, consolidated_dict: dict = None):
         """
         This function evaluates the 'real' candidate composites with the
         same cost function used in the optimization process.
         """
-
+        if consolidated_dict is None:
+            consolidated_dict = {}
         if matches_dict == {}:
             print("No materials match the recommended composite formulation.")
             return
@@ -239,13 +230,13 @@ class MatchFinder(Optimizer):
                     for material_dict in combo:
 
                         # Extract the material ID string from the dictionary
-                        material_id = list(material_dict.keys())[0]
+                        material_id = next(iter(material_dict.keys()))
 
                         # Ensure material_id is a string
                         # (it should already be, but this is to be safe)
                         material_str = str(material_id)
 
-                        if property in consolidated_dict.keys():
+                        if property in consolidated_dict:
                             m = consolidated_dict["material_id"].index(material_str)
                             material_values.append(consolidated_dict[property][m])
 
@@ -277,7 +268,7 @@ class MatchFinder(Optimizer):
             # Assemble a table for printing
             mat_ids = []
             for material_dict in combo:
-                material_id = list(material_dict.keys())[0]
+                material_id = next(iter(material_dict.keys()))
                 material_str = str(material_id)
                 mat_ids.append(np.reshape([material_id]*self.ga_params.num_members,
                                           (self.ga_params.num_members,1)))
@@ -301,9 +292,9 @@ class MatchFinder(Optimizer):
 
         headers = self.get_headers(include_mpids=True)
 
-        header_color = 'lavender'
-        odd_row_color = 'white'
-        even_row_color = 'lightgrey'
+        header_color = "lavender"
+        odd_row_color = "white"
+        even_row_color = "lightgrey"
         cells_color = [[odd_row_color,
                         even_row_color,
                         odd_row_color,
@@ -316,14 +307,14 @@ class MatchFinder(Optimizer):
             header=dict(
                 values=headers,
                 fill_color=header_color,
-                align='left',
+                align="left",
                 font=dict(size=12),
                 height=30
             ),
             cells=dict(
                 values=[list(col) for col in zip(*top_rows)],  # Transpose top_rows to get columns
                 fill_color=cells_color,
-                align='left',
+                align="left",
                 font=dict(size=12),
                 height=30,
             )

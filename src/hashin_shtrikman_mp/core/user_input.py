@@ -1,5 +1,6 @@
+
 from pydantic import BaseModel
-from typing import List
+
 
 class MaterialProperty(BaseModel):
     prop: str
@@ -8,7 +9,7 @@ class MaterialProperty(BaseModel):
 
 class Material(BaseModel):
     name: str
-    properties: List[MaterialProperty]
+    properties: list[MaterialProperty]
 
     def custom_dict(self):
         # Custom method to transform the default Pydantic dict to the desired format
@@ -25,7 +26,7 @@ class MixtureProperty(BaseModel):
 
 class Mixture(BaseModel):
     name: str
-    properties: List[MixtureProperty]
+    properties: list[MixtureProperty]
 
     def custom_dict(self):
         # Custom method to transform the default Pydantic dict to the desired format
@@ -34,36 +35,36 @@ class Mixture(BaseModel):
                 p.prop: {"desired_prop": p.desired_prop} for p in self.properties
             }
         }
-    
+
 class UserInput(BaseModel):
-    materials: List[Material]
-    mixtures: List[Mixture]
+    materials: list[Material]
+    mixtures: list[Mixture]
 
     def build_dict(self):
         # Builds the desired dict structure
         result = {}
         for material in self.materials:
             result.update(material.custom_dict())
-        
+
         for mixture in self.mixtures:
             result.update(mixture.custom_dict())
-        
+
         return result
 
     def items(self):
         # Support dict-like .items() method
         return self.build_dict().items()
-    
+
     def keys(self):
         # Support dict-like .keys() method
         return self.build_dict().keys()
-    
+
     def values(self):
         # Support dict-like .values() method
         return self.build_dict().values()
-    
+
     def len(self):
-        print(f'self.nuild_dict: {self.build_dict}')
+        print(f"self.nuild_dict: {self.build_dict}")
         return len(self.build_dict())
 
     def __iter__(self):
@@ -73,12 +74,12 @@ class UserInput(BaseModel):
     def __getitem__(self, key):
         return self.build_dict()[key]
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.build_dict())
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.build_dict())
-    
+
     def get(self, key, default=None):
         # Dict-like get method implementation
         return self.build_dict().get(key, default)
