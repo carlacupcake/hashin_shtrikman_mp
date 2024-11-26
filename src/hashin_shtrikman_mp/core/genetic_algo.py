@@ -1,32 +1,32 @@
 """ genetic_algo.py """
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PositiveInt, confloat
 
 class GAParams(BaseModel):
     """
     Class to hold the parameters used for the genetic algorithm.
     """
-    num_parents: int = Field(
+    num_parents: PositiveInt = Field(
         default=10,
         description="Number of parent members to retain in each generation."
     )
-    num_kids: int = Field(
+    num_kids: PositiveInt = Field(
         default=10,
         description="Number of children to produce from the parent members."
     )
-    num_generations: int = Field(
+    num_generations: PositiveInt = Field(
         default=100,
         description="Total number of generations to simulate in the genetic algorithm."
     )
-    num_members: int = Field(
+    num_members: PositiveInt = Field(
         default=200,
         description="Total number of members in each generation of the population."
     )
-    mixing_param: float = Field(
+    mixing_param: confloat(ge=0, le=1) = Field(
         default = 0.5,
         description ="For linear scaling between effective min and max."
                      "It is recommended to use 0.5 in the absence of experimental data"
     )
-    tolerance: float = Field(
+    tolerance: confloat(ge=0) = Field(
         default=1.0,
         description="This parameter sets the threshold for considering the deviation of "
                     "concentration factors from their ideal values. It is used to adjust "
@@ -37,7 +37,7 @@ class GAParams(BaseModel):
                     "concentration factors, influencing the penalty for deviations in "
                     "material properties from their desired values."
     )
-    weight_eff_prop: float = Field(
+    weight_eff_prop: confloat(ge=0) = Field(
         default=1.0,
         description="This weight factor scales the importance of the effective property "
                     "matching component of the cost function. It determines how "
@@ -48,7 +48,7 @@ class GAParams(BaseModel):
                     "optimize the material composition towards achieving specific "
                     "property targets."
     )
-    weight_conc_factor: float = Field(
+    weight_conc_factor: confloat(ge=0) = Field(
         default=1.0,
         description="This weight factor controls the significance of the "
                     "concentration factor matching in the cost function. It scales "
