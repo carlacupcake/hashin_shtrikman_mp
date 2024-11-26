@@ -1,3 +1,4 @@
+""" genetic_algo.py """
 from pydantic import BaseModel, Field
 
 class GAParams(BaseModel):
@@ -58,7 +59,3 @@ class GAParams(BaseModel):
                     "desired concentration balance between the composite's "
                     "constituents is more critical to minimizing the overall cost."
     )
-
-
-    
-

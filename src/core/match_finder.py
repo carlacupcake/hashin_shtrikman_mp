@@ -4,45 +4,47 @@ import json
 #import matplotlib.pyplot as plt
 import numpy as np
 import plotly.graph_objects as go
-import re
+#import re
 import sys
-import warnings
-import yaml
+#import warnings
+#import yaml
 
 from datetime import datetime
-from matplotlib import cm
+#from matplotlib import cm
 #import matplotlib.gridspec as gridspec
-from monty.serialization import loadfn
-from mp_api.client import MPRester
+#from monty.serialization import loadfn
+#from mp_api.client import MPRester
 #from mpcontribs.client import Client
 #from mpl_toolkits.mplot3d import Axes3D
 from pathlib import Path
 #from pydantic import BaseModel, Field, model_validator
 #rom tabulate import tabulate
 #rom typing import Any, Dict, List, Union, Optional
-from typing import Any, Dict, List
+from typing import Dict
 
 # Custom imports
 from hashin_shtrikman_mp.core.genetic_algo import GAParams
-from hashin_shtrikman_mp.core.member import Member
+#from hashin_shtrikman_mp.core.member import Member
 from hashin_shtrikman_mp.core.population import Population
 from hashin_shtrikman_mp.core.user_input import UserInput
 from hashin_shtrikman_mp.core.optimizer import Optimizer
-from ..log.custom_logger import logger
+#from ..log.custom_logger import logger
 
 # YAML files
 sys.path.insert(1, '../io/inputs')
-CALC_GUIDE = "cost_calculation_formulas.yaml"
-HS_HEADERS_YAML = "display_table_headers.yaml"
-MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
+#CALC_GUIDE = "cost_calculation_formulas.yaml"
+#HS_HEADERS_YAML = "display_table_headers.yaml"
+#MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
 
 # HashinShtrikman class defaults
+'''
 DEFAULT_FIELDS: dict = {"material_id": [], 
                         "is_stable": [], 
                         "band_gap": [], 
                         "is_metal": [],
                         "formula_pretty": [],}
-MODULE_DIR = Path(__file__).resolve().parent
+                        '''
+#MODULE_DIR = Path(__file__).resolve().parent
 
 # Load and compile cost calculation formulas
 #from compile_cost_calculation_formulas import compile_formulas

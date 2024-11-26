@@ -62,7 +62,7 @@ class Member(BaseModel):
         return values
     
     #------ Getter Methods ------#
-    def get_cost(self, plot_cost_func_contribs=False, return_plot=False):
+    def get_cost(self, include_cost_breakdown=False):
 
         """ MAIN COST FUNCTION """
         
@@ -124,11 +124,9 @@ class Member(BaseModel):
 
         cost = weight_domains * (weight_eff_prop * np.sum(costs_eff_props) + weight_conc_factor * np.sum(costs_cfs))
 
-        if plot_cost_func_contribs:
-            plot = self.plot_cost_func_contribs(1/2 * weight_eff_prop * costs_eff_props, 1/2 * weight_conc_factor * costs_cfs)
+        if include_cost_breakdown:
+            return cost, costs_eff_props, costs_cfs
 
-        if return_plot:
-            return cost, plot
         else:
             return cost
     
@@ -399,43 +397,6 @@ class Member(BaseModel):
         effective_properties  = np.array(effective_properties)
 
         return effective_properties
-
-    def plot_cost_func_contribs(self, scaled_costs_eff_props, scaled_costs_cfs):
-
-        # Labels for the pie chart 
-        eff_prop_labels = []
-        cf_labels = []
-        for category in self.property_categories:
-            for property in self.property_docs[category]:
-                eff_prop_labels.append(f'eff. {property}')
-                if property == 'bulk_modulus':
-                    cf_labels.append(f'cf hydrostatic stress')
-                elif property == 'shear_modulus':
-                    cf_labels.append(f'cf deviatoric stress')
-                else:
-                    cf_labels.append(f'cf load on {property}')
-                    cf_labels.append(f'cf response from {property}')
-        labels = eff_prop_labels + cf_labels
-
-        # Combine the data and labels for the eff props and concentration factors
-        scaled_costs_eff_props = np.array(scaled_costs_eff_props)
-        scaled_costs_cfs = np.array(scaled_costs_cfs)
-        cost_func_contribs = np.concatenate((scaled_costs_eff_props, scaled_costs_cfs)) 
-
-        # Create the pie chart figure 
-        fig = go.Figure(data=[go.Pie(labels=labels, values=cost_func_contribs, 
-                                     textinfo='percent', 
-                                     insidetextorientation='radial', 
-                                     hole=.25)])
-
-        fig.update_layout(
-            title_text='Cost Function Contributions',
-            showlegend=True
-        )
-
-        # Display the chart
-        # fig.show()
-        return fig
 
     
 

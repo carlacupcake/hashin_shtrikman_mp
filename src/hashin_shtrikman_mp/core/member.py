@@ -1,5 +1,5 @@
+"""member.py"""
 import numpy as np
-import plotly.graph_objs as go
 import warnings
 
 from pydantic import BaseModel, model_validator, Field

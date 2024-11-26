@@ -1,7 +1,6 @@
-#import copy
+"""visualizer.py"""
 import itertools
 import json
-import matplotlib.pyplot as plt
 import numpy as np
 import plotly.graph_objects as go
 import re
@@ -9,20 +8,7 @@ import sys
 import warnings
 import yaml
 
-#from datetime import datetime
-#from matplotlib import cm
-#import matplotlib.gridspec as gridspec
-from monty.serialization import loadfn
-#from mp_api.client import MPRester
-#from mpcontribs.client import Client
-#from mpl_toolkits.mplot3d import Axes3D
 from pathlib import Path
-#from pydantic import BaseModel, Field, model_validator
-#from tabulate import tabulate
-from typing import Any, Dict, List, Union, Optional
-
-#sys.path.insert(1, '../log')
-#from custom_logger import logger
 
 # Custom imports
 from hashin_shtrikman_mp.core.genetic_algo import GAParams
@@ -33,21 +19,11 @@ from hashin_shtrikman_mp.core.optimizer import Optimizer
 
 # YAML files
 sys.path.insert(1, '../io/inputs')
-CALC_GUIDE = "cost_calculation_formulas.yaml"
 HS_HEADERS_YAML = "display_table_headers.yaml"
 MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
 
-# HashinShtrikman class defaults
-DEFAULT_FIELDS: dict = {"material_id": [], 
-                        "is_stable": [], 
-                        "band_gap": [], 
-                        "is_metal": [],
-                        "formula_pretty": [],}
+# Optimizer class defaults
 MODULE_DIR = Path(__file__).resolve().parent
-
-# Load and compile cost calculation formulas
-#from compile_cost_calculation_formulas import compile_formulas
-#COMPILED_CALC_GUIDE = compile_formulas(loadfn(f"{MODULE_DIR}/../io/inputs/{CALC_GUIDE}"))
 
 np.seterr(divide='raise')
 

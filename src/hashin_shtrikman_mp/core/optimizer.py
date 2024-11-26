@@ -1,24 +1,15 @@
-#import copy
-#import itertools
+"""optimizer.py"""
 import json
-#import matplotlib.pyplot as plt
 import numpy as np
-#import plotly.graph_objects as go
 import re
 import sys
-#import warnings
 import yaml
 
 from datetime import datetime
-#from matplotlib import cm
-#import matplotlib.gridspec as gridspec
 from monty.serialization import loadfn
 from mp_api.client import MPRester
-#from mpcontribs.client import Client
-#from mpl_toolkits.mplot3d import Axes3D
 from pathlib import Path
 from pydantic import BaseModel, Field, model_validator
-#from tabulate import tabulate
 from typing import Any, Dict, List, Union, Optional
 
 # Custom imports
@@ -34,7 +25,7 @@ CALC_GUIDE = "cost_calculation_formulas.yaml"
 HS_HEADERS_YAML = "display_table_headers.yaml"
 MP_PROPERTY_DOCS_YAML = "mp_property_docs.yaml"
 
-# HashinShtrikman class defaults
+# Optimizer class defaults
 DEFAULT_FIELDS: dict = {"material_id": [], 
                         "is_stable": [], 
                         "band_gap": [], 
