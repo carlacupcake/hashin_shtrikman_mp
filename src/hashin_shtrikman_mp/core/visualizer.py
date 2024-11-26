@@ -445,3 +445,56 @@ class Visualizer(Optimizer):
             margin=dict(l=50, r=50, t=50, b=50) 
         )
         fig.show()
+
+    def plot_cost_func_contribs(self):
+
+        # Get the best design
+        best_design = Member(num_materials=self.num_materials, 
+                     num_properties=self.num_properties,
+                     values=self.final_population.values[0], 
+                     property_categories=self.property_categories,
+                     property_docs=self.property_docs, 
+                     desired_props=self.desired_props, 
+                     ga_params=self.ga_params,
+                     calc_guide=self.calc_guide)
+        cost, costs_eff_props, costs_cfs = best_design.get_cost(include_cost_breakdown=True)
+        print(f'Cost of best design: {cost}')
+
+        # Scale the costs of the effective properties and concentration factors
+        # Scale according to weights from GAParams
+        scaled_costs_eff_props = 1/2 * self.ga_params.weight_eff_prop * costs_eff_props
+        scaled_costs_cfs = 1/2 * self.ga_params.weight_conc_factor * costs_cfs
+
+        # Labels for the pie chart 
+        eff_prop_labels = []
+        cf_labels = []
+        for category in self.property_categories:
+            for property in self.property_docs[category]:
+                eff_prop_labels.append(f'eff. {property}')
+                if property == 'bulk_modulus':
+                    cf_labels.append(f'cf hydrostatic stress')
+                elif property == 'shear_modulus':
+                    cf_labels.append(f'cf deviatoric stress')
+                else:
+                    cf_labels.append(f'cf load on {property}')
+                    cf_labels.append(f'cf response from {property}')
+        labels = eff_prop_labels + cf_labels
+
+        # Combine the data and labels for the eff props and concentration factors
+        scaled_costs_eff_props = np.array(scaled_costs_eff_props)
+        scaled_costs_cfs = np.array(scaled_costs_cfs)
+        cost_func_contribs = np.concatenate((scaled_costs_eff_props, scaled_costs_cfs)) 
+
+        # Create the pie chart figure 
+        fig = go.Figure(data=[go.Pie(labels=labels, values=cost_func_contribs, 
+                                     textinfo='percent', 
+                                     insidetextorientation='radial', 
+                                     hole=.25)])
+
+        fig.update_layout(
+            title_text='Cost Function Contributions',
+            showlegend=True
+        )
+
+        # Display the chart
+        fig.show()
