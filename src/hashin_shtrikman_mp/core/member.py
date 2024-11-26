@@ -2,7 +2,7 @@
 import numpy as np
 import warnings
 
-from pydantic import BaseModel, model_validator, Field
+from pydantic import BaseModel, model_validator, Field, PositiveInt
 from typing import Any, Dict, List, Union, Optional
 
 # Custom imports
@@ -14,11 +14,11 @@ class Member(BaseModel):
     Stores the properties and configuration for genetic algorithm operations.
     """
 
-    num_materials: int = Field(
+    num_materials: PositiveInt = Field(
         default=0,
         description="Number of materials in the ultimate composite."
     )
-    num_properties: int = Field(
+    num_properties: PositiveInt = Field(
         default=0,
         description="Number of properties that each member of the population has."
     )
