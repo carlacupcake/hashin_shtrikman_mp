@@ -72,9 +72,6 @@ pydocstyle.convention = "numpy"
 isort.known-first-party = ["atomate2"]
 isort.split-on-trailing-comma = false
 
-#[tool.ruff.format]
-#docstring-code-format = true
-
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]
 "**/tests/*" = ["ANN", "ARG001", "D", "INP001", "PLR2004", "S101"]
