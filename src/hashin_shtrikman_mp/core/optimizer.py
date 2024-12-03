@@ -4,7 +4,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
 
 import numpy as np
 import yaml
@@ -51,11 +51,11 @@ class Optimizer(BaseModel):
     desired properties.
     """
 
-    api_key: str | None = Field(
+    api_key: Union[str, None] = Field(
         default=None,
         description="API key for accessing Materials Project database."
         )
-    mp_contribs_project: str | None = Field(
+    mp_contribs_project: Union[str, None] = Field(
         default=None,
         description="MPContribs project name for querying project-specific data."
         )
@@ -118,7 +118,7 @@ class Optimizer(BaseModel):
         default_factory=lambda: np.empty(0),
         description="Average cost of the top-performing parents across generations."
         )
-    calc_guide: dict[str, Any] | Any = Field(
+    calc_guide: Union[dict[str, Any], Any] = Field(
         default_factory=lambda: COMPILED_CALC_GUIDE,
         description="Calculation guide for property evaluation with compiled expressions."
     )
@@ -448,7 +448,6 @@ class Optimizer(BaseModel):
             "material_id": [],
             "formula_pretty": []
         }
-
 
         # Traverse the YAML structure to get all the keys
         for category, properties in mp_property_docs.items():

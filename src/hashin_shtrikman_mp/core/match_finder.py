@@ -1,16 +1,27 @@
 """match_finder.py."""
 import itertools
 import json
+import sys
 from datetime import datetime
+from pydantic import confloat
+from pathlib import Path
 
 import numpy as np
 import plotly.graph_objects as go
+import yaml
 
 # Custom imports
 from hashin_shtrikman_mp.core.genetic_algo import GAParams
 from hashin_shtrikman_mp.core.optimizer import Optimizer
 from hashin_shtrikman_mp.core.population import Population
 from hashin_shtrikman_mp.core.user_input import UserInput
+
+# YAML files
+sys.path.insert(1, "../io/inputs")
+HS_HEADERS_YAML = "display_table_headers.yaml"
+
+# Optimizer class defaults
+MODULE_DIR = Path(__file__).resolve().parent
 
 np.seterr(divide="raise")
 
@@ -104,16 +115,52 @@ class MatchFinder(Optimizer):
                     idx += 1
 
         return best_designs_dict
+    
+    def get_headers(self, include_mpids=False, filename = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}"):
 
-    def get_material_matches(self, overall_bounds_dict: dict = None):
+        with open(filename) as stream:
+            try:
+                data = yaml.safe_load(stream)
+                headers = []
+
+                # Add headers for mp-ids
+                if include_mpids:
+                    for m in range(1, self.num_materials + 1):
+                        headers.append(f"Material {m} MP-ID")
+
+                # Add headers for material properties
+                for category, properties in data["Per Material"].items():
+                    if category in self.property_categories:
+                        for property in properties.values():
+                            for m in range(1, self.num_materials + 1):
+                                headers.append(f"Phase {m} " + property)
+
+                # Add headers for volume fractions
+                for m in range(1, self.num_materials + 1):
+                    headers.append(f"Phase {m} Volume Fraction")
+
+                # Add headers for "Common" properties if present
+                if "Common" in data:
+                    for common_key in data["Common"]:
+                        headers.append(common_key)
+
+            except yaml.YAMLError as exc:
+                print(exc)
+
+        return headers
+
+    def get_material_matches(self, overall_bounds_dict: dict = None, consolidated_dict: dict = None, threshold: confloat(ge=0, le=1) = 1):
         """
         Identifies materials in the MP databse which match those
         recommended by the optimization.
         """
-        # Generate the consolidated dict based on overall bounds
+        # Make sure overall_bounds_dict is defined
         if overall_bounds_dict is None:
             overall_bounds_dict = {}
-        consolidated_dict = self.generate_consolidated_dict(overall_bounds_dict)
+
+        # Generate the consolidated dict based on overall bounds
+        if consolidated_dict is None:
+            consolidated_dict = self.generate_consolidated_dict(overall_bounds_dict)
 
         # Generate a dictionary of the best designs - same format as consolidated_dict
         best_designs_dict = self.get_dict_of_best_designs()
@@ -156,13 +203,13 @@ class MatchFinder(Optimizer):
                     "universal_anisotropy": consolidated_dict["universal_anisotropy"][i]
                 }
 
-                # Compare properties with best_designs_dict (within 1% threshold)
+                # Compare properties with best_designs_dict (within % threshold)
                 matching = {}
                 for prop_key, values in best_design_props.items():
                     if prop_key in material_props:
                         # Iterate through each value in best_design_props for comparison
                         for value in values:
-                            if abs(value - material_props[prop_key]) / value < 1:
+                            if abs(value - material_props[prop_key]) / value < threshold:
                                 matching[prop_key] = material_props[prop_key]
 
                 # If all the props are within the threshold,

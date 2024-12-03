@@ -1,13 +1,12 @@
 """member.py."""
 import warnings
-from typing import Any
+from typing import Any, Union
 
 import numpy as np
 from pydantic import BaseModel, Field, PositiveInt, model_validator
 
 # Custom imports
 from .genetic_algo import GAParams
-
 
 class Member(BaseModel):
     """
@@ -23,7 +22,7 @@ class Member(BaseModel):
         default=0,
         description="Number of properties that each member of the population has."
     )
-    values: np.ndarray | None = Field(
+    values: Union[np.ndarray, None] = Field(
         default=None,
         description="Values array representing the member's properties."
     )
@@ -37,14 +36,13 @@ class Member(BaseModel):
     )
     desired_props: dict[str, Any] = Field(
         default={},
-        description="Dictionary mapping individual properties to their desired "
-                    "properties."
+        description="Dictionary mapping individual properties to their desired properties."
     )
-    ga_params: GAParams | None = Field(
+    ga_params: Union['GAParams', None] = Field(
         default=None,
-        description="Parameter initilization class for the genetic algorithm."
+        description="Parameter initialization class for the genetic algorithm."
     )
-    calc_guide: dict[str, Any] | Any = Field(
+    calc_guide: Union[dict[str, Any], Any] = Field(
         default_factory=lambda: None,
         description="Calculation guide for property evaluation with compiled expressions."
     )
