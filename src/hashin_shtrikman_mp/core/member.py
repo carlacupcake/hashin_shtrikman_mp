@@ -392,18 +392,3 @@ class Member(BaseModel):
 
         # Cast effective properties to numpy arrays
         return np.array(effective_properties)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

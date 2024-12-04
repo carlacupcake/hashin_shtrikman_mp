@@ -81,4 +81,3 @@ def test_check_and_initialize_arrays():
 def test_arbitrary_types_allowed():
     member = Member(num_materials=2, num_properties=3, values=np.array([[1.0], [2.0], [3.0]]))
     assert isinstance(member.values, np.ndarray)  # Ensure that values is an ndarray
-

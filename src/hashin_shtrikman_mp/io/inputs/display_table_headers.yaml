@@ -17,4 +17,4 @@ Per Material:
   piezoelectric:
     piezo: Piezoelectric constant, [C/N or m/V]
 Common:
-  cost: Cost, []  
+  cost: Cost, []

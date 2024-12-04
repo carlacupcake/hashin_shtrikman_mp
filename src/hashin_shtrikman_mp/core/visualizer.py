@@ -472,4 +472,3 @@ class Visualizer(Optimizer):
 
         # Display the chart
         fig.show()
-

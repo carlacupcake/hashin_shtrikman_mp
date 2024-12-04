@@ -227,4 +227,3 @@ class Population(BaseModel):
         sorted_costs = np.sort(self.costs, axis=0)
         sorted_indices = np.argsort(self.costs, axis=0)
         return [sorted_costs, sorted_indices]
-
