@@ -1,0 +1,56 @@
+site_name: Hashin-Shtrikman MP documentation
+site_description: Documentation for the hashin-shtrikman-mp package
+copyright: Built by Carla Becker, Hrushikesh Sahasrabuddhe, and Max C. Gallant
+watch:
+  - src/hashin_shtrikman_mp
+nav:
+  - Home:
+    - hashin_shtrikman_mp: index.md
+    - Getting Started: ./guides/getting_started.ipynb
+    - Reference: reference/core/lattice.md
+    - Guides: ./guides/index.md
+  - Guides:
+    - Getting Started: ./guides/getting_started.ipynb
+  # - Reference:
+  #   - Core:
+
+repo_url: https://github.com/carlacupcake/hashin_shtrikman_mp/
+repo_name: Github
+
+theme:
+  name: material
+  icon:
+    logo: material/currency-sign
+  features:
+    - navigation.tabs
+    - navigation.top
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: purple
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji
+  - pymdownx.magiclink
+  - pymdownx.snippets:
+      check_paths: true
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - pymdownx.tasklist
+
+plugins:
+  - search
+  - section-index
+  - mkdocs-jupyter
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ['src']
+          setup_commands:
+            - import sys
+            - sys.path.append("docs")
+          selection:
+            new_path_syntax: yes
