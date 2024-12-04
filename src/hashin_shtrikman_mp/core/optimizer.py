@@ -5,6 +5,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
+from typing import Optional, Dict, Any
 
 import numpy as np
 import yaml
@@ -157,7 +158,7 @@ class Optimizer(BaseModel):
         return values
 
     @staticmethod
-    def load_property_categories(filename=f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input: dict = None):
+    def load_property_categories(filename=f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input: Optional[Dict[Any, Any]] = None):
             if user_input is None:
                 user_input = {}
             logger.info(f"Loading property categories from {filename}.")

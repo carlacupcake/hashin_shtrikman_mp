@@ -1,5 +1,6 @@
 """genetic_algo.py."""
 from pydantic import BaseModel, Field, PositiveInt, confloat
+from typing_extensions import Annotated
 
 
 class GAParams(BaseModel):
@@ -21,12 +22,12 @@ class GAParams(BaseModel):
         default=200,
         description="Total number of members in each generation of the population."
     )
-    mixing_param: confloat(ge=0, le=1) = Field(
+    mixing_param: Annotated[float, Field(strict=True, gt=0, lt=1)] = Field(
         default = 0.5,
         description ="For linear scaling between effective min and max."
                      "It is recommended to use 0.5 in the absence of experimental data"
     )
-    tolerance: confloat(ge=0) = Field(
+    tolerance: Annotated[float, Field(strict=True, ge=0)] = Field(
         default=1.0,
         description="This parameter sets the threshold for considering the deviation of "
                     "concentration factors from their ideal values. It is used to adjust "
@@ -37,7 +38,7 @@ class GAParams(BaseModel):
                     "concentration factors, influencing the penalty for deviations in "
                     "material properties from their desired values."
     )
-    weight_eff_prop: confloat(ge=0) = Field(
+    weight_eff_prop: Annotated[float, Field(strict=True, ge=0)] = Field(
         default=1.0,
         description="This weight factor scales the importance of the effective property "
                     "matching component of the cost function. It determines how "
@@ -48,7 +49,7 @@ class GAParams(BaseModel):
                     "optimize the material composition towards achieving specific "
                     "property targets."
     )
-    weight_conc_factor: confloat(ge=0) = Field(
+    weight_conc_factor: Annotated[float, Field(strict=True, ge=0)] = Field(
         default=1.0,
         description="This weight factor controls the significance of the "
                     "concentration factor matching in the cost function. It scales "
