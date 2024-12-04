@@ -1,4 +1,0 @@
-core
-examples
-hashin_shtrikman_mp
-io
