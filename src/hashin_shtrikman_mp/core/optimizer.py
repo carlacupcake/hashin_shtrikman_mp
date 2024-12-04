@@ -643,7 +643,7 @@ class Optimizer(BaseModel):
             prop_value = float(f"{prop_str}e{prop_exponent}") * 1e-14  # multiply by relaxation time, 10 fs
             logger.info(f"{prop}_if_statement = {prop_value}")
         else:
-            prop_value = float(prop_str) * 1e-14  # multply by relaxation time, 10 fs
+            prop_value = float(prop_str) * 1e-14  # multiply by relaxation time, 10 fs
             logger.info(f"{prop}_else_statement = {prop_value}")
 
         self.fields[prop].append(prop_value)

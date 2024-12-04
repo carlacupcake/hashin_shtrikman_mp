@@ -32,7 +32,7 @@ Example notebooks are included in [examples](https://github.com/carlacupcake/has
 - Ensure you have valid credentials for the Materials Project API, which you can find by registering yourself with Materials Project – [https://next-gen.materialsproject.org/](https://next-gen.materialsproject.org/).
 - Optimization parameters (number of parents, children, etc.) should be chosen based on the complexity of the desired material properties and computational resources.
 - The genetic algorithm's efficiency and effectiveness can vary greatly based on the optimization parameters and the definition of the cost function. Using defaults is recommended.
-- Visualization of cost versus generation can provide insights into the convergence behavior of the genetic algorithm. Expect that the exact shape of the convergence plot will change every time the algorithm is run, due to the stocahstic nature of the algorithm.
+- Visualization of cost versus generation can provide insights into the convergence behavior of the genetic algorithm. Expect that the exact shape of the convergence plot will change every time the algorithm is run, due to the stochastic nature of the algorithm.
 
 ### Miscallaneous features
 **mpi4py support is added to append final_dict** 🛑 <-- still true ?? 🛑
