@@ -1,4 +1,4 @@
-# Composites Discovery App: A Computational Tool for the Optimal Design and Discovery of Multi-phase Composite Materials
+# Composites Discoverer: A Computational Tool for the Optimal Design and Discovery of Multi-phase Composite Materials
 
 ## Overview
 The library utilizes the tightest theoretical bounds on the effective properties of composite materials with unspecified microstructure – the Hashin-Shtrikman bounds – to identify candidate theoretical materials, find real materials that are close to the candidates, and determine the optimal volume fractions for each of the constituents in the resulting composite. 
@@ -79,3 +79,20 @@ mpiexec -n 4 python orp_test.py
 - **Find the Optimal Volume Fractions** by evaluating the  population with the same cost function used previously.
 - **Display of Top-Performing Candidates**: Repeat the process for all possible combinations of materials and display the top-performers along with their volume fractions.
 - **For 2-, 3-, and 4-phase Composites** view the phase diagram for each property of interest and view how changing constituent volume fractions changes the effective composite property.
+
+---
+
+## Example Visualizations
+
+
+***Phase Diagram of Thermal Conductivity for 2-phase Composite***
+![2phase](https://github.com/user-attachments/assets/00c7c051-f974-4437-9490-e08a6d8afc1c)
+
+***Phase Diagram of Thermal Conductivity for 3-phase Composite***
+![3phase](https://github.com/user-attachments/assets/a375ff79-1c54-463f-92a2-c294b96d159c)
+
+***Phase Diagram of Thermal Conductivity for 4-phase Composite***
+![4phase](https://github.com/user-attachments/assets/df5b06fc-b64e-4ad4-82df-52c235211d62)
+
+
+
