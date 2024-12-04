@@ -22,7 +22,7 @@ class GAParams(BaseModel):
         default=200,
         description="Total number of members in each generation of the population."
     )
-    mixing_param: Annotated[float, Field(strict=True, gt=0, lt=1)] = Field(
+    mixing_param: Annotated[float, Field(strict=True, ge=0, le=1)] = Field(
         default = 0.5,
         description ="For linear scaling between effective min and max."
                      "It is recommended to use 0.5 in the absence of experimental data"
