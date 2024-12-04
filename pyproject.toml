@@ -25,6 +25,18 @@ dependencies = [
 # Move the tests section outside the [project] section
 [project.optional-dependencies]
 tests = ["pytest"]
+docs = [
+    "jupyter_contrib_nbextensions>=0.7.0",
+    "notebook==6.4.12",
+    "mkdocs>=1.4.0",
+    "mkdocs-autorefs>=0.4.1",
+    "mkdocs-jupyter>=0.24.6",
+    "mkdocs-section-index>=0.3.4",
+    "mkdocstrings>=0.19.0",
+    "mkdocstrings-python>=0.7.1",
+    "pymdown-extensions>=9.6",
+
+]
 
 [project.urls]
 repository = "https://github.com/carlacupcake/hashin_shtrikman_mp"
