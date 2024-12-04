@@ -46,7 +46,7 @@ class Population(BaseModel):
     )
     ga_params: GAParams = Field(
         default_factory=GAParams,
-        description="Parameter initilization class for the genetic algorithm."
+        description="Parameter initialization class for the genetic algorithm."
     )
     calc_guide: Union[dict[str, Any], Any] = Field(
         default_factory=lambda: None,

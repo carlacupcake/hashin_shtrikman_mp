@@ -104,7 +104,7 @@ class Optimizer(BaseModel):
         )
     ga_params: GAParams = Field(
         default_factory=GAParams,
-        description="Parameter initilization class for the genetic algorithm."
+        description="Parameter initialization class for the genetic algorithm."
         )
     final_population: Population = Field(
         default_factory=Population,
@@ -562,7 +562,7 @@ class Optimizer(BaseModel):
 
             #print(f"Tables: {tables}")
 
-            # Only append the values to the corresponding material_id from the result_dict. At the end, make all the remaning values
+            # Only append the values to the corresponding material_id from the result_dict. At the end, make all the remaining values
             # corresponding to the material_id as None
             # Iterate over the tables returned and map the data to the result_dict
             for table in tables["data"]:
@@ -640,7 +640,7 @@ class Optimizer(BaseModel):
             # Convert the exponent part to a format that Python can understand
             prop_exponent = self.superscript_to_int(prop_exponent_str.strip())
             # Combine the numeric part and the exponent part, and convert the result to a float
-            prop_value = float(f"{prop_str}e{prop_exponent}") * 1e-14  # multply by relaxation time, 10 fs
+            prop_value = float(f"{prop_str}e{prop_exponent}") * 1e-14  # multiply by relaxation time, 10 fs
             logger.info(f"{prop}_if_statement = {prop_value}")
         else:
             prop_value = float(prop_str) * 1e-14  # multply by relaxation time, 10 fs

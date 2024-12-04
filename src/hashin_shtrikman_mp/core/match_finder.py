@@ -151,7 +151,7 @@ class MatchFinder(Optimizer):
 
     def get_material_matches(self, overall_bounds_dict: dict = None, consolidated_dict: dict = None, threshold: confloat(ge=0, le=1) = 1):
         """
-        Identifies materials in the MP databse which match those
+        Identifies materials in the MP database which match those
         recommended by the optimization.
         """
         # Make sure overall_bounds_dict is defined
