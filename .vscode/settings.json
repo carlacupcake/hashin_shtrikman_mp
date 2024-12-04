@@ -1,0 +1,6 @@
+{
+    "python.analysis.extraPaths": [
+        "/Users/HPSahasrabuddhe/code/atomate2_pheasy/atomate2",
+        "./src/core"
+    ]
+}
