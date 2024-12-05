@@ -169,7 +169,6 @@ class MatchFinder(Optimizer):
         with open(f"consolidated_dict_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}", "w") as f:
             json.dump(consolidated_dict, f)
 
-
         # Initialize an empty dictionary to store the output in the required format
         final_matching_materials = {}
 
@@ -239,7 +238,7 @@ class MatchFinder(Optimizer):
             new_element = 1.0
             for element in vol_frac_tup:
                 new_combo.append(element)
-                new_element = new_element - element
+                new_element = max(new_element - element, 0.0)
             new_combo.append(new_element)
             all_vol_frac_combos.append(new_combo)
 

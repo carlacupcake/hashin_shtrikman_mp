@@ -392,6 +392,7 @@ class Optimizer(BaseModel):
 
     def generate_consolidated_dict(self, overall_bounds_dict: dict = None):
         """MAIN FUNCTION USED TO GENERATE MATERIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST."""
+        print(f'overall_bounds_dict: {overall_bounds_dict}')
         # Base query initialization
         if overall_bounds_dict is None:
             overall_bounds_dict = {}
@@ -407,13 +408,9 @@ class Optimizer(BaseModel):
             if "upper_bound" in bounds and "lower_bound" in bounds:
                 query[prop] = (bounds["lower_bound"], bounds["upper_bound"])
 
-        # Print the query before changes
-        #print(f"Initial query: {query}")
-
         # Add additional fields you want to query, like 'material_id', 'formula_pretty', and all the properties in the initial query
         fields = ["material_id", "formula_pretty"]  # Fixed fields
         fields.extend(query.keys())  # Adding all the keys from the query to the fields list
-        #print(f"Fields: {fields}")
 
         # Change 'bulk_modulus' to 'k_voigt'
         if "bulk_modulus" in query:
@@ -475,8 +472,8 @@ class Optimizer(BaseModel):
 
             # Define a mapping between query keys and result_dict keys and their corresponding material attributes
             property_map = {
-                "k_voigt": ("bulk_modulus_voigt", "bulk_modulus", "voigt"),
-                "g_voigt": ("shear_modulus_voigt", "shear_modulus", "voigt"),
+                "k_vrh": ("bulk_modulus_vrh", "bulk_modulus", "vrh"),
+                "g_vrh": ("shear_modulus_vrh", "shear_modulus", "vrh"),
                 "elastic_anisotropy": ("universal_anisotropy", "universal_anisotropy"),
                 "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping", "elec_cond_300k_low_doping"),
                 "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping", "therm_cond_300k_low_doping"),
@@ -492,6 +489,7 @@ class Optimizer(BaseModel):
             # Iterate over the properties in the query and append values to result_dict dynamically
             for prop, (result_key, material_attr, *sub_attr) in property_map.items():
                 if prop in query:
+
                     # Check if there's a sub-attribute (e.g., "voigt" in "bulk_modulus")
                     if sub_attr:
                         value = getattr(material, material_attr, {})
@@ -499,13 +497,8 @@ class Optimizer(BaseModel):
                     else:
                         result_dict[result_key].append(getattr(material, material_attr, None))  # Direct access to attribute
 
-
         # Initialize variables
         formula_pretty_length = len(result_dict["formula_pretty"])
-
-        # Print lengths of all properties
-        #for key in result_dict:
-        #    print(f"Length of {key}: {len(result_dict[key])}")
 
         # Filter out incomplete or empty lists that don't need sorting
         non_empty_keys = [key for key in result_dict if len(result_dict[key]) == formula_pretty_length]
@@ -522,18 +515,6 @@ class Optimizer(BaseModel):
             if key not in non_empty_keys:
                 result_dict[key] = [None] * formula_pretty_length
 
-        # Print the length of material_id after sorting
-        #print(f"Length of material_id after sorting: {len(result_dict['formula_pretty'])}")
-
-        # Print the sorted result_dict keys and lengths of the lists
-        #for key in result_dict:
-        #    print(f"Final Length of {key}: {len(result_dict[key])}")
-
-        # Print keys of the result_dict
-        #print(f"Keys of result_dict: {result_dict.keys()}")
-        #print(f"result_dict['material_id'] = {result_dict['material_id']}")
-
-
         if "carrier-transport" in self.property_categories:
             print("Carrier transport is in the property categories")
             from mpcontribs.client import Client
@@ -549,7 +530,7 @@ class Optimizer(BaseModel):
                     if "upper_bound" in bounds and "lower_bound" in bounds:
                         query_carrier_transport[prop] = (bounds["lower_bound"], bounds["upper_bound"])
 
-            #print(f"Query for carrier transport: {query_carrier_transport}")
+            print(f"Query for carrier transport: {query_carrier_transport}")
 
             tables = client.query_contributions({"project":"carrier_transport",
                                         "data__sigma__p__value__gt": query_carrier_transport["elec_cond_300k_low_doping"][0] / 1e15 / 1e-14, # the 1003100.0,
@@ -560,8 +541,6 @@ class Optimizer(BaseModel):
                                     },
                                     fields=["identifier", "formula", "data.sigma.p", "data.kappa.p"],
                                     sort="+formula") #  'identifier','data.V', 'tables', 'kappa' , 'kappa.p.value', 'sigma.p.value', '_all' (2769600.0, 1093100.0)
-
-            #print(f"Tables: {tables}")
 
             # Only append the values to the corresponding material_id from the result_dict. At the end, make all the remaining values
             # corresponding to the material_id as None
@@ -589,18 +568,11 @@ class Optimizer(BaseModel):
                 for key in result_dict:
                     result_dict[key].pop(i)
 
-            # # change the key name of bulk_modugus_vrh to bulk_modulus & shear_modulus_vrh to shear_modulus
-            # if 'bulk_modulus_vrh' in result_dict:
-            #     result_dict['bulk_modulus'] = result_dict.pop('bulk_modulus_vrh')
-            # if 'shear_modulus_vrh' in result_dict:
-            #     result_dict['shear_modulus'] = result_dict.pop('shear_modulus_vrh')
-
-            # change the key name of bulk_modugus_voigt to bulk_modulus & shear_modulus_voigt to shear_modulus
-            if "bulk_modulus_voigt" in result_dict:
-                result_dict["bulk_modulus"] = result_dict.pop("bulk_modulus_voigt")
-            if "shear_modulus_voigt" in result_dict:
-                result_dict["shear_modulus"] = result_dict.pop("shear_modulus_voigt")
-
+            # Change the key name of bulk_modulus_vrh to bulk_modulus & shear_modulus_vrh to shear_modulus
+            if 'bulk_modulus_vrh' in result_dict:
+                result_dict['bulk_modulus'] = result_dict.pop('bulk_modulus_vrh')
+            if 'shear_modulus_vrh' in result_dict:
+                result_dict['shear_modulus'] = result_dict.pop('shear_modulus_vrh')
 
         # Save the consolidated results to a JSON file
         now = datetime.now()
@@ -623,8 +595,6 @@ class Optimizer(BaseModel):
             table_column = 7
         elif prop == "elec_cond_300k_low_doping":
             table_column = 5
-        #print(f"my_dict[tables] = {my_dict['tables']}")
-        # prop_str = my_dict["tables"][table_column].iloc[2, 0]
         if table_column < len(my_dict["tables"]):
             prop_str = my_dict["tables"][table_column].iloc[2, 0]
         else:
