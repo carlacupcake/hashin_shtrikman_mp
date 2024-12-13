@@ -3,12 +3,12 @@ import itertools
 import json
 import sys
 from datetime import datetime
-from pydantic import confloat
 from pathlib import Path
 
 import numpy as np
 import plotly.graph_objects as go
 import yaml
+from pydantic import confloat
 
 # Custom imports
 from hashin_shtrikman_mp.core.genetic_algo import GAParams

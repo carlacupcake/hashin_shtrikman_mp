@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, PositiveInt, model_validator
 # Custom imports
 from .genetic_algo import GAParams
 
+
 class Member(BaseModel):
     """
     Class to represent a member of the population in genetic algorithm optimization.

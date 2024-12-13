@@ -1,6 +1,7 @@
 """genetic_algo.py."""
-from pydantic import BaseModel, Field, PositiveInt, confloat
-from typing_extensions import Annotated
+from typing import Annotated
+
+from pydantic import BaseModel, Field, PositiveInt
 
 
 class GAParams(BaseModel):

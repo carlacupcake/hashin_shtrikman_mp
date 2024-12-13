@@ -4,8 +4,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Union
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional, Union
 
 import numpy as np
 import yaml
@@ -35,9 +34,8 @@ DEFAULT_FIELDS: dict = {"material_id": [],
 MODULE_DIR = Path(__file__).resolve().parent
 
 # Load and compile cost calculation formulas
-from hashin_shtrikman_mp.io.inputs.compile_cost_calculation_formulas import (
-    compile_formulas,
-)
+from hashin_shtrikman_mp.io.inputs.compile_cost_calculation_formulas import \
+    compile_formulas
 
 COMPILED_CALC_GUIDE = compile_formulas(loadfn(f"{MODULE_DIR}/../io/inputs/{CALC_GUIDE}"))
 
