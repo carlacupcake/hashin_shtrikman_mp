@@ -8,9 +8,7 @@ from pathlib import Path
 import numpy as np
 import plotly.graph_objects as go
 import yaml
-from pydantic import confloat
 
-# Custom imports
 from hashin_shtrikman_mp.core.genetic_algo import GAParams
 from hashin_shtrikman_mp.core.optimizer import Optimizer
 from hashin_shtrikman_mp.core.population import Population
