@@ -2,6 +2,7 @@ import pytest
 from hashin_shtrikman_mp.core.genetic_algo import GAParams
 from pydantic import ValidationError
 
+
 # Test for default values
 def test_default_values():
     # Creating an instance with no arguments (will use the default values)

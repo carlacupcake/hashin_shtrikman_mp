@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any
 
 import numpy as np
 from pydantic import BaseModel, Field, model_validator
@@ -36,11 +36,11 @@ class Population(BaseModel):
         description="Dictionary mapping individual properties to their desired "
                     "properties."
     )
-    values: Union[np.ndarray, None] = Field(
+    values: np.ndarray | None = Field(
         default=None,
         description="Matrix of values representing the population's properties."
     )
-    costs: Union[np.ndarray, None] = Field(
+    costs: np.ndarray | None = Field(
         default=None,
         description="Array of costs associated with each member of the population."
     )
@@ -48,7 +48,7 @@ class Population(BaseModel):
         default_factory=GAParams,
         description="Parameter initialization class for the genetic algorithm."
     )
-    calc_guide: Union[dict[str, Any], Any] = Field(
+    calc_guide: dict[str, Any] | Any = Field(
         default_factory=lambda: None,
         description="Calculation guide for property evaluation with compiled expressions."
     )

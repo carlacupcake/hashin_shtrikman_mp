@@ -3,14 +3,12 @@ import itertools
 import json
 import sys
 from datetime import datetime
-from pydantic import confloat
 from pathlib import Path
 
 import numpy as np
 import plotly.graph_objects as go
 import yaml
 
-# Custom imports
 from hashin_shtrikman_mp.core.genetic_algo import GAParams
 from hashin_shtrikman_mp.core.optimizer import Optimizer
 from hashin_shtrikman_mp.core.population import Population
@@ -54,10 +52,11 @@ class MatchFinder(Optimizer):
 
         arbitrary_types_allowed = True
 
-    def get_unique_designs(self):
+    def get_unique_designs(self) -> list:
         """
+        Deduplicates the designs in the final population.
+
         Genetic algorithms often return identical top performers.
-        This function deduplicates the designs in the final population.
         """
         # Costs are often equal to >10 decimal points,
         # truncate to obtain a richer set of suggestions
@@ -70,17 +69,15 @@ class MatchFinder(Optimizer):
         unique_members = self.final_population.values[unique_indices]
         return [unique_members, unique_costs]
 
-    def get_table_of_best_designs(self, rows: int = 10):
-        """
-        For tabulating the material properties
-        and volume fractions of the best designs.
-        """
+    def get_table_of_best_designs(self, rows: int = 10) -> np.ndarray:
+        """For tabulating the material properties and volume fractions of the best designs."""
         [unique_members, unique_costs] = self.get_unique_designs()
         return np.hstack((unique_members[0:rows, :], unique_costs[0:rows].reshape(-1, 1)))
 
-
-    def get_dict_of_best_designs(self):
+    def get_dict_of_best_designs(self) -> dict:
         """
+        Constructs a dictionary containing the best designs found.
+
         Eventually, we traverse a dictionary of materials from
         the Materials Project database. We want to traverse the
         best designs in a similar manner, so we must store the
@@ -95,8 +92,8 @@ class MatchFinder(Optimizer):
         for category in self.property_categories:
             for mat in best_designs_dict:
                 best_designs_dict[mat][category] = {}
-                for property in self.property_docs[category]:
-                    best_designs_dict[mat][category][property] = []
+                for prop in self.property_docs[category]:
+                    best_designs_dict[mat][category][prop] = []
 
         [unique_members, unique_costs] = self.get_unique_designs()
 
@@ -108,15 +105,17 @@ class MatchFinder(Optimizer):
         for i, _ in enumerate(unique_costs):
             idx = 0
             for category in self.property_categories:
-                for property in self.property_docs[category]:
+                for prop in self.property_docs[category]:
                     all_phase_props = unique_members[i][idx:stop:step]
                     for m, mat in enumerate(best_designs_dict.keys()):
-                        best_designs_dict[mat][category][property].append(all_phase_props[m])
+                        best_designs_dict[mat][category][prop].append(all_phase_props[m])
                     idx += 1
 
         return best_designs_dict
 
-    def get_headers(self, include_mpids=False, filename = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}"):
+    def _get_headers(self,
+                     include_mpids: bool = False,
+                     filename: str = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}") -> list:
 
         with open(filename) as stream:
             try:
@@ -125,15 +124,14 @@ class MatchFinder(Optimizer):
 
                 # Add headers for mp-ids
                 if include_mpids:
-                    for m in range(1, self.num_materials + 1):
-                        headers.append(f"Material {m} MP-ID")
+                    headers += [f"Material {m} MP-ID" for m in range(1, self.num_materials + 1)]
 
                 # Add headers for material properties
                 for category, properties in data["Per Material"].items():
                     if category in self.property_categories:
-                        for property in properties.values():
+                        for prop in properties.values():
                             for m in range(1, self.num_materials + 1):
-                                headers.append(f"Phase {m} " + property)
+                                headers.append(f"Phase {m} " + prop)
 
                 # Add headers for volume fractions
                 for m in range(1, self.num_materials + 1):
@@ -149,10 +147,25 @@ class MatchFinder(Optimizer):
 
         return headers
 
-    def get_material_matches(self, overall_bounds_dict: dict = None, consolidated_dict: dict = None, threshold: confloat(ge=0, le=1) = 1):
-        """
-        Identifies materials in the MP database which match those
-        recommended by the optimization.
+    def get_material_matches(self,
+                             overall_bounds_dict: dict = None,
+                             consolidated_dict: dict = None,
+                             threshold: float = 1) -> dict:
+        """Identifies materials in the MP database which match those recommended by the optimization.
+
+        Parameters
+        ----------
+        overall_bounds_dict : dict, optional
+            _description_, by default None
+        consolidated_dict : dict, optional
+            _description_, by default None
+        threshold : float, optional
+            Should be between 0 and 1, by default 1
+
+        Returns
+        -------
+        _type_
+            _description_
         """
         # Make sure overall_bounds_dict is defined
         if overall_bounds_dict is None:
@@ -222,14 +235,14 @@ class MatchFinder(Optimizer):
 
         return final_matching_materials
 
-    def get_all_possible_vol_frac_combos(self, num_fractions: int = 30):
+    def get_all_possible_vol_frac_combos(self, num_fractions: int = 30) -> list:
         """
+        Computes the optimal volume fractions of known materials.
+
         Once real materials have been identified, we must calculate
         which volume fraction combinations are 'best' for the composite.
         """
-        all_vol_frac_ranges = []
-        for _ in range(self.num_materials - 1):
-            all_vol_frac_ranges.append(list(np.linspace(0.01, 0.99, num_fractions)))
+        all_vol_frac_ranges = [list(np.linspace(0.01, 0.99, num_fractions)) for _ in range(self.num_materials - 1)]
 
         all_vol_frac_combos = []
         all_vol_frac_combo_tups = list(itertools.product(*all_vol_frac_ranges))
@@ -244,16 +257,19 @@ class MatchFinder(Optimizer):
 
         return all_vol_frac_combos
 
-    def get_material_match_costs(self, matches_dict, consolidated_dict: dict = None):
+    def get_material_match_costs(self,
+                                 matches_dict: dict,
+                                 consolidated_dict: dict = None) -> go.Figure:
         """
-        This function evaluates the 'real' candidate composites with the
-        same cost function used in the optimization process.
+        Evaluates the 'real' candidate composites.
+
+        Performs this evaluationm using the same cost function used in the optimization process.
         """
         if consolidated_dict is None:
             consolidated_dict = {}
         if matches_dict == {}:
             print("No materials match the recommended composite formulation.")
-            return
+            return None
 
         if consolidated_dict == {}:
             with open("consolidated_dict_02_11_2024_23_45_58") as f:
@@ -272,7 +288,7 @@ class MatchFinder(Optimizer):
             mat_ids = np.zeros((len(material_combinations), self.num_materials))
 
             for category in self.property_categories:
-                for property in self.property_docs[category]:
+                for prop in self.property_docs[category]:
                     for material_dict in combo:
 
                         # Extract the material ID string from the dictionary
@@ -282,9 +298,9 @@ class MatchFinder(Optimizer):
                         # (it should already be, but this is to be safe)
                         material_str = str(material_id)
 
-                        if property in consolidated_dict:
+                        if prop in consolidated_dict:
                             m = consolidated_dict["material_id"].index(material_str)
-                            material_values.append(consolidated_dict[property][m])
+                            material_values.append(consolidated_dict[prop][m])
 
             # Create population of same properties for all members
             # based on material match combination
@@ -336,7 +352,7 @@ class MatchFinder(Optimizer):
         # At this point, top_rows contains the lowest 5 costs across all combinations
         # Now prepare the table for final output
 
-        headers = self.get_headers(include_mpids=True)
+        headers = self._get_headers(include_mpids=True)
 
         header_color = "lavender"
         odd_row_color = "white"
@@ -358,7 +374,7 @@ class MatchFinder(Optimizer):
                 height=30
             ),
             cells=dict(
-                values=[list(col) for col in zip(*top_rows)],  # Transpose top_rows to get columns
+                values=[list(col) for col in zip(*top_rows, strict=False)],  # Transpose top_rows to get columns
                 fill_color=cells_color,
                 align="left",
                 font=dict(size=12),
@@ -377,4 +393,4 @@ class MatchFinder(Optimizer):
         )
         fig.show()
 
-        return
+        return fig

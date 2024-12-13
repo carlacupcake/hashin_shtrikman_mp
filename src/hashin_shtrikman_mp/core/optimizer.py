@@ -4,8 +4,7 @@ import re
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Union
-from typing import Optional, Dict, Any
+from typing import Any
 
 import numpy as np
 import yaml
@@ -35,9 +34,7 @@ DEFAULT_FIELDS: dict = {"material_id": [],
 MODULE_DIR = Path(__file__).resolve().parent
 
 # Load and compile cost calculation formulas
-from hashin_shtrikman_mp.io.inputs.compile_cost_calculation_formulas import (
-    compile_formulas,
-)
+from hashin_shtrikman_mp.io.inputs.compile_cost_calculation_formulas import compile_formulas
 
 COMPILED_CALC_GUIDE = compile_formulas(loadfn(f"{MODULE_DIR}/../io/inputs/{CALC_GUIDE}"))
 
@@ -52,11 +49,11 @@ class Optimizer(BaseModel):
     desired properties.
     """
 
-    api_key: Union[str, None] = Field(
+    api_key: str | None = Field(
         default=None,
         description="API key for accessing Materials Project database."
         )
-    mp_contribs_project: Union[str, None] = Field(
+    mp_contribs_project: str | None = Field(
         default=None,
         description="MPContribs project name for querying project-specific data."
         )
@@ -119,7 +116,7 @@ class Optimizer(BaseModel):
         default_factory=lambda: np.empty(0),
         description="Average cost of the top-performing parents across generations."
         )
-    calc_guide: Union[dict[str, Any], Any] = Field(
+    calc_guide: dict[str, Any] | Any = Field(
         default_factory=lambda: COMPILED_CALC_GUIDE,
         description="Calculation guide for property evaluation with compiled expressions."
     )
@@ -158,7 +155,7 @@ class Optimizer(BaseModel):
         return values
 
     @staticmethod
-    def load_property_categories(filename=f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input: Optional[Dict[Any, Any]] = None):
+    def load_property_categories(filename=f"{MODULE_DIR}/../io/inputs/mp_property_docs.yaml", user_input: dict[Any, Any] | None = None):
             if user_input is None:
                 user_input = {}
             logger.info(f"Loading property categories from {filename}.")
@@ -392,7 +389,7 @@ class Optimizer(BaseModel):
 
     def generate_consolidated_dict(self, overall_bounds_dict: dict = None):
         """MAIN FUNCTION USED TO GENERATE MATERIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST."""
-        print(f'overall_bounds_dict: {overall_bounds_dict}')
+        print(f"overall_bounds_dict: {overall_bounds_dict}")
         # Base query initialization
         if overall_bounds_dict is None:
             overall_bounds_dict = {}
@@ -569,10 +566,10 @@ class Optimizer(BaseModel):
                     result_dict[key].pop(i)
 
             # Change the key name of bulk_modulus_vrh to bulk_modulus & shear_modulus_vrh to shear_modulus
-            if 'bulk_modulus_vrh' in result_dict:
-                result_dict['bulk_modulus'] = result_dict.pop('bulk_modulus_vrh')
-            if 'shear_modulus_vrh' in result_dict:
-                result_dict['shear_modulus'] = result_dict.pop('shear_modulus_vrh')
+            if "bulk_modulus_vrh" in result_dict:
+                result_dict["bulk_modulus"] = result_dict.pop("bulk_modulus_vrh")
+            if "shear_modulus_vrh" in result_dict:
+                result_dict["shear_modulus"] = result_dict.pop("shear_modulus_vrh")
 
         # Save the consolidated results to a JSON file
         now = datetime.now()

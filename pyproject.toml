@@ -35,7 +35,10 @@ docs = [
     "mkdocstrings>=0.19.0",
     "mkdocstrings-python>=0.7.1",
     "pymdown-extensions>=9.6",
-
+]
+dev = [
+    "ruff>=0.4.10",
+    "isort"
 ]
 
 [project.urls]
@@ -44,7 +47,8 @@ changelog = "https://github.com/carlacupcake/hashin_shtrikman_mp/.chglog/CHANGEL
 
 [tool.ruff]
 target-version = "py310"
-output-format = "text"
+output-format = "concise"
+line-length = 120
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -52,10 +56,12 @@ ignore = [
     "ANN002",  # Missing type annotation for *arg
     "ANN003",  # Missing type annotation for **kwargs
     "ANN401",  # typing.Any disallowed
+    "ANN101",  # requiring self types
     "ARG002",  # unused method argument
     "C408",    # Unnecessary (dict/list/tuple) call - remove call
     "C901",    # function too complex
     "COM812",  # trailing comma missing
+    "D401",    # Imperative mood in docstring
     "EM",      # exception message must not use f-string literal
     "ERA001",  # found commented out code
     "FBT001",
@@ -81,7 +87,6 @@ ignore = [
     "TRY003",  # long message outside exception class
 ]
 pydocstyle.convention = "numpy"
-isort.known-first-party = ["atomate2"]
 isort.split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]

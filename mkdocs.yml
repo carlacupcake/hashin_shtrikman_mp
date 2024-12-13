@@ -5,14 +5,20 @@ watch:
   - src/hashin_shtrikman_mp
 nav:
   - Home:
-    - hashin_shtrikman_mp: index.md
+    - Welcome: index.md
     - Getting Started: ./guides/getting_started.ipynb
-    - Reference: reference/core/lattice.md
+    - Reference: reference/core/optimizer.md
     - Guides: ./guides/index.md
   - Guides:
     - Getting Started: ./guides/getting_started.ipynb
-  # - Reference:
-  #   - Core:
+  - Reference:
+    - Optimizer: ./reference/core/optimizer.md
+    - GAParams: ./reference/core/genetic_algo.md
+    - Member: ./reference/core/member.md
+    - Population: ./reference/core/population.md
+    - UserInput: ./reference/core/user_input.md
+    - Visualizer: ./reference/core/visualizer.md
+    - MatchFinder: ./reference/core/match_finder.md
 
 repo_url: https://github.com/carlacupcake/hashin_shtrikman_mp/
 repo_name: Github
