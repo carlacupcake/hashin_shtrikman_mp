@@ -36,6 +36,10 @@ docs = [
     "mkdocstrings-python>=0.7.1",
     "pymdown-extensions>=9.6",
 ]
+dev = [
+    "ruff>=0.4.10",
+    "isort"
+]
 
 [project.urls]
 repository = "https://github.com/carlacupcake/hashin_shtrikman_mp"
@@ -43,7 +47,8 @@ changelog = "https://github.com/carlacupcake/hashin_shtrikman_mp/.chglog/CHANGEL
 
 [tool.ruff]
 target-version = "py310"
-output-format = "text"
+output-format = "concise"
+line-length = 120
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -80,7 +85,6 @@ ignore = [
     "TRY003",  # long message outside exception class
 ]
 pydocstyle.convention = "numpy"
-isort.known-first-party = ["atomate2"]
 isort.split-on-trailing-comma = false
 
 [tool.ruff.lint.per-file-ignores]
