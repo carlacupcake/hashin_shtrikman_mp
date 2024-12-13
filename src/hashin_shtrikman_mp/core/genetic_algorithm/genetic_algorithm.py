@@ -10,9 +10,11 @@ from ..user_input import UserInput
 class GeneticAlgorithm():
 
     def run(self,
-            optimization_parameters: OptimizationParams,
+            user_inputs: UserInput,
             ga_algo_params: GeneticAlgorithmParams = None,
             gen_counter: bool = False):
+        
+        optimization_parameters = OptimizationParams.from_user_input(user_inputs)
         
         if ga_algo_params is None:
             ga_algo_params = GeneticAlgorithmParams()

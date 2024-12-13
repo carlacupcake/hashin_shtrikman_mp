@@ -21,38 +21,38 @@ class OptimizationParams(BaseModel):
     property_categories: list[str] = Field(
         default_factory=list,
         description="List of property categories considered for optimization."
-        )
+    )
     property_docs: dict[str, dict[str, Any]] = Field(
         default_factory=dict,
         description="A hard coded yaml file containing property categories and their individual properties."
-        )
+    )
     lower_bounds: dict[str, Any] = Field(
         default_factory=dict,
         description="Lower bounds for properties of materials considered in the optimization."
-        )
+    )
     upper_bounds: dict[str, Any] = Field(
         default_factory=dict,
         description="Upper bounds for properties of materials considered in the optimization."
-        )
+    )
     desired_props: dict[str, list[float]] = Field(
         default_factory=dict,
         description="Dictionary mapping individual properties to their desired properties."
-        )
+    )
     num_materials: int = Field(
         default=0,
         description="Number of materials to comprise the composite."
-        )
+    )
     num_properties: int = Field(
         default=0,
         description="Number of properties being optimized."
-        )
+    )
     indices_elastic_moduli: list[Any] = Field(
         default=[None, None],
         description="For handling coupling between bulk & shear moduli"
                     "List of length 2, first element is index of bulk modulus"
                     "in list version of the bounds, second element is the"
                     "shear modulus"
-        )
+    )
 
     class Config:
         arbitrary_types_allowed = True
