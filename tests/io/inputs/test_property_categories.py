@@ -1,4 +1,4 @@
-from hashin_shtrikman_mp.io.inputs.property_categories import load_property_categories
+from hashin_shtrikman_mp.core.utilities import load_property_categories
 from hashin_shtrikman_mp.core.user_input import UserInput, Material, MaterialProperty, MixtureProperty, Mixture
 
 def test_load_property_categories():
@@ -28,6 +28,6 @@ def test_load_property_categories():
     # Initialize UserInput instance with materials and mixtures
     user_input= UserInput(materials=[mat_1, mat_2], mixtures=[mixture])    
 
-    categories, category_props = load_property_categories(user_input=user_input)
+    categories, _ = load_property_categories(user_input=user_input)
     assert "dielectric" in categories
     assert "carrier-transport" in categories
