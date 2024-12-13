@@ -4,7 +4,7 @@ from typing import Annotated
 from pydantic import BaseModel, Field, PositiveInt
 
 
-class GAParams(BaseModel):
+class GeneticAlgorithmParams(BaseModel):
     """Class to hold the parameters used for the genetic algorithm."""
 
     num_parents: PositiveInt = Field(

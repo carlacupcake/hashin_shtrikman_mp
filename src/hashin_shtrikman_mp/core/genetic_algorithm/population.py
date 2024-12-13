@@ -1,108 +1,71 @@
-from typing import Any
-
 import numpy as np
-from pydantic import BaseModel, Field, model_validator
 
-# Custom imports
-from .genetic_algo import GAParams
+from .genetic_algorithm_parameters import GeneticAlgorithmParams
+from .optimization_params import OptimizationParams
+
 from .member import Member
 
-
-class Population(BaseModel):
+class Population():
     """
     Class to hold the population of members. The class also implements
     methods to generate the initial population, set the costs of the
     members, and sort the members based on their costs.
     """
 
-    num_materials: int = Field(
-        default=0,
-        description="Number of materials in the ultimate composite."
-    )
-    num_properties: int = Field(
-        default=0,
-        description="Number of properties that each member of the population has."
-    )
-    property_categories: list[str] = Field(
-        default=[],
-        description="List of property categories considered for optimization."
-    )
-    property_docs: dict[str, dict[str, Any]] = Field(
-        default={},
-        description="A hard coded yaml file containing property categories and their individual properties."
-    )
-    desired_props: dict[str, list[float]] = Field(
-        default={},
-        description="Dictionary mapping individual properties to their desired "
-                    "properties."
-    )
-    values: np.ndarray | None = Field(
-        default=None,
-        description="Matrix of values representing the population's properties."
-    )
-    costs: np.ndarray | None = Field(
-        default=None,
-        description="Array of costs associated with each member of the population."
-    )
-    ga_params: GAParams = Field(
-        default_factory=GAParams,
-        description="Parameter initialization class for the genetic algorithm."
-    )
-    calc_guide: dict[str, Any] | Any = Field(
-        default_factory=lambda: None,
-        description="Calculation guide for property evaluation with compiled expressions."
-    )
+    def __init__(self,
+                 optimization_params: OptimizationParams,
+                 ga_params: GeneticAlgorithmParams,
+                 values = None,
+                 costs = None):
+        """_summary_
 
-    # To use np.ndarray or other arbitrary types in your Pydantic models
-    class Config:
-        arbitrary_types_allowed = True
-
-    @model_validator(mode="before")
-    def set_default_values_and_costs(cls, values):
-        ga_params = GAParams(**values.get("ga_params", {})) if isinstance(values.get("ga_params"), dict) else values.get("ga_params", GAParams())
+        Parameters
+        ----------
+        optimization_params : OptimizationParams
+            _description_
+        ga_params : GeneticAlgorithmParams
+            _description_
+        values : _type_, optional
+            Matrix of values representing the population's properties., by default None
+        costs : _type_, optional
+            Array of costs associated with each member of the population., by default None
+        """        
+        self.opt_params = optimization_params
+        self.ga_params = ga_params
 
         num_members = ga_params.num_members  # Assuming GAParams model has a num_members field directly accessible
-        num_properties = values.get("num_properties", 0)
-        num_materials = values.get("num_materials", 0)
+        num_properties = self.opt_params.num_properties
+        num_materials = self.opt_params.num_materials
 
-        # Set default for values if not provided or is np.empty
-        if values.get("values") is None or (isinstance(values.get("values"), np.ndarray) and values.get("values").size == 0):
-            values["values"] = np.zeros((num_members, num_properties * num_materials))
-
-        # Set default for costs in a similar manner
-        if values.get("costs") is None or (isinstance(values.get("costs"), np.ndarray) and values.get("costs").size == 0):
-            values["costs"] = np.zeros((num_members, num_properties * num_materials))
-
-        return values
+        self.values = values
+        if self.values is None:
+            self.values = np.zeros((num_members, num_properties * num_materials))
+        
+        self.costs = costs
+        if self.costs is None:
+            self.costs = np.zeros((num_members, num_properties * num_materials))    
 
     #------ Getter Methods ------#
-    def get_unique_designs(population, costs):
-
-        # Costs are often equal to >10 decimal points
-        # Truncate to obtain a richer set of suggestions
-        new_costs = np.round(costs, decimals=3)
+    def get_unique_designs(self):
+        self.set_costs()
+        final_costs = self.costs
+        rounded_costs = np.round(final_costs, decimals=3)
 
         # Obtain unique members and costs
-        [unique_costs, unique_indices] = np.unique(new_costs, return_index=True)
-        unique_members = population[unique_indices]
-
+        [unique_costs, unique_indices] = np.unique(rounded_costs, return_index=True)
+        unique_members = self.values[unique_indices]
         return [unique_members, unique_costs]
 
     def get_effective_properties(self):
         population_values = self.values
         num_members = self.ga_params.num_members
-        num_properties = self.num_properties - 1 # do not include volume fraction
+        num_properties = self.opt_params.num_properties - 1 # do not include volume fraction
 
         all_effective_properties = np.zeros((num_members, num_properties))
         for i in range(num_members):
-            this_member = Member(num_materials=self.num_materials,
-                                 num_properties=self.num_properties,
-                                 values=population_values[i, :],
-                                 property_categories=self.property_categories,
-                                 property_docs=self.property_docs,
-                                 desired_props=self.desired_props,
-                                 ga_params=self.ga_params,
-                                 calc_guide=self.calc_guide)
+            this_member = Member(ga_params=self.ga_params,
+                                 optimization_params=self.opt_params,
+                                 values=population_values[i, :])            
             eff_props = this_member.get_effective_properties()
             all_effective_properties[i, :] = eff_props
 
@@ -125,14 +88,14 @@ class Population(BaseModel):
         for material in lower_bounds:
             if material != "volume-fractions":
                 for category, properties in lower_bounds[material].items():
-                    if category in self.property_categories:
+                    if category in self.opt_params.property_categories:
                         for property in properties:
                             lower_bounds_list.append(property)
 
         for material in upper_bounds:
             if material != "volume-fractions":
                 for category, properties in upper_bounds[material].items():
-                    if category in self.property_categories:
+                    if category in self.opt_params.property_categories:
                         for property in properties:
                             upper_bounds_list.append(property)
 
@@ -147,8 +110,8 @@ class Population(BaseModel):
             self.values[i, :-num_materials] = np.random.uniform(lower_bounds_array, upper_bounds_array)
 
         # Adjust for bulk and shear moduli, if they are present (cannot have bulk_i < bulk_j and shear_i > shear_j simultaneously)
-        stop = self.num_materials * (self.num_properties - 1) # the last num_materials entries are volume fractions, not material properties
-        step = self.num_properties - 1                        # subtract 1 so as not to include volume fraction
+        stop = self.opt_params.num_materials * (self.opt_params.num_properties - 1) # the last num_materials entries are volume fractions, not material properties
+        step = self.opt_params.num_properties - 1                        # subtract 1 so as not to include volume fraction
 
         # Extract bulk moduli and shear moduli from population
         [bulk_idx, shear_idx] = indices_elastic_moduli
@@ -162,14 +125,14 @@ class Population(BaseModel):
             for i in range(start_member, population_size):
                 member = self.values[i, :]
                 sorted_bulk_indices = np.argsort(member[bulk_idx:stop:step])
-                unsorted_member = np.zeros((self.num_materials, (self.num_properties - 1)))
-                for m in range(self.num_materials):
-                    start = m * (self.num_properties - 1)
-                    end = start + (self.num_properties - 1)
+                unsorted_member = np.zeros((self.opt_params.num_materials, (self.opt_params.num_properties - 1)))
+                for m in range(self.opt_params.num_materials):
+                    start = m * (self.opt_params.num_properties - 1)
+                    end = start + (self.opt_params.num_properties - 1)
                     material = member[start:end]
                     unsorted_member[m, :] = material
                 sorted_member = unsorted_member[sorted_bulk_indices]
-                self.values[i, :-self.num_materials] = sorted_member.flatten()
+                self.values[i, :-self.opt_params.num_materials] = sorted_member.flatten()
 
             # Use sorted bulk moduli values to potentially replace lower bound on shear modulus
             # so that random values allow for  bulk_i < bulk_j and shear_i < shear_j simultaneously
@@ -177,7 +140,7 @@ class Population(BaseModel):
             for i in range(start_member, population_size):
                 member = self.values[i, :]
                 shear_mods = member[shear_idx:stop:step]
-                for m in range(1, self.num_materials):
+                for m in range(1, self.opt_params.num_materials):
                     idx = shear_indices[m]
                     self.values[i, idx] = np.random.uniform(max(shear_mods[m-1], lower_bounds_array[idx]), max(shear_mods[m-1], upper_bounds_array[idx]))
 
@@ -201,21 +164,16 @@ class Population(BaseModel):
         num_members = self.ga_params.num_members
         costs = np.zeros(num_members)
         for i in range(num_members):
-            this_member = Member(num_materials=self.num_materials,
-                                 num_properties=self.num_properties,
-                                 values=population_values[i, :],
-                                 property_categories=self.property_categories,
-                                 property_docs=self.property_docs,
-                                 desired_props=self.desired_props,
-                                 ga_params=self.ga_params,
-                                 calc_guide=self.calc_guide)
+            this_member = Member(ga_params=self.ga_params,
+                                 optimization_params=self.opt_params,
+                                 values=population_values[i, :])
             costs[i] = this_member.get_cost()
 
         self.costs = costs
         return self
 
     def set_order_by_costs(self, sorted_indices):
-        temporary = np.zeros((self.ga_params.num_members, self.num_properties * self.num_materials))
+        temporary = np.zeros((self.ga_params.num_members, self.opt_params.num_properties * self.opt_params.num_materials))
         for i in range(len(sorted_indices)):
             temporary[i,:] = self.values[int(sorted_indices[i]),:]
         self.values = temporary
