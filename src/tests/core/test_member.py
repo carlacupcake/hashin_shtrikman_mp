@@ -1,7 +1,7 @@
-import pytest
 import numpy as np
-from hashin_shtrikman_mp.core.member import Member
+import pytest
 from hashin_shtrikman_mp.core.genetic_algo import GAParams
+from hashin_shtrikman_mp.core.member import Member
 from pydantic import ValidationError
 
 

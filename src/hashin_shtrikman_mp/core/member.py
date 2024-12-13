@@ -23,7 +23,7 @@ class Member(BaseModel):
         default=0,
         description="Number of properties that each member of the population has."
     )
-    values: Union[np.ndarray, None] = Field(
+    values: np.ndarray | None = Field(
         default=None,
         description="Values array representing the member's properties."
     )
@@ -39,11 +39,11 @@ class Member(BaseModel):
         default={},
         description="Dictionary mapping individual properties to their desired properties."
     )
-    ga_params: Union['GAParams', None] = Field(
+    ga_params: Union["GAParams", None] = Field(
         default=None,
         description="Parameter initialization class for the genetic algorithm."
     )
-    calc_guide: Union[dict[str, Any], Any] = Field(
+    calc_guide: dict[str, Any] | Any = Field(
         default_factory=lambda: None,
         description="Calculation guide for property evaluation with compiled expressions."
     )
