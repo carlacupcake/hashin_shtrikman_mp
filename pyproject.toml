@@ -56,10 +56,12 @@ ignore = [
     "ANN002",  # Missing type annotation for *arg
     "ANN003",  # Missing type annotation for **kwargs
     "ANN401",  # typing.Any disallowed
+    "ANN101",  # requiring self types
     "ARG002",  # unused method argument
     "C408",    # Unnecessary (dict/list/tuple) call - remove call
     "C901",    # function too complex
     "COM812",  # trailing comma missing
+    "D401",    # Imperative mood in docstring
     "EM",      # exception message must not use f-string literal
     "ERA001",  # found commented out code
     "FBT001",
