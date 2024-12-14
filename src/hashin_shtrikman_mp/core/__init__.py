@@ -1,5 +1,4 @@
-from .genetic_algo import GAParams
-from .member import Member
-from .optimizer import Optimizer
-from .population import Population
+from .genetic_algorithm import GeneticAlgorithmParams, GeneticAlgorithm
 from .user_input import Material, MaterialProperty, Mixture, MixtureProperty
+from .match_finder import MatchFinder
+from .visualization import CompositePropertyPlotter, OptimizationResultVisualizer

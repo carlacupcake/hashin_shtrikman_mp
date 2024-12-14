@@ -4,15 +4,15 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import plotly.graph_objects as go
 import yaml
+from mp_api.client import MPRester
 
-from hashin_shtrikman_mp.core.genetic_algo import GAParams
-from hashin_shtrikman_mp.core.optimizer import Optimizer
-from hashin_shtrikman_mp.core.population import Population
-from hashin_shtrikman_mp.core.user_input import UserInput
+from .genetic_algorithm import GeneticAlgorithmResult
+from .utilities import get_headers, load_property_docs
 
 # YAML files
 sys.path.insert(1, "../io/inputs")
@@ -23,7 +23,7 @@ MODULE_DIR = Path(__file__).resolve().parent
 
 np.seterr(divide="raise")
 
-class MatchFinder(Optimizer):
+class MatchFinder():
     """
     MatchFinder class for Hashin-Shtrikman optimization.
 
@@ -32,47 +32,12 @@ class MatchFinder(Optimizer):
     (fictitious) materials recommended by the optimization.
     """
 
-    def __init__(self, optimizer: Optimizer) -> None:
+    def __init__(self,
+                 ga_result: GeneticAlgorithmResult) -> None:
         # Dump the optimizer's data into a dictionary
-        optimizer_attributes = optimizer.model_dump()
-
-        # Ensure user_input is passed as an instance of UserInput
-        if isinstance(optimizer_attributes.get("user_input"), dict):
-            optimizer_attributes["user_input"] = UserInput(**optimizer_attributes["user_input"])
-
-        # Ensure ga_params is passed as an instance of GAParams
-        if isinstance(optimizer_attributes.get("ga_params"), dict):
-            optimizer_attributes["ga_params"] = GAParams(**optimizer_attributes["ga_params"])
-
-        # Pass all the optimizer attributes (including user_input, ga_params) to the parent class
-        super().__init__(**optimizer_attributes)
-
-    class Config:
-        """To use np.ndarray or other arbitrary types in your Pydantic models."""
-
-        arbitrary_types_allowed = True
-
-    def get_unique_designs(self) -> list:
-        """
-        Deduplicates the designs in the final population.
-
-        Genetic algorithms often return identical top performers.
-        """
-        # Costs are often equal to >10 decimal points,
-        # truncate to obtain a richer set of suggestions
-        self.final_population.set_costs()
-        final_costs = self.final_population.costs
-        rounded_costs = np.round(final_costs, decimals=3)
-
-        # Obtain unique members and costs
-        [unique_costs, unique_indices] = np.unique(rounded_costs, return_index=True)
-        unique_members = self.final_population.values[unique_indices]
-        return [unique_members, unique_costs]
-
-    def get_table_of_best_designs(self, rows: int = 10) -> np.ndarray:
-        """For tabulating the material properties and volume fractions of the best designs."""
-        [unique_members, unique_costs] = self.get_unique_designs()
-        return np.hstack((unique_members[0:rows, :], unique_costs[0:rows].reshape(-1, 1)))
+        self.optimization_params = ga_result.optimization_params
+        self.optimized_population = ga_result.final_population
+        self.ga_params = ga_result.algo_parameters
 
     def get_dict_of_best_designs(self) -> dict:
         """
@@ -85,67 +50,33 @@ class MatchFinder(Optimizer):
         """
         # Initialize dictionaries for each material based on selected property categories
         best_designs_dict = {}
-        for m in range(1, self.num_materials + 1):
+        for m in range(1, self.optimization_params.num_materials + 1):
             best_designs_dict[f"mat{m}"] = {}
 
         # Initialize the structure for each category
-        for category in self.property_categories:
+        for category in self.optimization_params.property_categories:
             for mat in best_designs_dict:
                 best_designs_dict[mat][category] = {}
-                for prop in self.property_docs[category]:
+                for prop in self.optimization_params.property_docs[category]:
                     best_designs_dict[mat][category][prop] = []
 
-        [unique_members, unique_costs] = self.get_unique_designs()
+        [unique_members, unique_costs] = self.optimized_population.get_unique_designs()
 
         # Populate the dictionary with unique design values
         # The last num_materials entries are volume fractions, not material properties
-        stop = -self.num_materials
-        step = self.num_properties - 1 # subtract 1 so as not to include volume fraction
+        stop = -self.optimization_params.num_materials
+        step = self.optimization_params.num_properties - 1 # subtract 1 so as not to include volume fraction
 
         for i, _ in enumerate(unique_costs):
             idx = 0
-            for category in self.property_categories:
-                for prop in self.property_docs[category]:
+            for category in self.optimization_params.property_categories:
+                for prop in self.optimization_params.property_docs[category]:
                     all_phase_props = unique_members[i][idx:stop:step]
                     for m, mat in enumerate(best_designs_dict.keys()):
                         best_designs_dict[mat][category][prop].append(all_phase_props[m])
                     idx += 1
 
         return best_designs_dict
-
-    def _get_headers(self,
-                     include_mpids: bool = False,
-                     filename: str = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}") -> list:
-
-        with open(filename) as stream:
-            try:
-                data = yaml.safe_load(stream)
-                headers = []
-
-                # Add headers for mp-ids
-                if include_mpids:
-                    headers += [f"Material {m} MP-ID" for m in range(1, self.num_materials + 1)]
-
-                # Add headers for material properties
-                for category, properties in data["Per Material"].items():
-                    if category in self.property_categories:
-                        for prop in properties.values():
-                            for m in range(1, self.num_materials + 1):
-                                headers.append(f"Phase {m} " + prop)
-
-                # Add headers for volume fractions
-                for m in range(1, self.num_materials + 1):
-                    headers.append(f"Phase {m} Volume Fraction")
-
-                # Add headers for "Common" properties if present
-                if "Common" in data:
-                    for common_key in data["Common"]:
-                        headers.append(common_key)
-
-            except yaml.YAMLError as exc:
-                print(exc)
-
-        return headers
 
     def get_material_matches(self,
                              overall_bounds_dict: dict = None,
@@ -242,7 +173,7 @@ class MatchFinder(Optimizer):
         Once real materials have been identified, we must calculate
         which volume fraction combinations are 'best' for the composite.
         """
-        all_vol_frac_ranges = [list(np.linspace(0.01, 0.99, num_fractions)) for _ in range(self.num_materials - 1)]
+        all_vol_frac_ranges = [list(np.linspace(0.01, 0.99, num_fractions)) for _ in range(self.optimization_params.num_materials - 1)]
 
         all_vol_frac_combos = []
         all_vol_frac_combo_tups = list(itertools.product(*all_vol_frac_ranges))
@@ -256,6 +187,197 @@ class MatchFinder(Optimizer):
             all_vol_frac_combos.append(new_combo)
 
         return all_vol_frac_combos
+
+    def generate_consolidated_dict(self, overall_bounds_dict: dict = None):
+        """MAIN FUNCTION USED TO GENERATE MATERIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST."""
+        print(f"overall_bounds_dict: {overall_bounds_dict}")
+        # Base query initialization
+        if overall_bounds_dict is None:
+            overall_bounds_dict = {}
+        query = {}
+
+        # Iterate over the properties in the overall_bounds_dict and dynamically build the query
+        for prop, bounds in overall_bounds_dict.items():
+            # Skip 'elec_cond_300k_low_doping' and 'therm_cond_300k_low_doping'
+            if prop in ["elec_cond_300k_low_doping", "therm_cond_300k_low_doping"]:
+                continue  # Skip the current iteration
+
+            # Proceed if 'upper_bound' and 'lower_bound' exist for the property
+            if "upper_bound" in bounds and "lower_bound" in bounds:
+                query[prop] = (bounds["lower_bound"], bounds["upper_bound"])
+
+        # Add additional fields you want to query, like 'material_id', 'formula_pretty', and all the properties in the initial query
+        fields = ["material_id", "formula_pretty"]  # Fixed fields
+        fields.extend(query.keys())  # Adding all the keys from the query to the fields list
+
+        # Change 'bulk_modulus' to 'k_voigt'
+        if "bulk_modulus" in query:
+            query["k_vrh"] = query.pop("bulk_modulus")
+
+        # Change 'shear_modulus' to 'g_voigt'
+        if "shear_modulus" in query:
+            query["g_vrh"] = query.pop("shear_modulus")
+
+        # Change 'universal_anisotropy' to 'elastic_anisotropy'
+        if "universal_anisotropy" in query:
+            query["elastic_anisotropy"] = query.pop("universal_anisotropy")
+
+        # change 'e_ij_max' to 'piezoelectric_modulus'
+        if "e_ij_max" in query:
+            query["piezoelectric_modulus"] = query.pop("e_ij_max")
+
+        mpr = MPRester("QePM93qZsMKNPkI4fEYaJfB7dONoQjaM")
+
+        # Perform the query on the Materials Project database using the built query
+        materials = mpr.materials.summary.search(
+            **query,  # Dynamically passing the property bounds as query filters
+            fields=fields,
+            # num_chunks=100
+        )
+
+        mp_property_docs = load_property_docs()
+
+        # Initialize dictionary to hold the desired data format
+        result_dict: dict[str, list[Any]] = {
+            "material_id": [],
+            "formula_pretty": []
+        }
+
+        # Traverse the YAML structure to get all the keys
+        for category, properties in mp_property_docs.items():
+            # Check if the category is present in self.optimization_params.property_categories
+            if category in self.optimization_params.property_categories:
+                for prop, subprop in properties.items():
+                    # If there's a subproperty (e.g., voigt for bulk_modulus), append the subproperty
+                    if isinstance(subprop, str):
+                        result_dict[f"{prop}_{subprop}"] = []
+                    else:
+                        # Otherwise, append the main property
+                        result_dict[prop] = []
+
+        # Print the initialized result_dict
+        print(f"Initialized result_dict: {result_dict}")
+
+        # remove all the rows that have None values
+        materials = [material for material in materials if all(getattr(material, field, None) is not None for field in fields)]
+
+        # Extract data and organize it into the result_dict
+        for material in materials:
+            result_dict["material_id"].append(material.material_id)
+            result_dict["formula_pretty"].append(material.formula_pretty)
+
+            # Define a mapping between query keys and result_dict keys and their corresponding material attributes
+            property_map = {
+                "k_vrh": ("bulk_modulus_vrh", "bulk_modulus", "vrh"),
+                "g_vrh": ("shear_modulus_vrh", "shear_modulus", "vrh"),
+                "elastic_anisotropy": ("universal_anisotropy", "universal_anisotropy"),
+                "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping", "elec_cond_300k_low_doping"),
+                "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping", "therm_cond_300k_low_doping"),
+                "e_electronic": ("e_electronic", "e_electronic"),
+                "e_ionic": ("e_ionic", "e_ionic"),
+                "e_total": ("e_total", "e_total"),
+                "n": ("n", "n"),
+                "total_magnetization": ("total_magnetization", "total_magnetization"),
+                "total_magnetization_normalized_vol": ("total_magnetization_normalized_vol", "total_magnetization_normalized_vol"),
+                "e_ij_max": ("e_ij_max", "e_ij_max")
+            }
+
+            # Iterate over the properties in the query and append values to result_dict dynamically
+            for prop, (result_key, material_attr, *sub_attr) in property_map.items():
+                if prop in query:
+
+                    # Check if there's a sub-attribute (e.g., "voigt" in "bulk_modulus")
+                    if sub_attr:
+                        value = getattr(material, material_attr, {})
+                        result_dict[result_key].append(value.get(sub_attr[0], None))  # Access sub-attribute if it exists
+                    else:
+                        result_dict[result_key].append(getattr(material, material_attr, None))  # Direct access to attribute
+
+        # Initialize variables
+        formula_pretty_length = len(result_dict["formula_pretty"])
+
+        # Filter out incomplete or empty lists that don't need sorting
+        non_empty_keys = [key for key in result_dict if len(result_dict[key]) == formula_pretty_length]
+
+        # Sort the result_dict by ascending order of material_id for non-empty lists
+        sorted_indices = sorted(range(formula_pretty_length), key=lambda i: result_dict["formula_pretty"][i])
+
+        # Re-arrange all the properties in result_dict based on the sorted indices, but only for non-empty lists
+        for key in non_empty_keys:
+            result_dict[key] = [result_dict[key][i] for i in sorted_indices]
+
+        # for all the empty lists, append None to the corresponding material_id
+        for key in result_dict:
+            if key not in non_empty_keys:
+                result_dict[key] = [None] * formula_pretty_length
+
+        if "carrier-transport" in self.optimization_params.property_categories:
+            print("Carrier transport is in the property categories")
+            from mpcontribs.client import Client
+            client = Client(apikey="QePM93qZsMKNPkI4fEYaJfB7dONoQjaM")
+            client.get_project("carrier_transport")
+
+            # Iterate over the properties in the overall_bounds_dict and dynamically build the query
+            query_carrier_transport = {}
+            for prop, bounds in overall_bounds_dict.items():
+                # Skip 'elec_cond_300k_low_doping' and 'therm_cond_300k_low_doping'
+                if prop in ["elec_cond_300k_low_doping", "therm_cond_300k_low_doping"]:
+                    # Proceed if 'upper_bound' and 'lower_bound' exist for the property
+                    if "upper_bound" in bounds and "lower_bound" in bounds:
+                        query_carrier_transport[prop] = (bounds["lower_bound"], bounds["upper_bound"])
+
+            print(f"Query for carrier transport: {query_carrier_transport}")
+
+            tables = client.query_contributions({"project":"carrier_transport",
+                                        "data__sigma__p__value__gt": query_carrier_transport["elec_cond_300k_low_doping"][0] / 1e15 / 1e-14, # the 1003100.0,
+                                        "data__sigma__p__value__lt": query_carrier_transport["elec_cond_300k_low_doping"][1] / 1e15 / 1e-14, #2093100.0,
+                                        "data__kappa__p__value__gt": query_carrier_transport["therm_cond_300k_low_doping"][0] / 1e9 / 1e-14, #7091050.0,
+                                        "data__kappa__p__value__lt": query_carrier_transport["therm_cond_300k_low_doping"][1] / 1e9 / 1e-14, #8591050.0,
+                                        "identifier__in": result_dict["material_id"],
+                                    },
+                                    fields=["identifier", "formula", "data.sigma.p", "data.kappa.p"],
+                                    sort="+formula") #  'identifier','data.V', 'tables', 'kappa' , 'kappa.p.value', 'sigma.p.value', '_all' (2769600.0, 1093100.0)
+
+            # Only append the values to the corresponding material_id from the result_dict. At the end, make all the remaining values
+            # corresponding to the material_id as None
+            # Iterate over the tables returned and map the data to the result_dict
+            for table in tables["data"]:
+                #print(f"Table: {table}")
+                material_id = table["identifier"]  # Material ID from the table
+                if material_id in result_dict["material_id"]:  # Only map for materials already in result_dict
+                    index = result_dict["material_id"].index(material_id)
+                    #print(f"Index: {index}")
+
+                    # Access the electrical conductivity and thermal conductivity values
+                    sigma_value = table["data"]["sigma"]["p"]["value"]  # Electrical conductivity
+                    kappa_value = table["data"]["kappa"]["p"]["value"]  # Thermal conductivity
+
+                    # Convert and append the values to the correct positions in the result_dict
+                    result_dict["elec_cond_300k_low_doping"][index] = sigma_value * 1e15 * 1e-14
+                    result_dict["therm_cond_300k_low_doping"][index] = kappa_value * 1e9 * 1e-14
+
+            # Drop rows with None values
+            keys_to_check = result_dict.keys()
+            indices_to_drop = [i for i in range(formula_pretty_length) if any(result_dict[key][i] is None for key in keys_to_check)]
+
+            for i in sorted(indices_to_drop, reverse=True):
+                for key in result_dict:
+                    result_dict[key].pop(i)
+
+            # Change the key name of bulk_modulus_vrh to bulk_modulus & shear_modulus_vrh to shear_modulus
+            if "bulk_modulus_vrh" in result_dict:
+                result_dict["bulk_modulus"] = result_dict.pop("bulk_modulus_vrh")
+            if "shear_modulus_vrh" in result_dict:
+                result_dict["shear_modulus"] = result_dict.pop("shear_modulus_vrh")
+
+        # Save the consolidated results to a JSON file
+        now = datetime.now()
+        my_file_name = f"{MODULE_DIR}/../io/outputs/consolidated_dict_" + now.strftime("%m_%d_%Y_%H_%M_%S")
+        with open(my_file_name, "w") as my_file:
+            json.dump(result_dict, my_file)
+
+        return result_dict
+
 
     def get_material_match_costs(self,
                                  matches_dict: dict,
@@ -285,10 +407,10 @@ class MatchFinder(Optimizer):
         for combo in material_combinations:
 
             material_values = []
-            mat_ids = np.zeros((len(material_combinations), self.num_materials))
+            mat_ids = np.zeros((len(material_combinations), self.optimization_params.num_materials))
 
-            for category in self.property_categories:
-                for prop in self.property_docs[category]:
+            for category in self.optimization_params.property_categories:
+                for prop in self.optimization_params.property_docs[category]:
                     for material_dict in combo:
 
                         # Extract the material ID string from the dictionary
@@ -308,20 +430,19 @@ class MatchFinder(Optimizer):
 
             # Vary the volume fractions across the population
             volume_fractions = np.array(all_vol_frac_combos).reshape(len(all_vol_frac_combos),
-                                                                         self.num_materials)
+                                                                         self.optimization_params.num_materials)
 
             # Include the random mixing parameters and volume fractions in the population
             values = np.c_[population_values, volume_fractions]
 
             # Instantiate the population and find the best performers
-            population = Population(num_materials=self.num_materials,
-                                    num_properties=self.num_properties,
+            population = Population(num_materials=self.optimization_params.num_materials,
+                                    num_properties=self.optimization_params.num_properties,
                                     values=values,
-                                    property_categories=self.property_categories,
-                                    property_docs=self.property_docs,
-                                    desired_props=self.desired_props,
-                                    ga_params=self.ga_params,
-                                    calc_guide=self.calc_guide)
+                                    property_categories=self.optimization_params.property_categories,
+                                    property_docs=self.optimization_params.property_docs,
+                                    desired_props=self.optimization_params.desired_props,
+                                    ga_params=self.ga_params)
             population.set_costs()
             [sorted_costs, sorted_indices] = population.sort_costs()
             population.set_order_by_costs(sorted_indices)
@@ -352,7 +473,9 @@ class MatchFinder(Optimizer):
         # At this point, top_rows contains the lowest 5 costs across all combinations
         # Now prepare the table for final output
 
-        headers = self._get_headers(include_mpids=True)
+        headers = get_headers(self.optimization_params.num_materials,
+                              self.optimization_params.property_categories,
+                              include_mpids=True)
 
         header_color = "lavender"
         odd_row_color = "white"

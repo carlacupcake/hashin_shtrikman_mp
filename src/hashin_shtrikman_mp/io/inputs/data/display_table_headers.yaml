@@ -1,0 +1,20 @@
+Per Material:
+  carrier-transport:
+    elec_cond: Electrical conductivity, [S/m]
+    thermal_cond:  Thermal conductivity, [W/m/K]
+  dielectric:
+    total_dielectric: Total dielectric constant, [F/m]
+    ionic_dielectric:  Ionic contrib dielectric constant, [F/m]
+    electronic_dielectric: Electronic contrib dielectric constant, [F/m]
+    n_dielectric: Dielectric n, [F/m]
+  elastic:
+    bulk_mod: Bulk modulus, [GPa]
+    shear_mod: Shear modulus, [GPa]
+    univ_aniso: Universal anisotropy, []
+  magnetic:
+    total_magnet: Total magnetization, []
+    total_magnet_norm_vol: Total magnetization normalized volume, []
+  piezoelectric:
+    piezo: Piezoelectric constant, [C/N or m/V]
+Common:
+  cost: Cost, []

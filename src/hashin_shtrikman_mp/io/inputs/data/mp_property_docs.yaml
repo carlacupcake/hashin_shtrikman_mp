@@ -1,0 +1,17 @@
+carrier-transport:
+    elec_cond_300k_low_doping:
+    therm_cond_300k_low_doping:
+dielectric:
+    e_electronic:
+    e_ionic:
+    e_total:
+    n:
+elastic:
+    bulk_modulus: vrh
+    shear_modulus: vrh
+    universal_anisotropy:
+magnetic:
+    total_magnetization:
+    total_magnetization_normalized_vol:
+piezoelectric:
+    e_ij_max:
