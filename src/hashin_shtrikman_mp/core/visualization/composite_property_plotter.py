@@ -15,7 +15,7 @@ from ..genetic_algorithm import GeneticAlgorithmResult, OptimizationParams, Gene
 from ..user_input import UserInput
 
 # YAML files
-sys.path.insert(1, "../io/inputs")
+sys.path.insert(1, "../io/inputs/")
 HS_HEADERS_YAML = "display_table_headers.yaml"
 
 # Optimizer class defaults
@@ -32,11 +32,18 @@ class CompositePropertyPlotter():
     for visualizing optimization results.
     """
 
+    '''
     def __init__(self,
                  opt_params: OptimizationParams,
                  ga_params: GeneticAlgorithmParams) -> None:
         self.opt_params = opt_params
         self.ga_params = ga_params
+    '''
+
+    def __init__(self, ga_result: GeneticAlgorithmResult) -> None:
+        self.ga_params = ga_result.algo_parameters
+        self.opt_params = ga_result.optimization_params
+        self.ga_result = ga_result
         
     @classmethod
     def from_optimization_result(cls, ga_result: GeneticAlgorithmResult):
@@ -107,7 +114,7 @@ class CompositePropertyPlotter():
         print(f"all_effective_properties.shape: {all_effective_properties.shape}")
 
         # Get property strings for labeling the plot(s)
-        file_name = f"{MODULE_DIR}/../io/inputs/{HS_HEADERS_YAML}"
+        file_name = MODULE_DIR.joinpath("../../io/inputs/data", HS_HEADERS_YAML).resolve()
         property_strings = []
         with open(file_name) as stream:
             data = yaml.safe_load(stream)
