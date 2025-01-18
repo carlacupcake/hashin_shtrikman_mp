@@ -1,12 +1,22 @@
+"""test_optimization_flow.py."""
 from hashin_shtrikman_mp.core.user_input import MaterialProperty, Material, MixtureProperty, Mixture, UserInput
-from hashin_shtrikman_mp.core import GeneticAlgorithmParams, GeneticAlgorithm
+from hashin_shtrikman_mp.core import GeneticAlgorithm
 from hashin_shtrikman_mp.core.genetic_algorithm import OptimizationParams
 from hashin_shtrikman_mp.core.match_finder import MatchFinder
+from hashin_shtrikman_mp.core.visualization import OptimizationResultVisualizer
 
+def test_optimization_flow():   
 
-def test_optimization_flow():
+    """
+    Integration test for the optimization flow of the Hashin-Shtrikman bounds optimization problem.
+
+    Notes:
+    - Run `pip install -e .` in the root directory to install the package in editable mode.
+
+    """ 
 
     # Define properties for each material
+    print("Defining properties for each material...")
     properties_mat_1 = [
         MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=120, lower_bound=1e-7), # upper_bound=20, lower_bound=1 
         MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=2, lower_bound=1e-7), # upper_bound=0.0001, lower_bound=1e-5 
@@ -41,6 +51,7 @@ def test_optimization_flow():
     ]
 
     # Create Material & Mixture instances
+    print("Creating Material & Mixture instances...")
     mat_1 = Material(name='mat_1', properties=properties_mat_1)
     mat_2 = Material(name='mat_2', properties=properties_mat_2)
     mat_3 = Material(name='mat_3', properties=properties_mat_3)
@@ -48,8 +59,8 @@ def test_optimization_flow():
     aggregate = [mat_1, mat_2, mat_3, mixture]
 
     # Initialize UserInput instance with materials and mixtures
+    print("Initializing UserInput instance...")
     user_input= UserInput(materials=[mat_1, mat_2, mat_3], mixtures=[mixture])
-    print("User Input: ", user_input)
 
     # Initialize dictionaries to store the overall upper and lower bounds for each property
     overall_bounds = {}
@@ -69,12 +80,8 @@ def test_optimization_flow():
                     overall_bounds[prop_name]['upper_bound'] = max(overall_bounds[prop_name]['upper_bound'], property.upper_bound)
                     overall_bounds[prop_name]['lower_bound'] = min(overall_bounds[prop_name]['lower_bound'], property.lower_bound)
 
-    # Print the overall bounds for each property
-    print("Overall Upper & Lower Bounds:")
-    for prop, bounds in overall_bounds.items():
-        print(f"Property: {prop}, Upper Bound: {bounds['upper_bound']}, Lower Bound: {bounds['lower_bound']}")
-
-    # Step 1: Create the consolidated_dict
+    # Create the consolidated_dict
+    print("Creating the consolidated dictionary...")
     overall_bounds_dict = {}
     for prop, bounds in overall_bounds.items():
         overall_bounds_dict[prop] = {
@@ -82,14 +89,41 @@ def test_optimization_flow():
             'lower_bound': bounds['lower_bound']
         }
 
-    optimizer = GeneticAlgorithm()
-    ga_result = optimizer.run(user_input, gen_counter=True)    
+    # Initialize optimization parameters and genetic algorithm
+    print("Initializing optimization parameters and genetic algorithm...")
+    optimization_parameters = OptimizationParams.from_user_input(user_input)
+    ga = GeneticAlgorithm()
 
+    assert optimization_parameters.property_categories, "There are no property categories in optimization parameters."
+    assert optimization_parameters.property_docs, "There are no property docs in optimization parameters."
+    assert optimization_parameters.lower_bounds, "There are no lower bounds in optimization parameters."
+    assert optimization_parameters.upper_bounds, "There are no upper bounds in optimization parameters."
+    assert optimization_parameters.num_materials, "The number of materials is not defined in optimization parameters."
+    assert optimization_parameters.num_properties, "The number of properties is not defined in optimization parameters."
 
+    # Run the optimization
+    print("Running the optimization...")
+    ga_result = ga.run(user_input, gen_counter=True)
+
+    # Create an instance of the MatchFinder class using the genetic algorithm result
     match_finder = MatchFinder(ga_result)
+
+    # Get material matches
+    print("Getting material matches...")
     matches_dict = match_finder.get_material_matches(overall_bounds_dict)
+
+    # Check that the matches_dict is non-empty
     assert len(matches_dict['mat1']) > 1
     assert len(matches_dict['mat2']) > 1
     assert len(matches_dict['mat3']) > 1
 
-    test_consolidated_dict = match_finder.generate_consolidated_dict(overall_bounds_dict=overall_bounds_dict)    
+    # Test that `generate_consolidated_dict` method works as expected
+    test_consolidated_dict = match_finder.generate_consolidated_dict(overall_bounds_dict=overall_bounds_dict)
+    assert test_consolidated_dict, "The generated dictionary is empty."
+
+    # Test complete
+    print("Test completed successfully.")
+
+# Perform the test
+if __name__ == "__main__":
+    test_optimization_flow()
