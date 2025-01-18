@@ -1,10 +1,12 @@
+"""genetic_algorithm_result.py."""
 import numpy as np
 
 from .genetic_algorithm_parameters import GeneticAlgorithmParams
 from .optimization_params import OptimizationParams
 from .population import Population
 
-class GeneticAlgorithmResult():
+
+class GeneticAlgorithmResult:
 
     def __init__(self,
                  algo_parameters: GeneticAlgorithmParams,
@@ -24,7 +26,7 @@ class GeneticAlgorithmResult():
             Lowest cost values across generations.
         avg_parent_costs : np.ndarray
             Average cost of the top-performing parents across generations.
-        """        
+        """
         self.algo_parameters = algo_parameters
         self.final_population = final_population
         self.lowest_costs = lowest_costs

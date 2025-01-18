@@ -8,10 +8,9 @@ from typing import Any
 
 import numpy as np
 import plotly.graph_objects as go
-import yaml
 from mp_api.client import MPRester
 
-from .genetic_algorithm import GeneticAlgorithmResult
+from .genetic_algorithm import GeneticAlgorithmResult, Population
 from .utilities import get_headers, load_property_docs
 
 # YAML files
@@ -23,7 +22,7 @@ MODULE_DIR = Path(__file__).resolve().parent
 
 np.seterr(divide="raise")
 
-class MatchFinder():
+class MatchFinder:
     """
     MatchFinder class for Hashin-Shtrikman optimization.
 
@@ -173,7 +172,8 @@ class MatchFinder():
         Once real materials have been identified, we must calculate
         which volume fraction combinations are 'best' for the composite.
         """
-        all_vol_frac_ranges = [list(np.linspace(0.01, 0.99, num_fractions)) for _ in range(self.optimization_params.num_materials - 1)]
+        all_vol_frac_ranges = [list(np.linspace(0.01, 0.99, num_fractions))
+                               for _ in range(self.optimization_params.num_materials - 1)]
 
         all_vol_frac_combos = []
         all_vol_frac_combo_tups = list(itertools.product(*all_vol_frac_ranges))
@@ -188,7 +188,7 @@ class MatchFinder():
 
         return all_vol_frac_combos
 
-    def generate_consolidated_dict(self, overall_bounds_dict: dict = None):
+    def generate_consolidated_dict(self, overall_bounds_dict: dict = None) -> dict:
         """MAIN FUNCTION USED TO GENERATE MATERIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST."""
         print(f"overall_bounds_dict: {overall_bounds_dict}")
         # Base query initialization
@@ -206,7 +206,8 @@ class MatchFinder():
             if "upper_bound" in bounds and "lower_bound" in bounds:
                 query[prop] = (bounds["lower_bound"], bounds["upper_bound"])
 
-        # Add additional fields you want to query, like 'material_id', 'formula_pretty', and all the properties in the initial query
+        # Add additional fields you want to query, like 'material_id', 'formula_pretty',
+        # and all the properties in the initial query
         fields = ["material_id", "formula_pretty"]  # Fixed fields
         fields.extend(query.keys())  # Adding all the keys from the query to the fields list
 
@@ -255,11 +256,9 @@ class MatchFinder():
                         # Otherwise, append the main property
                         result_dict[prop] = []
 
-        # Print the initialized result_dict
-        print(f"Initialized result_dict: {result_dict}")
-
         # remove all the rows that have None values
-        materials = [material for material in materials if all(getattr(material, field, None) is not None for field in fields)]
+        materials = [material for material in materials
+                     if all(getattr(material, field, None) is not None for field in fields)]
 
         # Extract data and organize it into the result_dict
         for material in materials:
@@ -268,18 +267,32 @@ class MatchFinder():
 
             # Define a mapping between query keys and result_dict keys and their corresponding material attributes
             property_map = {
-                "k_vrh": ("bulk_modulus_vrh", "bulk_modulus", "vrh"),
-                "g_vrh": ("shear_modulus_vrh", "shear_modulus", "vrh"),
-                "elastic_anisotropy": ("universal_anisotropy", "universal_anisotropy"),
-                "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping", "elec_cond_300k_low_doping"),
-                "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping", "therm_cond_300k_low_doping"),
-                "e_electronic": ("e_electronic", "e_electronic"),
-                "e_ionic": ("e_ionic", "e_ionic"),
-                "e_total": ("e_total", "e_total"),
-                "n": ("n", "n"),
-                "total_magnetization": ("total_magnetization", "total_magnetization"),
-                "total_magnetization_normalized_vol": ("total_magnetization_normalized_vol", "total_magnetization_normalized_vol"),
-                "e_ij_max": ("e_ij_max", "e_ij_max")
+                "k_vrh": ("bulk_modulus_vrh",
+                          "bulk_modulus",
+                          "vrh"),
+                "g_vrh": ("shear_modulus_vrh",
+                          "shear_modulus",
+                          "vrh"),
+                "elastic_anisotropy": ("universal_anisotropy",
+                                       "universal_anisotropy"),
+                "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping",
+                                              "elec_cond_300k_low_doping"),
+                "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping",
+                                               "therm_cond_300k_low_doping"),
+                "e_electronic": ("e_electronic",
+                                 "e_electronic"),
+                "e_ionic": ("e_ionic",
+                            "e_ionic"),
+                "e_total": ("e_total",
+                            "e_total"),
+                "n": ("n",
+                      "n"),
+                "total_magnetization": ("total_magnetization",
+                                        "total_magnetization"),
+                "total_magnetization_normalized_vol": ("total_magnetization_normalized_vol",
+                                                       "total_magnetization_normalized_vol"),
+                "e_ij_max": ("e_ij_max",
+                             "e_ij_max")
             }
 
             # Iterate over the properties in the query and append values to result_dict dynamically
@@ -288,10 +301,12 @@ class MatchFinder():
 
                     # Check if there's a sub-attribute (e.g., "voigt" in "bulk_modulus")
                     if sub_attr:
+                        # Access sub-attribute if it exists
                         value = getattr(material, material_attr, {})
-                        result_dict[result_key].append(value.get(sub_attr[0], None))  # Access sub-attribute if it exists
+                        result_dict[result_key].append(value.get(sub_attr[0], None))
                     else:
-                        result_dict[result_key].append(getattr(material, material_attr, None))  # Direct access to attribute
+                        # Direct access to attribute
+                        result_dict[result_key].append(getattr(material, material_attr, None))
 
         # Initialize variables
         formula_pretty_length = len(result_dict["formula_pretty"])
@@ -312,7 +327,6 @@ class MatchFinder():
                 result_dict[key] = [None] * formula_pretty_length
 
         if "carrier-transport" in self.optimization_params.property_categories:
-            print("Carrier transport is in the property categories")
             from mpcontribs.client import Client
             client = Client(apikey="QePM93qZsMKNPkI4fEYaJfB7dONoQjaM")
             client.get_project("carrier_transport")
@@ -326,19 +340,19 @@ class MatchFinder():
                     if "upper_bound" in bounds and "lower_bound" in bounds:
                         query_carrier_transport[prop] = (bounds["lower_bound"], bounds["upper_bound"])
 
-            print(f"Query for carrier transport: {query_carrier_transport}")
+            tables = client.query_contributions(
+                {"project":"carrier_transport",
+                 "data__sigma__p__value__gt": query_carrier_transport["elec_cond_300k_low_doping"][0] / 1e15 / 1e-14,
+                 "data__sigma__p__value__lt": query_carrier_transport["elec_cond_300k_low_doping"][1] / 1e15 / 1e-14,
+                 "data__kappa__p__value__gt": query_carrier_transport["therm_cond_300k_low_doping"][0] / 1e9 / 1e-14,
+                 "data__kappa__p__value__lt": query_carrier_transport["therm_cond_300k_low_doping"][1] / 1e9 / 1e-14,
+                 "identifier__in": result_dict["material_id"],
+                 },
+                fields=["identifier", "formula", "data.sigma.p", "data.kappa.p"],
+                sort="+formula")
 
-            tables = client.query_contributions({"project":"carrier_transport",
-                                        "data__sigma__p__value__gt": query_carrier_transport["elec_cond_300k_low_doping"][0] / 1e15 / 1e-14, # the 1003100.0,
-                                        "data__sigma__p__value__lt": query_carrier_transport["elec_cond_300k_low_doping"][1] / 1e15 / 1e-14, #2093100.0,
-                                        "data__kappa__p__value__gt": query_carrier_transport["therm_cond_300k_low_doping"][0] / 1e9 / 1e-14, #7091050.0,
-                                        "data__kappa__p__value__lt": query_carrier_transport["therm_cond_300k_low_doping"][1] / 1e9 / 1e-14, #8591050.0,
-                                        "identifier__in": result_dict["material_id"],
-                                    },
-                                    fields=["identifier", "formula", "data.sigma.p", "data.kappa.p"],
-                                    sort="+formula") #  'identifier','data.V', 'tables', 'kappa' , 'kappa.p.value', 'sigma.p.value', '_all' (2769600.0, 1093100.0)
-
-            # Only append the values to the corresponding material_id from the result_dict. At the end, make all the remaining values
+            # Only append the values to the corresponding material_id from
+            # the result_dict. At the end, make all the remaining values
             # corresponding to the material_id as None
             # Iterate over the tables returned and map the data to the result_dict
             for table in tables["data"]:
@@ -358,7 +372,8 @@ class MatchFinder():
 
             # Drop rows with None values
             keys_to_check = result_dict.keys()
-            indices_to_drop = [i for i in range(formula_pretty_length) if any(result_dict[key][i] is None for key in keys_to_check)]
+            indices_to_drop = [i for i in range(formula_pretty_length)
+                               if any(result_dict[key][i] is None for key in keys_to_check)]
 
             for i in sorted(indices_to_drop, reverse=True):
                 for key in result_dict:
@@ -377,7 +392,6 @@ class MatchFinder():
             json.dump(result_dict, my_file)
 
         return result_dict
-
 
     def get_material_match_costs(self,
                                  matches_dict: dict,

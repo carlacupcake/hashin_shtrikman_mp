@@ -1,9 +1,12 @@
+"""user_input.py."""
+from collections.abc import Iterable
+from typing import Any
+
 from pydantic import BaseModel
 
-from typing import Dict, Iterable, Any
-
-from .mixture import Mixture
 from .material import Material
+from .mixture import Mixture
+
 
 class UserInput(BaseModel):
     """
@@ -14,11 +17,14 @@ class UserInput(BaseModel):
     for each of those components), and a list of optimized mixtures to produce from
     those individual components.
     """
+
     materials: list[Material]
     mixtures: list[Mixture]
 
-    def build_dict(self) -> Dict:
-        """Builds the desired dict structure"""
+    def build_dict(self) -> dict:
+        """
+        Builds the desired dictionary structure from the materials and mixtures.
+        """
         result = {}
         for material in self.materials:
             result.update(material.custom_dict())
@@ -29,33 +35,57 @@ class UserInput(BaseModel):
         return result
 
     def items(self) -> Iterable:
-        """Support dict-like .items() method"""
+        """
+        Support dict-like .items() method for iteration.
+        """
         return self.build_dict().items()
 
     def keys(self) -> Iterable:
-        """Support dict-like .keys() method"""
+        """
+        Support dict-like .keys() method for retrieving keys.
+        """
         return self.build_dict().keys()
 
     def values(self) -> Iterable:
-        """Support dict-like .values() method"""
+        """
+        Support dict-like .values() method for retrieving values.
+        """
         return self.build_dict().values()
 
     def __len__(self) -> int:
-        """"""
+        """
+        Returns the length of the dictionary representation of the object.
+        """
         return len(self.build_dict())
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable:
+        """
+        Returns an iterator over the items of the dictionary representation of the object.
+
+        This method allows for iteration over key-value pairs in the dictionary representation of the object.
+        """
         return iter(self.build_dict().items())
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> Any:
+        """
+        Accesses an item from the dictionary representation of the object using the provided key.
+        """
         return self.build_dict()[key]
 
     def __repr__(self) -> str:
+        """
+        Returns a string representation of the UserInput object.
+        """
         return str(self.build_dict())
 
     def __str__(self) -> str:
+        """
+        Returns a string version of the UserInput object.
+        """
         return str(self.build_dict())
 
     def get(self, key: str, default=None) -> Any:
-        """Dict-like get method implementation"""
+        """
+        Retrieves a value from the dictionary representation of the object for the given key.
+        """
         return self.build_dict().get(key, default)

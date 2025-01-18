@@ -1,29 +1,38 @@
+"""utilities.py."""
 from importlib import resources as impresources
-import yaml
-import json
-from typing import Any, List
+from typing import Any
 
+import yaml
 from monty.serialization import loadfn
 
-from ..log import logger
-
 import hashin_shtrikman_mp.io.inputs.data as io_data
+
+from ..log import logger
 
 HEADERS_PATH = str(impresources.files(io_data) / "display_table_headers.yaml")
 PROPERTY_CATEGORIES = str(impresources.files(io_data) / "mp_property_docs.yaml")
 COST_FORMULAS_PATH = str(impresources.files(io_data) / "cost_calculation_formulas.yaml")
 
 
-def get_headers(num_materials: int,
-                property_categories: List[str],
-                include_mpids: bool = False) -> list:
+def get_headers(num_materials: int, property_categories: list[str], include_mpids: bool = False) -> list:
+    """
+    Generates headers for a data table based on the number of materials and selected property categories.
 
+    Args:
+        num_materials (int): The number of materials to include in the headers.
+        property_categories (list[str]): List of property categories to include.
+        include_mpids (bool, optional): Whether to include MP-ID headers. Defaults to False.
+
+    Returns
+    -------
+        list: A list of headers as strings.
+    """
     with open(HEADERS_PATH) as stream:
         try:
             data = yaml.safe_load(stream)
             headers = []
 
-            # Add headers for mp-ids
+            # Add headers for MP-IDs
             if include_mpids:
                 headers += [f"Material {m} MP-ID" for m in range(1, num_materials + 1)]
 
@@ -48,10 +57,32 @@ def get_headers(num_materials: int,
 
     return headers
 
-def load_property_docs():
+
+def load_property_docs() -> dict:
+    """
+    Loads property documentation from a predefined YAML file.
+
+    Returns
+    -------
+        dict: A dictionary containing property documentation.
+    """
     return loadfn(PROPERTY_CATEGORIES)
 
-def load_property_categories(user_input: dict[Any, Any] | None = None):
+
+def load_property_categories(user_input: dict[Any, Any] | None = None) -> tuple[list[str], dict]:
+    """
+    Identifies property categories present in the user input by comparing them
+    with predefined property documentation.
+
+    Args:
+        user_input (dict[Any, Any] | None, optional): A dictionary of user-defined properties. Defaults to None.
+
+    Returns
+    -------
+        tuple: A tuple containing:
+            - property_categories (list): A list of property categories found in the user input.
+            - property_docs (dict): A dictionary of all property documentation.
+    """
     if user_input is None:
         user_input = {}
     logger.info(f"Loading property categories from {PROPERTY_CATEGORIES}.")
@@ -63,8 +94,8 @@ def load_property_categories(user_input: dict[Any, Any] | None = None):
     user_defined_properties = []
 
     for entity in user_input.values():
-        for property in entity:
-            user_defined_properties.append(property)
+        for prop in entity:
+            user_defined_properties.append(prop)
 
     # Only keep the unique entries of the list
     user_defined_properties = list(set(user_defined_properties))
@@ -77,7 +108,19 @@ def load_property_categories(user_input: dict[Any, Any] | None = None):
     logger.info(f"property_categories = {property_categories}")
     return property_categories, property_docs
 
-def compile_formulas(formulas_dict):
+
+def compile_formulas(formulas_dict: dict[Any, Any] | None = None) -> dict:
+    """
+    Compiles mathematical formulas defined as strings in a dictionary into executable Python code.
+
+    Args:
+        formulas_dict (dict): A dictionary where the keys are formula names and the values are
+                              formulas as strings or nested dictionaries.
+
+    Returns
+    -------
+        dict: A dictionary with the same structure as `formulas_dict`, but with formulas compiled.
+    """
     compiled_formulas = {}
     for key, formula in formulas_dict.items():
         if isinstance(formula, str):
@@ -121,5 +164,6 @@ def compile_formulas(formulas_dict):
             compiled_formulas[key] = compile_formulas(formula)
 
     return compiled_formulas
+
 
 COMPILED_CALC_GUIDE = compile_formulas(loadfn(COST_FORMULAS_PATH))

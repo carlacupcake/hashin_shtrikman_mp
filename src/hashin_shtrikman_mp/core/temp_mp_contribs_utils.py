@@ -5,6 +5,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from hashin_shtrikman_mp.log.custom_logger import logger
+
 # Optimizer class defaults
 DEFAULT_FIELDS: dict = {"material_id": [],
                         "is_stable": [],

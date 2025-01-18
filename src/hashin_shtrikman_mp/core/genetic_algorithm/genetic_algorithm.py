@@ -1,21 +1,40 @@
+"""genetic_algorithm.py."""
 import numpy as np
 
-from .population import Population
-from .member import Member
+from ..user_input import UserInput
 from .genetic_algorithm_parameters import GeneticAlgorithmParams
 from .genetic_algorithm_result import GeneticAlgorithmResult
+from .member import Member
 from .optimization_params import OptimizationParams
-from ..user_input import UserInput
+from .population import Population
 
-class GeneticAlgorithm():
+
+class GeneticAlgorithm:
 
     def run(self,
             user_inputs: UserInput,
             ga_algo_params: GeneticAlgorithmParams = None,
             gen_counter: bool = False):
-        
+        """
+        Executes the Genetic Algorithm (GA) optimization process.
+
+        Initializes a population, evaluates costs, and iteratively
+        evolves the population through breeding and selection to minimize
+        the cost function over multiple generations. The best and average costs
+        for each generation are tracked, and the final population is returned
+        alongside optimization results.
+
+        Args:
+            user_inputs (UserInput)
+            ga_algo_params (GeneticAlgorithmParams, optional)
+            gen_counter (bool, optional)
+
+        Returns
+        -------
+            GeneticAlgorithmResult
+        """
         optimization_parameters = OptimizationParams.from_user_input(user_inputs)
-        
+
         if ga_algo_params is None:
             ga_algo_params = GeneticAlgorithmParams()
 

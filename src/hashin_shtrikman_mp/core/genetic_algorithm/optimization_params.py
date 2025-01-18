@@ -1,11 +1,11 @@
 """optimizer.py."""
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 from pydantic import BaseModel, Field
 
-from ..user_input import UserInput
 from ...log.custom_logger import logger
+from ..user_input import UserInput
 from ..utilities import load_property_categories
 
 np.seterr(divide="raise")
@@ -18,6 +18,7 @@ class OptimizationParams(BaseModel):
     and find optimal material properties for each composite constituent to achieve
     desired properties.
     """
+
     property_categories: list[str] = Field(
         default_factory=list,
         description="List of property categories considered for optimization."
@@ -58,7 +59,16 @@ class OptimizationParams(BaseModel):
         arbitrary_types_allowed = True
 
     @classmethod
-    def from_user_input(cls, user_input: Optional[UserInput] = None):
+    def from_user_input(cls, user_input: UserInput | None = None) -> "OptimizationParams":
+        """
+        Initializes the `OptimizationParams` class from the user input dictionary.
+
+        This class method processes the provided `user_input` dictionary to extract the necessary
+        parameters for initializing an instance of the `OptimizationParams` class. It loads property
+        categories and documents, extracts desired properties, calculates bounds for material properties,
+        and determines the total number of properties. The method also handles the extraction of elastic
+        moduli indices, if present in the user input.
+        """
         params = {}
         # Load property categories and docs
         property_categories, property_docs = load_property_categories(user_input=user_input)
@@ -69,7 +79,7 @@ class OptimizationParams(BaseModel):
         # Is user_input ever None??
         if user_input is not None:
             num_materials  = len(user_input) - 1
-            
+
             desired_props = cls.get_desired_props_from_user_input(
                 user_input,
                 property_categories=property_categories,
@@ -109,7 +119,17 @@ class OptimizationParams(BaseModel):
         return cls(**params)
 
     @staticmethod
-    def get_num_properties_from_desired_props(desired_props):
+    def get_num_properties_from_desired_props(desired_props: dict[str, list[float]]) -> int:
+        """
+        Calculates the total number of properties from the desired properties dictionary.
+
+        Args:
+            desired_props (dict)
+
+        Returns
+        -------
+            int: The total number of properties, including 1 for volume fractions.
+        """
         num_properties = 0
 
         # Iterate through property categories to count the total number of properties
@@ -122,7 +142,28 @@ class OptimizationParams(BaseModel):
         return num_properties
 
     @staticmethod
-    def get_bounds_from_user_input(user_input: dict, bound_key: str, property_docs: dict[str, list[str]], num_materials: int):
+    def get_bounds_from_user_input(user_input: dict,
+                                   bound_key: str,
+                                   property_docs: dict[str, list[str]],
+                                   num_materials: int) -> dict:
+        """
+        Extracts bounds (upper or lower) for material properties from the user input.
+
+        It retrieves the bounds for each property in the `property_docs` and organizes
+        them by material and property category. The function also adds bounds for volume
+        fractions.
+
+        Args:
+            user_input (dict)
+            bound_key (str)
+            property_docs (dict[str, list[str]])
+            num_materials (int)
+
+        Returns
+        -------
+            dict: A dictionary where keys are material names and values are dictionaries containing
+            the bounds for each property category (e.g., "elastic", "thermal").
+        """
         if bound_key not in ["upper_bound", "lower_bound"]:
             raise ValueError("bound_key must be either 'upper_bound' or 'lower_bound'.")
 
@@ -153,8 +194,26 @@ class OptimizationParams(BaseModel):
         return bounds
 
     @staticmethod
-    def get_desired_props_from_user_input(user_input: dict, property_categories: list[str], property_docs: dict):
+    def get_desired_props_from_user_input(user_input: dict,
+                                          property_categories: list[str],
+                                          property_docs: dict) -> dict:
+        """
+        Extracts the desired values for each property category.
 
+        It extracts the desired values from the user input and organizes them
+        into a dictionary, mapping property categories to lists of desired properties.
+
+        Args:
+            user_input (dict)
+            property_categories (list[str])
+            property_docs (dict)
+
+        Returns
+        -------
+            dict: A dictionary where each key is a property category, and the value
+            is a list of desired properties for that category. If a property is not
+            found in the "mixture" part of the input, it is not included in the output.
+        """
         # Initialize the dictionary to hold the desired properties
         desired_props: dict[str, list[float]] = {category: [] for category in property_categories}
 
@@ -172,15 +231,30 @@ class OptimizationParams(BaseModel):
         return desired_props
 
     @staticmethod
-    def get_elastic_idx_from_user_input(upper_bounds: dict, property_categories: list[str]):
+    def get_elastic_idx_from_user_input(upper_bounds: dict, property_categories: list[str]) -> list[int]:
+        """
+        Gets the indices of elastic properties from the upper bounds.
+
+        The method iterates through the upper bounds for each material and their
+        associated property categories to locate the indices of elastic properties.
+        It returns the first occurrence of elastic properties as a list of two indices.
+
+        Args:
+            upper_bounds (dict)
+            property_categories (list[str])
+
+        Returns
+        -------
+            list[int]: A list containing two indices corresponding to the elastic properties.
+            If no elastic properties are found, returns [None, None].
+        """
         idx = 0
         indices = [None, None]
         for material in upper_bounds:
             if material != "volume-fractions":
                 for category, properties in upper_bounds[material].items():
                     if category in property_categories:
-                        for property in properties:
-                            print(f"material: {material}, category: {category}, property: {property}")
+                        for _ in properties:
                             if category == "elastic":
                                 return [idx, idx+1]
                             idx += 1

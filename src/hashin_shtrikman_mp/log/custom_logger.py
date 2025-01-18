@@ -1,3 +1,20 @@
+"""
+This script configures a basic logging setup for an application.
+
+- A logger is created using the module's `__name__`, allowing logs 
+  to be traced back to the module where they originate.
+- The logger and handler are set to the INFO level, meaning that only 
+  messages with a severity level of INFO or higher will be logged.
+- A `StreamHandler` is used to direct log messages to the console (standard output).
+- A log message formatter is applied to define the structure of log messages, 
+  including the timestamp, logger name, log level, and the log message itself.
+
+Usage:
+    Use the `logger` instance to log messages in your code:
+        logger.info("This is an informational message")
+        logger.error("This is an error message")
+"""
+
 import logging
 
 # Create a logger
