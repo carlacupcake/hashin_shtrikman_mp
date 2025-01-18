@@ -39,7 +39,7 @@ def get_headers(num_materials: int, property_categories: list[str], include_mpid
             # Add headers for material properties
             for category, properties in data["Per Material"].items():
                 if category in property_categories:
-                    for prop in properties.values():
+                    for prop in sorted(properties.values()):
                         for m in range(1, num_materials + 1):
                             headers.append(f"Phase {m} " + prop)
 
@@ -56,7 +56,6 @@ def get_headers(num_materials: int, property_categories: list[str], include_mpid
             print(exc)
 
     return headers
-
 
 def load_property_docs() -> dict:
     """
@@ -108,7 +107,6 @@ def load_property_categories(user_input: dict[Any, Any] | None = None) -> tuple[
     logger.info(f"property_categories = {property_categories}")
     return property_categories, property_docs
 
-
 def compile_formulas(formulas_dict: dict[Any, Any] | None = None) -> dict:
     """
     Compiles mathematical formulas defined as strings in a dictionary into executable Python code.
@@ -121,6 +119,9 @@ def compile_formulas(formulas_dict: dict[Any, Any] | None = None) -> dict:
     -------
         dict: A dictionary with the same structure as `formulas_dict`, but with formulas compiled.
     """
+    if formulas_dict is None:
+        formulas_dict = {}
+
     compiled_formulas = {}
     for key, formula in formulas_dict.items():
         if isinstance(formula, str):
@@ -164,6 +165,5 @@ def compile_formulas(formulas_dict: dict[Any, Any] | None = None) -> dict:
             compiled_formulas[key] = compile_formulas(formula)
 
     return compiled_formulas
-
 
 COMPILED_CALC_GUIDE = compile_formulas(loadfn(COST_FORMULAS_PATH))
