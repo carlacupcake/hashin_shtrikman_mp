@@ -134,6 +134,8 @@ class GeneticAlgorithm:
             # Update the generation counter
             g = g + 1
 
+        print(f'final_population: {population.values}')
+        print(f'avg_parent_costs: {avg_parent_costs}')
         return GeneticAlgorithmResult(
             algo_parameters=ga_algo_params,
             final_population=population,

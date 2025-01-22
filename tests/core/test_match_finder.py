@@ -1,8 +1,6 @@
 """test_match_finder.py."""
-from datetime import datetime
 from hashin_shtrikman_mp.core.match_finder import MatchFinder
 from hashin_shtrikman_mp.core.genetic_algorithm import GeneticAlgorithmResult, Population
-import json
 import pytest
 from unittest import mock
 

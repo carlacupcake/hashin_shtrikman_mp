@@ -61,7 +61,6 @@ class Member:
 
         # Get Hashin-Shtrikman effective properties for all properties
         idx = 0
-
         for category in self.opt_params.property_categories:
 
             if category == "elastic":
