@@ -1,4 +1,4 @@
-"""optimizer.py."""
+"""optimization_params.py."""
 from typing import Any
 
 import numpy as np
