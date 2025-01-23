@@ -1,5 +1,6 @@
-import pytest
+"""test_optimization_params.py"""
 from hashin_shtrikman_mp.core.genetic_algorithm.optimization_params import OptimizationParams
+import pytest
 
 mock_num_materials  = 3
 mock_num_properties = 6

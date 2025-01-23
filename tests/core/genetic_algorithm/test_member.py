@@ -1,8 +1,9 @@
-import numpy as np
-import pytest
+"""test_member.py"""
 from hashin_shtrikman_mp.core.genetic_algorithm import GeneticAlgorithmParams
 from hashin_shtrikman_mp.core.genetic_algorithm import OptimizationParams, Member
+import numpy as np
 from pydantic import ValidationError
+import pytest
 
 @pytest.fixture(scope="module")
 def basic_opt_params():
