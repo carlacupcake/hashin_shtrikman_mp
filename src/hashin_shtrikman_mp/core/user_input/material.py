@@ -1,9 +1,6 @@
 """material.py."""
-
 from pydantic import BaseModel
-
 from .material_property import MaterialProperty
-
 
 class Material(BaseModel):
     """Represents a material with a list of property constraints represented by MaterialPropertys."""
