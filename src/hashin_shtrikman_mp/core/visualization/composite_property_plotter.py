@@ -1,16 +1,13 @@
 """visualizer.py."""
 import itertools
-import json
 import re
 import sys
 import warnings
-from pathlib import Path
-
 import numpy as np
 import plotly.graph_objects as go
 import yaml
 
-# Custom imports
+from pathlib import Path
 from ..genetic_algorithm import GeneticAlgorithmResult, OptimizationParams, GeneticAlgorithmParams, Population
 from ..user_input import UserInput
 
@@ -22,7 +19,6 @@ HS_HEADERS_YAML = "display_table_headers.yaml"
 MODULE_DIR = Path(__file__).resolve().parent
 
 np.seterr(divide="raise")
-
 
 class CompositePropertyPlotter():
     """

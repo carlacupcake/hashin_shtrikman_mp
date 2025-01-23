@@ -8,7 +8,6 @@ from .member import Member
 from .optimization_params import OptimizationParams
 from .population import Population
 
-
 class GeneticAlgorithm:
 
     def run(self,

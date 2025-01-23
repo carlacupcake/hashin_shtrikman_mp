@@ -5,7 +5,6 @@ from .genetic_algorithm_parameters import GeneticAlgorithmParams
 from .optimization_params import OptimizationParams
 from .population import Population
 
-
 class GeneticAlgorithmResult:
 
     def __init__(self,

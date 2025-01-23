@@ -5,7 +5,6 @@ from .genetic_algorithm_parameters import GeneticAlgorithmParams
 from .member import Member
 from .optimization_params import OptimizationParams
 
-
 class Population:
     """
     Class to hold the population of members.

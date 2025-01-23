@@ -7,7 +7,6 @@ from ..utilities import COMPILED_CALC_GUIDE
 from .genetic_algorithm_parameters import GeneticAlgorithmParams
 from .optimization_params import OptimizationParams
 
-
 class Member:
     """
     Class to represent a member of the population in genetic algorithm optimization.
@@ -26,7 +25,6 @@ class Member:
         self.ga_params = ga_params
         self.opt_params = optimization_params
 
-    #------ Getter Methods ------#
     def get_cost(self, include_cost_breakdown=False):
         """
         Calculates the total cost for the current member based on effective properties 
