@@ -1,8 +1,6 @@
 """genetic_algo.py."""
 from typing import Annotated
-
 from pydantic import BaseModel, Field, PositiveInt
-
 
 class GeneticAlgorithmParams(BaseModel):
     """Class to hold the parameters used for the genetic algorithm."""

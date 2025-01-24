@@ -1,4 +1,4 @@
-"""visualizer.py."""
+"""composite_property_plotter.py."""
 import itertools
 import re
 import sys
@@ -8,8 +8,9 @@ import plotly.graph_objects as go
 import yaml
 
 from pathlib import Path
-from ..genetic_algorithm import GeneticAlgorithmResult, OptimizationParams, GeneticAlgorithmParams, Population
-from ..user_input import UserInput
+
+from ..genetic_algorithm import GeneticAlgorithmResult, Population
+
 
 # YAML files
 sys.path.insert(1, "../io/inputs/")
@@ -20,6 +21,7 @@ MODULE_DIR = Path(__file__).resolve().parent
 
 np.seterr(divide="raise")
 
+
 class CompositePropertyPlotter():
     """
     Visualizer class for Hashin-Shtrikman optimization.
@@ -28,27 +30,16 @@ class CompositePropertyPlotter():
     for visualizing optimization results.
     """
 
-    '''
-    def __init__(self,
-                 opt_params: OptimizationParams,
-                 ga_params: GeneticAlgorithmParams) -> None:
-        self.opt_params = opt_params
-        self.ga_params = ga_params
-    '''
-
     def __init__(self, ga_result: GeneticAlgorithmResult) -> None:
         self.ga_params = ga_result.algo_parameters
         self.opt_params = ga_result.optimization_params
         self.ga_result = ga_result
-        
-    @classmethod
-    def from_optimization_result(cls, ga_result: GeneticAlgorithmResult):
-        return cls(ga_result.optimization_params, ga_result.algo_parameters)
+
 
     @classmethod
-    def from_user_input(cls, user_input: UserInput):
-        opt_params = OptimizationParams.from_user_input(user_input)
-        return cls(opt_params, GeneticAlgorithmParams())
+    def from_optimization_result(cls, ga_result: GeneticAlgorithmResult):
+        return cls(ga_result)
+
 
     def get_all_possible_vol_frac_combos(self, num_fractions: int = 30):
         all_vol_frac_ranges = []
@@ -65,16 +56,20 @@ class CompositePropertyPlotter():
                 new_element = new_element - element
             new_combo.append(new_element)
             all_vol_frac_combos.append(new_combo)
-
+  
         return all_vol_frac_combos
+
 
     def visualize_composite_eff_props(self, match, consolidated_dict: dict, num_fractions: int = 99):
 
         # Too much computation to use the default for 4 phase, so reduce num_fractions
+        if len(match) == 1:
+            warnings.warn(UserWarning("No visualizations available for single materials (not a composite)."))
+            return
         if len(match) == 4:
             num_fractions = 20
-        if len(match) == 1 or len(match) > 4:
-            warnings.warn("No visualizations available for composites with 5 or more phases.")
+        if len(match) > 4:
+            warnings.warn(UserWarning("No visualizations available for composites with 5 or more phases."))
             return
 
         all_vol_frac_combos = self.get_all_possible_vol_frac_combos(num_fractions=num_fractions)
@@ -107,7 +102,6 @@ class CompositePropertyPlotter():
                                 values=values,
                                 ga_params=this_pop_ga_params)
         all_effective_properties = population.get_effective_properties()
-        print(f"all_effective_properties.shape: {all_effective_properties.shape}")
 
         # Get property strings for labeling the plot(s)
         file_name = MODULE_DIR.joinpath("../../io/inputs/data", HS_HEADERS_YAML).resolve()
@@ -149,6 +143,7 @@ class CompositePropertyPlotter():
 
         return
 
+
     def visualize_composite_eff_props_2_phase(self, match, property, units, volume_fractions, effective_properties):
 
         fig = go.Figure()
@@ -166,6 +161,7 @@ class CompositePropertyPlotter():
             margin=dict(l=50, r=50, t=50, b=50)
         )
         fig.show()
+        return fig
 
 
     def visualize_composite_eff_props_3_phase(self, match, property, units, volume_fractions, effective_properties):
@@ -189,6 +185,7 @@ class CompositePropertyPlotter():
             margin=dict(l=50, r=50, t=50, b=50)
         )
         fig.show()
+        return fig
 
 
     def visualize_composite_eff_props_4_phase(self, match, property, units, volume_fractions, effective_properties):
@@ -230,3 +227,4 @@ class CompositePropertyPlotter():
             margin=dict(l=50, r=50, t=50, b=50)
         )
         fig.show()
+        return fig
