@@ -11,9 +11,9 @@ from .population import Population
 class GeneticAlgorithm:
 
     def run(self,
-            user_inputs: UserInput,
+            user_inputs:    UserInput,
             ga_algo_params: GeneticAlgorithmParams = None,
-            gen_counter: bool = False):
+            gen_counter:    bool = False):
         """
         Executes the Genetic Algorithm (GA) optimization process.
 
@@ -28,10 +28,10 @@ class GeneticAlgorithm:
             ga_algo_params (GeneticAlgorithmParams, optional)
             gen_counter (bool, optional)
 
-        Returns
-        -------
+        Returns:
             GeneticAlgorithmResult
         """
+        
         optimization_parameters = OptimizationParams.from_user_input(user_inputs)
 
         if ga_algo_params is None:

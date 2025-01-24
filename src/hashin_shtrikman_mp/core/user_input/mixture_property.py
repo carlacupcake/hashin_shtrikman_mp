@@ -1,8 +1,10 @@
 """mixture_property.py."""
 import sys
 import yaml
+
 from pathlib import Path
 from pydantic import BaseModel, field_validator
+
 
 # Load valid properties from YAML file
 sys.path.insert(1, "../io/inputs/")
@@ -21,6 +23,7 @@ for category, props in data.items():
             valid_properties.append(sub_prop)
     else:
         valid_properties.append(category)
+
 
 class MixtureProperty(BaseModel):
     """Represents a target property for an optimized mixture."""

@@ -3,7 +3,6 @@ from hashin_shtrikman_mp.core.user_input import MaterialProperty, Material, Mixt
 from hashin_shtrikman_mp.core import GeneticAlgorithm
 from hashin_shtrikman_mp.core.genetic_algorithm import OptimizationParams
 from hashin_shtrikman_mp.core.match_finder import MatchFinder
-from hashin_shtrikman_mp.core.visualization import OptimizationResultVisualizer
 
 def test_optimization_flow():   
 
@@ -123,6 +122,7 @@ def test_optimization_flow():
 
     # Test complete
     print("Test completed successfully.")
+
 
 # Perform the test
 if __name__ == "__main__":

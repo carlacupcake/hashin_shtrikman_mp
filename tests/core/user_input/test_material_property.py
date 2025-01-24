@@ -1,6 +1,7 @@
 """test_material_property.py"""
-from hashin_shtrikman_mp.core.user_input.material_property import MaterialProperty
 import pytest
+from hashin_shtrikman_mp.core.user_input.material_property import MaterialProperty
+
 
 # Test valid data input
 def test_valid_data():

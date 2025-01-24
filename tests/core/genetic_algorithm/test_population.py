@@ -1,16 +1,20 @@
 """test_population.py"""
-from hashin_shtrikman_mp.core.genetic_algorithm.population import Population
-from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_parameters import GeneticAlgorithmParams
 import numpy as np
 import pytest
+
+from hashin_shtrikman_mp.core.genetic_algorithm.population import Population
+from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_parameters import GeneticAlgorithmParams
+
 
 mock_num_materials  = 3
 mock_num_properties = 6
 mock_num_members    = 4
 
+
 @pytest.fixture
 def mock_ga_params():
     return GeneticAlgorithmParams(num_members=mock_num_members)
+
 
 @pytest.fixture
 def mock_property_docs():
@@ -39,6 +43,7 @@ def mock_property_docs():
         }
     }
 
+
 @pytest.fixture
 def mock_opt_params(mock_property_docs):
     class MockOptimizationParams:
@@ -49,6 +54,7 @@ def mock_opt_params(mock_property_docs):
         property_docs = mock_property_docs
     return MockOptimizationParams()
 
+
 @pytest.fixture
 def mock_population(mock_opt_params, mock_ga_params):
     values = np.array([[1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10, 1.11, 1.12, 1.13, 1.14, 1.15, 0.33, 0.33, 0.34],
@@ -58,9 +64,11 @@ def mock_population(mock_opt_params, mock_ga_params):
     costs = np.array([10, 20, 30, 40])
     return Population(mock_opt_params, mock_ga_params, values, costs)
 
+
 def test_initialization(mock_population):
     assert mock_population.values.shape == (mock_num_members, mock_num_materials * mock_num_properties)
     assert mock_population.costs.shape  == (mock_num_members,)
+
 
 def test_get_unique_designs(mock_population, mocker):
     mocker.patch.object(mock_population, 'set_costs', return_value=None)
@@ -68,9 +76,11 @@ def test_get_unique_designs(mock_population, mocker):
     assert unique_designs.shape[0] == len(np.unique(mock_population.costs))
     assert unique_costs.shape[0]   == len(np.unique(mock_population.costs))
 
+
 def test_get_effective_properties(mock_population, mocker):
     result = mock_population.get_effective_properties()
     assert result.shape == (mock_num_members, mock_num_properties - 1) # subtract one for volume fraction
+
 
 def test_set_random_values(mock_population):
     lower_bounds = {
@@ -107,9 +117,11 @@ def test_set_random_values(mock_population):
     mock_population.set_random_values(lower_bounds, upper_bounds)
     assert mock_population.values.shape == (mock_num_members, mock_num_materials * mock_num_properties)
 
+
 def test_set_costs(mock_population):
     mock_population.set_costs()
     assert np.all(mock_population.costs != None)
+
 
 def test_set_order_by_costs(mock_population):
     sorted_indices = np.array([3, 2, 1, 0])

@@ -1,9 +1,10 @@
-"""visualizer.py."""
+"""optimization_result_visualizer.py."""
 import numpy as np
 import plotly.graph_objects as go
 
 from ..genetic_algorithm import GeneticAlgorithmResult, Member
 from ..utilities import get_headers
+
 
 class OptimizationResultVisualizer():
     """
@@ -18,24 +19,47 @@ class OptimizationResultVisualizer():
         self.opt_params = ga_result.optimization_params
         self.ga_result = ga_result
 
+
     def get_table_of_best_designs(self, rows: int = 10):
+        """
+        Retrieves a table of the top-performing designs from the final population.
+
+        Args:
+            rows (int, optional)
+            - The number of top designs to retrieve.
+
+        Returns:
+            table_of_best_designs (ndarray)
+        """
+        
         [unique_members, unique_costs] = self.ga_result.final_population.get_unique_designs()
-        return np.hstack((unique_members[0:rows, :], unique_costs[0:rows].reshape(-1, 1)))
+        table_of_best_designs = np.hstack((unique_members[0:rows, :], unique_costs[0:rows].reshape(-1, 1)))
+        return table_of_best_designs
+
 
     def print_table_of_best_designs(self, rows: int = 10):
+        """
+        Generates and displays a formatted table of the top-performing designs.
+
+        Args:
+            rows (int, optional)
+
+        Returns:
+            plotly.graph_objects.Figure
+        """
 
         table_data = self.get_table_of_best_designs(rows)
         headers = get_headers(self.opt_params.num_materials,
                               self.opt_params.property_categories)
 
-        header_color = "lavender"
-        odd_row_color = "white"
+        header_color   = "lavender"
+        odd_row_color  = "white"
         even_row_color = "lightgrey"
         if rows % 2 == 0:
-            multiplier = int(rows/2)
+            multiplier  = int(rows/2)
             cells_color = [[odd_row_color, even_row_color]*multiplier]
         else:
-            multiplier = int(np.floor(rows/2))
+            multiplier  = int(np.floor(rows/2))
             cells_color = [[odd_row_color, even_row_color]*multiplier]
             cells_color.append(odd_row_color)
 
@@ -71,6 +95,12 @@ class OptimizationResultVisualizer():
 
 
     def plot_optimization_results(self):
+        """
+        Generates a plot visualizing the optimization results over generations.
+
+        Returns:
+            plotly.graph_objects.Figure
+        """
 
         fig = go.Figure()
 
@@ -111,7 +141,15 @@ class OptimizationResultVisualizer():
 
         return fig
 
+
     def plot_cost_func_contribs(self):
+        """
+        Generates a pie chart visualizing the contributions of different factors
+        to the cost function for the best design found by the genetic algorithm.
+
+        Returns:
+            plotly.graph_objects.Figure
+        """
 
         # Get the best design
         best_design = Member(optimization_params=self.opt_params,

@@ -42,6 +42,21 @@ class CompositePropertyPlotter():
 
 
     def get_all_possible_vol_frac_combos(self, num_fractions: int = 30):
+        """
+        Generates all possible volume fraction combinations for a given number of materials, 
+        ensuring that the sum of fractions equals 1. 
+
+        Args:
+            num_fractions (int, optional)
+
+        Returns:
+            all_vol_frac_combos (list of list of float)
+
+        Notes:
+            - The final material's volume fraction is computed by subtracting the sum of 
+              the previous fractions from 1 to ensure the total sum constraint.
+        """
+        
         all_vol_frac_ranges = []
         for _ in range(self.opt_params.num_materials - 1):
             all_vol_frac_ranges.append(list(np.linspace(0.01, 0.99, num_fractions)))
@@ -61,6 +76,24 @@ class CompositePropertyPlotter():
 
 
     def visualize_composite_eff_props(self, match, consolidated_dict: dict, num_fractions: int = 99):
+        """
+        Generates visualizations of effective properties for composite materials.
+
+        Args:
+            match (list)
+            - A list of material identifiers used to construct the composite.
+            consolidated_dict (dict)
+            - A dictionary containing material property values with keys as 
+              property names and values as lists of corresponding data.
+            num_fractions (int, optional)
+            - The number of discrete volume fraction values to consider.
+
+        Returns:
+            None
+
+        Notes:
+            - The function does not support visualization for single-phase or five-or-more-phase composites.
+        """
 
         # Too much computation to use the default for 4 phase, so reduce num_fractions
         if len(match) == 1:
@@ -145,6 +178,19 @@ class CompositePropertyPlotter():
 
 
     def visualize_composite_eff_props_2_phase(self, match, property, units, volume_fractions, effective_properties):
+        """
+        Generates a 2D line plot to visualize the effective properties of a two-phase composite. 
+
+        Args:
+            match (list)
+            property (str)
+            units (str)
+            volume_fractions (ndarray)
+            effective_properties (ndarray)
+
+        Returns:
+            fig (plotly.graph_objects.Figure)
+        """
 
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=volume_fractions[:, 0], y=effective_properties, mode="lines"))
@@ -165,6 +211,19 @@ class CompositePropertyPlotter():
 
 
     def visualize_composite_eff_props_3_phase(self, match, property, units, volume_fractions, effective_properties):
+        """
+        Generates a 3D surface plot to visualize the effective properties of a three-phase composite. 
+
+        Args:
+            match (list)
+            property (str)
+            units (str)
+            volume_fractions (ndarray)
+            effective_properties (ndarray)
+
+        Returns:
+            fig (plotly.graph_objects.Figure)
+        """
 
         phase1_vol_fracs = np.unique(volume_fractions[:, 0])
         phase2_vol_fracs = np.unique(volume_fractions[:, 1])
@@ -189,6 +248,19 @@ class CompositePropertyPlotter():
 
 
     def visualize_composite_eff_props_4_phase(self, match, property, units, volume_fractions, effective_properties):
+        """
+        Generates a 3D scatter plot to visualize the effective properties of a four-phase composite. 
+
+        Args:
+            match (list)
+            property (str)
+            units (str)
+            volume_fractions (ndarray)
+            effective_properties (ndarray)
+
+        Returns:
+            fig (plotly.graph_objects.Figure)
+        """
 
         phase1_vol_fracs = np.unique(volume_fractions[:, 0])
         phase2_vol_fracs = np.unique(volume_fractions[:, 1])

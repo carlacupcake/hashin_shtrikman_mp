@@ -1,9 +1,10 @@
 """test_genetic_algorithm_result.py"""
+import numpy as np
+
 from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_parameters import GeneticAlgorithmParams
 from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_result import GeneticAlgorithmResult
 from hashin_shtrikman_mp.core.genetic_algorithm.population import Population
 from hashin_shtrikman_mp.core.genetic_algorithm.optimization_params import OptimizationParams
-import numpy as np
 
 def test_genetic_algorithm_result_initialization():
     algo_params = GeneticAlgorithmParams()

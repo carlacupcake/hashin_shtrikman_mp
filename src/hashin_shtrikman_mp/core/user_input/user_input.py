@@ -21,6 +21,7 @@ class UserInput(BaseModel):
     materials: list[Material]
     mixtures: list[Mixture]
 
+
     def build_dict(self) -> dict:
         """
         Builds the desired dictionary structure from the materials and mixtures.
@@ -34,11 +35,13 @@ class UserInput(BaseModel):
 
         return result
 
+
     def items(self) -> Iterable:
         """
         Support dict-like .items() method for iteration.
         """
         return self.build_dict().items()
+
 
     def keys(self) -> Iterable:
         """
@@ -46,17 +49,20 @@ class UserInput(BaseModel):
         """
         return self.build_dict().keys()
 
+
     def values(self) -> Iterable:
         """
         Support dict-like .values() method for retrieving values.
         """
         return self.build_dict().values()
 
+
     def __len__(self) -> int:
         """
         Returns the length of the dictionary representation of the object.
         """
         return len(self.build_dict())
+
 
     def __iter__(self) -> Iterable:
         """
@@ -66,11 +72,13 @@ class UserInput(BaseModel):
         """
         return iter(self.build_dict().items())
 
+
     def __getitem__(self, key) -> Any:
         """
         Accesses an item from the dictionary representation of the object using the provided key.
         """
         return self.build_dict()[key]
+
 
     def __repr__(self) -> str:
         """
@@ -78,11 +86,13 @@ class UserInput(BaseModel):
         """
         return str(self.build_dict())
 
+
     def __str__(self) -> str:
         """
         Returns a string version of the UserInput object.
         """
         return str(self.build_dict())
+
 
     def get(self, key: str, default=None) -> Any:
         """

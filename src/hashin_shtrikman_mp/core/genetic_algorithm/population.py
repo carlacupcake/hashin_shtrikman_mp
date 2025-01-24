@@ -5,6 +5,7 @@ from .genetic_algorithm_parameters import GeneticAlgorithmParams
 from .member import Member
 from .optimization_params import OptimizationParams
 
+
 class Population:
     """
     Class to hold the population of members.
@@ -15,21 +16,10 @@ class Population:
 
     def __init__(self,
                  optimization_params: OptimizationParams,
-                 ga_params: GeneticAlgorithmParams,
-                 values: np.ndarray = None,
-                 costs: np.ndarray = None) -> None:
-        """
-        Parameters
-        ----------
-        optimization_params : OptimizationParams
-            _description_
-        ga_params : GeneticAlgorithmParams
-            _description_
-        values : _type_, optional
-            Matrix of values representing the population's properties., by default None
-        costs : _type_, optional
-            Array of costs associated with each member of the population., by default None
-        """
+                 ga_params:           GeneticAlgorithmParams,
+                 values:              np.ndarray = None,
+                 costs:               np.ndarray = None) -> None:
+
         self.opt_params = optimization_params
         self.ga_params = ga_params
 
@@ -45,23 +35,15 @@ class Population:
         if self.costs is None:
             self.costs = np.zeros((num_members, num_properties * num_materials))
 
+
     def get_unique_designs(self) -> "Population":
         """
         Retrieves the unique designs from the population based on their costs.
 
-        This function calculates the costs of all members in the population,
-        rounds the costs to three decimal places, and then identifies the unique designs
-        by selecting the members with unique rounded costs.
-        It returns the unique members and their corresponding costs.
-
-        Args:
-            None.
-
-        Returns
-        -------
+        Returns:
             list: A list containing two elements:
-                - A numpy array of unique population members corresponding to unique costs.
-                - A numpy array of unique costs for these members.
+            - unique_members (ndarray), unique population members corresponding to unique_costs.
+            - uniqie_costs (ndarray)
         """
         self.set_costs()
         final_costs = self.costs
@@ -72,24 +54,15 @@ class Population:
         unique_members = self.values[unique_indices]
         return [unique_members, unique_costs]
 
+
     def get_effective_properties(self) -> np.ndarray:
         """
         Calculates the effective properties for each member in the population.
 
-        This function iterates over all population members, creating a `Member` instance for each,
-        and retrieves the effective properties using the `get_effective_properties` method of the `Member` class.
-        The effective properties exclude the volume fraction, and are returned as an array where each row represents
-        the effective properties of one member.
-
-        Args:
-            None.
-
-        Returns
-        -------
-            np.ndarray: A 2D numpy array where each row contains the effective properties for
-                        a single member of the population. The number of columns corresponds to
-                        the number of material properties, excluding the volume fraction.
+        Returns:
+            self (Population)
         """
+
         population_values = self.values
         num_members = self.ga_params.num_members
         num_properties = self.opt_params.num_properties - 1 # do not include volume fraction
@@ -104,30 +77,23 @@ class Population:
 
         return all_effective_properties
 
+
     def set_random_values(self,
-                          lower_bounds: np.ndarray = None,
-                          upper_bounds: np.ndarray = None,
-                          start_member: int = 0,
+                          lower_bounds:           np.ndarray = None,
+                          upper_bounds:           np.ndarray = None,
+                          start_member:           int = 0,
                           indices_elastic_moduli: list = None) -> "Population":
         """
         Sets random values for the properties of each member in the population.
 
-        The function first initializes and processes the lower and upper bounds for the material properties.
-        It then fills in the population values randomly within these bounds. Additionally, if bulk modulus
-        and shear modulus are specified, the function ensures that these values are ordered correctly in each
-        member of the population. The volume fractions are also set to sum to 1, with each material’s volume
-        fraction being randomly selected within the bounds.
-
         Args:
-            lower_bounds (np.ndarray, optional)
-            upper_bounds (np.ndarray, optional)
-            start_member (int, optional): The index of the first member to update in the population. Defaults to 0.
-            indices_elastic_moduli (list, optional): A list containing the indices for bulk and shear moduli,
-                                                    used for ensuring proper ordering. Defaults to None.
+            lower_bounds (ndarray, optional)
+            upper_bounds (ndarray, optional)
+            start_member (int, optional): index of the first member to update in the population
+            indices_elastic_moduli (list, optional): ensures proper ordering.
 
         Returns
-        -------
-            Population: The instance of the population with updated property values for each member.
+            self (Population)
         """
         # Initialize bounds lists
         if indices_elastic_moduli is None:
@@ -219,21 +185,15 @@ class Population:
 
         return self
 
+
     def set_costs(self) -> "Population":
         """
         Calculates the costs for each member in the population.
 
-        This method iterates through each member in the population, calculates their individual cost using
-        the `get_cost` method from the `Member` class, and stores the resulting costs in the `self.costs` array.
-
-        Args:
-            None
-
-        Returns
-        -------
-            Population: The instance itself with the `self.costs` array
-                        populated with the calculated costs for each member.
+        Returns:
+            self (Population)
         """
+
         population_values = self.values
         num_members = self.ga_params.num_members
         costs = np.zeros(num_members)
@@ -246,19 +206,18 @@ class Population:
         self.costs = costs
         return self
 
+
     def set_order_by_costs(self, sorted_indices: np.ndarray = None) ->  "Population":
         """
         Reorders the population based on the sorted indices of costs.
 
         Args:
-            sorted_indices (numpy.ndarray)
+            sorted_indices (ndarray)
 
-        Returns
-        -------
-            Population: The instance itself with the `self.values`
-            array reordered according to `sorted_indices`.
-
+        Returns:
+            self (Population)
         """
+
         temporary = np.zeros((self.ga_params.num_members,
                               self.opt_params.num_properties * self.opt_params.num_materials))
         for i in range(len(sorted_indices)):
@@ -266,20 +225,17 @@ class Population:
         self.values = temporary
         return self
 
+
     def sort_costs(self) -> list:
         """
         Sorts the costs and returns the sorted values along with their corresponding indices.
 
-        Args:
-            None
-
-        Returns
-        -------
-            list: A list containing two arrays:
-                - The first element is a 1D or 2D array of sorted costs.
-                - The second element is a 1D or 2D array of indices that
-                  would sort the original `self.costs`.
+        Returns:
+            A list containing two arrays:
+            - sorted costs (ndarray)
+            - sorted_indices (ndarray), indices that would sort the original `self.costs`.
         """
+
         sorted_costs = np.sort(self.costs, axis=0)
         sorted_indices = np.argsort(self.costs, axis=0)
         return [sorted_costs, sorted_indices]

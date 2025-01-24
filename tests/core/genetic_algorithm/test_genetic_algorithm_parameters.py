@@ -1,7 +1,7 @@
 """test_genetic_algorithm_parameters.py"""
-from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_parameters import GeneticAlgorithmParams
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
+from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_parameters import GeneticAlgorithmParams
 
 # Test for default values
 def test_default_values():
@@ -17,6 +17,7 @@ def test_default_values():
     assert ga_params.tolerance          == 1.0
     assert ga_params.weight_eff_prop    == 1.0
     assert ga_params.weight_conc_factor == 1.0
+
 
 # Test for custom values
 def test_custom_values():
@@ -41,6 +42,7 @@ def test_custom_values():
     assert ga_params.tolerance          == 0.8
     assert ga_params.weight_eff_prop    == 1.5
     assert ga_params.weight_conc_factor == 2.0
+
 
 # Test for validation errors (invalid values)
 def test_invalid_values():
@@ -68,6 +70,7 @@ def test_invalid_values():
     with pytest.raises(ValidationError):
         GeneticAlgorithmParams(weight_conc_factor=-1.0)
 
+
 # Test for boundary values
 def test_boundary_values():
     # Test mixing_param on boundary (should be a float between 0 and 1)
@@ -80,6 +83,7 @@ def test_boundary_values():
     # Test tolerance at the boundary
     ga_params_tolerance = GeneticAlgorithmParams(tolerance=0.0)
     assert ga_params_tolerance.tolerance == 0.0
+
 
 # Test for missing required fields (should raise a ValidationError)
 def test_missing_required_fields():

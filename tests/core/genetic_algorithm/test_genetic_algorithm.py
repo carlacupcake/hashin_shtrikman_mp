@@ -1,12 +1,14 @@
 """test_genetic_algorithm.py"""
+import numpy as np
+import pytest
+
+from unittest.mock import MagicMock
+
 from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm import GeneticAlgorithm
 from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_parameters import GeneticAlgorithmParams
 from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_result import GeneticAlgorithmResult
 from hashin_shtrikman_mp.core.genetic_algorithm.population import Population
 from hashin_shtrikman_mp.core.user_input import UserInput
-import numpy as np
-import pytest
-from unittest.mock import MagicMock
 
 mock_num_parents     = 10
 mock_num_generations = 100

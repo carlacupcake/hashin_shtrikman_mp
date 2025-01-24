@@ -2,6 +2,7 @@
 from pydantic import BaseModel
 from .mixture_property import MixtureProperty
 
+
 class Mixture(BaseModel):
     """Represents an optimal mixture defined by a list of desired properties as MixturePropertys."""
 
