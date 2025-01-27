@@ -65,8 +65,8 @@ def test_visualize_composite_eff_props_2_phase(monkeypatch):
     """Test the visualize_composite_eff_props_2_phase method."""
 
     # Mock the show function to prevent displaying the figure
-    # Uncomment to display in browser
-    monkeypatch.setattr(go.Figure, "show", lambda self: None)
+    # Comment to display in browser
+    #monkeypatch.setattr(go.Figure, "show", lambda self: None)
     
     # Mock the CompositePropertyPlotter instance
     mock_plotter = MagicMock()
@@ -106,7 +106,7 @@ def test_visualize_composite_eff_props_3_phase(monkeypatch):
     """Test the visualize_composite_eff_props_3_phase method."""
 
     # Mock the show function to prevent displaying the figure
-    # Uncomment to display in browser
+    # Comment to display in browser
     monkeypatch.setattr(go.Figure, "show", lambda self: None)
     
     # Mock the CompositePropertyPlotter instance
@@ -155,8 +155,8 @@ def test_visualize_composite_eff_props_4_phase(monkeypatch):
     """Test the visualize_composite_eff_props_4_phase method."""
 
     # Mock the show function to prevent displaying the figure
-    # Uncomment to display in browser
-    monkeypatch.setattr(go.Figure, "show", lambda self: None)
+    # Comment to display in browser
+    #monkeypatch.setattr(go.Figure, "show", lambda self: None)
     
     # Mock the CompositePropertyPlotter instance
     mock_plotter = MagicMock()
