@@ -25,7 +25,7 @@ pip install .
 ### Documentation (🛑 under construction 🛑)
 Detailed documentation for this library can be found [here](https://mcgalcode.github.io/hashin_shtrikman_mp/)
 
-### Jupyter Notebook Examples (🛑 under construction 🛑)
+### Jupyter Notebook Examples
 Example notebooks are included in [examples](https://github.com/carlacupcake/hashin_shtrikman_mp/tree/master/examples).
 
 ### Implementation Notes
@@ -48,9 +48,9 @@ brew install mpi4py
 pip install mpi4py
 ```
 
-Then run: 🛑 <-- THIS SCRIPT NO LONGER EXISTS 🛑
+Then run:
 ```
-mpiexec -n 4 python orp_test.py
+mpiexec -n 4 python tests/integration/test_optimization_flow.py
 ```
 
 ---
@@ -86,10 +86,14 @@ mpiexec -n 4 python orp_test.py
 
 
 ***Phase Diagram of Thermal Conductivity for 2-phase Composite***
-![2phase](https://github.com/user-attachments/assets/00c7c051-f974-4437-9490-e08a6d8afc1c)
+
+<img width="597" alt="elec-cond-2phase-cursor" src="https://github.com/user-attachments/assets/654f2961-7d0a-43d6-aac7-33a42a55a2b3" />
 
 ***Phase Diagram of Thermal Conductivity for 3-phase Composite***
-![3phase](https://github.com/user-attachments/assets/a375ff79-1c54-463f-92a2-c294b96d159c)
+
+<img width="572" alt="elec-cond-3phase-cursor" src="https://github.com/user-attachments/assets/6e72dce5-76a2-4b12-94c3-d74de55978d6" />
 
 ***Phase Diagram of Thermal Conductivity for 4-phase Composite***
-![4phase](https://github.com/user-attachments/assets/df5b06fc-b64e-4ad4-82df-52c235211d62)
+
+<img width="563" alt="elec-cond-4phase-cursor" src="https://github.com/user-attachments/assets/a79f654d-d875-4c4d-8ee4-fa7b5a71ca86" />
+
