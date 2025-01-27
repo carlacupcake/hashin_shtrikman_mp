@@ -3,7 +3,7 @@ import sys
 import yaml
 
 from pathlib import Path
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel
 
 
 # Load valid properties from YAML file
@@ -26,13 +26,14 @@ for category, props in data.items():
 
 
 class MixtureProperty(BaseModel):
-    """Represents a target property for an optimized mixture."""
+    """
+    Represents a target property for an optimized mixture.
+    """
 
     prop: str
     desired_prop: float
 
-    @field_validator("prop")
-    def validate_prop(cls, value):
+    def validate_prop(self, value):
         if value not in valid_properties:
             raise ValueError(f"Invalid prop: {value}. Must be one of {valid_properties}")
         return value

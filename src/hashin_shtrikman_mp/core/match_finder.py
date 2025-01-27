@@ -22,31 +22,29 @@ MODULE_DIR = Path(__file__).resolve().parent
 
 np.seterr(divide="raise")
 
+
 class MatchFinder:
     """
     MatchFinder class for Hashin-Shtrikman optimization.
-
-    This class extends the HashinShtrikman class to include methods
-    for finding real materials in the MP database which match
-    (fictitious) materials recommended by the optimization.
     """
+
 
     def __init__(self,
                  ga_result: GeneticAlgorithmResult) -> None:
-        # Dump the optimizer's data into a dictionary
         self.optimization_params = ga_result.optimization_params
         self.optimized_population = ga_result.final_population
         self.ga_params = ga_result.algo_parameters
+
 
     def get_dict_of_best_designs(self) -> dict:
         """
         Constructs a dictionary containing the best designs found.
 
-        Eventually, we traverse a dictionary of materials from
-        the Materials Project database. We want to traverse the
-        best designs in a similar manner, so we must store the
-        best designs as a dictionary with the same structure.
+        Returns
+        -------
+            best_designs_dict (dict)
         """
+
         # Initialize dictionaries for each material based on selected property categories
         best_designs_dict = {}
         for m in range(1, self.optimization_params.num_materials + 1):
@@ -64,7 +62,9 @@ class MatchFinder:
         # Populate the dictionary with unique design values
         # The last num_materials entries are volume fractions, not material properties
         stop = -self.optimization_params.num_materials
-        step = self.optimization_params.num_properties - 1 # subtract 1 so as not to include volume fraction
+
+        # subtract 1 so as not to include volume fraction
+        step = self.optimization_params.num_properties - 1
 
         for i, _ in enumerate(unique_costs):
             idx = 0
@@ -77,25 +77,25 @@ class MatchFinder:
 
         return best_designs_dict
 
+
     def get_material_matches(self,
                              overall_bounds_dict: dict = None,
                              consolidated_dict: dict = None,
                              threshold: float = 1) -> dict:
-        """Identifies materials in the MP database which match those recommended by the optimization.
+        """
+        Identifies materials in the MP database which match those recommended by the optimization.
 
-        Parameters
-        ----------
-        overall_bounds_dict : dict, optional
-            _description_, by default None
-        consolidated_dict : dict, optional
-            _description_, by default None
-        threshold : float, optional
-            Should be between 0 and 1, by default 1
+        Args:
+            overall_bounds_dict (dict, optional)
+            consolidated_dict (dict, optional)
+            threshold (float, optional)
+            - Should be between 0 and 1, by default 1
 
         Returns
         -------
-        _type_
-            _description_
+            final_matching_materials (dict)
+            - Keys are fake materials recommended by the genetic algorithm
+            - Values are mp-ids of real materials
         """
         # Make sure overall_bounds_dict is defined
         if overall_bounds_dict is None:
@@ -171,26 +171,41 @@ class MatchFinder:
 
         Once real materials have been identified, we must calculate
         which volume fraction combinations are 'best' for the composite.
-        """
-        all_vol_frac_ranges = [list(np.linspace(0.01, 0.99, num_fractions))
-                               for _ in range(self.optimization_params.num_materials - 1)]
 
-        all_vol_frac_combos = []
-        all_vol_frac_combo_tups = list(itertools.product(*all_vol_frac_ranges))
-        for vol_frac_tup in all_vol_frac_combo_tups:
-            new_combo = []
-            new_element = 1.0
-            for element in vol_frac_tup:
-                new_combo.append(element)
-                new_element = max(new_element - element, 0.0)
-            new_combo.append(new_element)
-            all_vol_frac_combos.append(new_combo)
+        Args:
+            num_fractions (int)
+
+        Returns
+        -------
+            all_vol_frac_combos (list)
+        """
+
+        spacing = np.linspace(0.0, 1.0, num_fractions + 1)
+        combinations = itertools.product(spacing, repeat=self.optimization_params.num_materials)
+
+        # Convert to set to ensure uniqueness, tuples are hashable
+        unique_combos = {tuple(combo) for combo in combinations if np.isclose(sum(combo), 1)}
+
+        # Convert tuples back to lists
+        all_vol_frac_combos = [list(combo) for combo in unique_combos]
 
         return all_vol_frac_combos
 
     def generate_consolidated_dict(self, overall_bounds_dict: dict = None) -> dict:
-        """MAIN FUNCTION USED TO GENERATE MATERIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST."""
-        print(f"overall_bounds_dict: {overall_bounds_dict}")
+        """
+        MAIN FUNCTION USED TO GENERATE MATERIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST.
+        
+        Args:
+            overall_bounds_dict (dict)
+            - Dictionary of upper and lower bounds for material search
+            - User-defined
+
+        Returns
+        -------
+            consolidated_dict (dict)
+            - mp-ids with properties which match the bounds criteria
+        """
+
         # Base query initialization
         if overall_bounds_dict is None:
             overall_bounds_dict = {}
@@ -249,7 +264,7 @@ class MatchFinder:
             # Check if the category is present in self.optimization_params.property_categories
             if category in self.optimization_params.property_categories:
                 for prop, subprop in properties.items():
-                    # If there's a subproperty (e.g., voigt for bulk_modulus), append the subproperty
+                    # Append if there's a subproperty (e.g., voigt for bulk_modulus)
                     if isinstance(subprop, str):
                         result_dict[f"{prop}_{subprop}"] = []
                     else:
@@ -265,7 +280,8 @@ class MatchFinder:
             result_dict["material_id"].append(material.material_id)
             result_dict["formula_pretty"].append(material.formula_pretty)
 
-            # Define a mapping between query keys and result_dict keys and their corresponding material attributes
+            # Define a mapping between query keys and result_dict keys
+            # and their corresponding material attributes
             property_map = {
                 "k_vrh": ("bulk_modulus_vrh",
                           "bulk_modulus",
@@ -312,12 +328,15 @@ class MatchFinder:
         formula_pretty_length = len(result_dict["formula_pretty"])
 
         # Filter out incomplete or empty lists that don't need sorting
-        non_empty_keys = [key for key in result_dict if len(result_dict[key]) == formula_pretty_length]
+        non_empty_keys = [key for key in result_dict
+                          if len(result_dict[key]) == formula_pretty_length]
 
         # Sort the result_dict by ascending order of material_id for non-empty lists
-        sorted_indices = sorted(range(formula_pretty_length), key=lambda i: result_dict["formula_pretty"][i])
+        sorted_indices = sorted(range(formula_pretty_length),
+                                key=lambda i: result_dict["formula_pretty"][i])
 
-        # Re-arrange all the properties in result_dict based on the sorted indices, but only for non-empty lists
+        # Re-arrange all the properties in result_dict based on the sorted indices,
+        # but only for non-empty lists
         for key in non_empty_keys:
             result_dict[key] = [result_dict[key][i] for i in sorted_indices]
 
@@ -338,7 +357,8 @@ class MatchFinder:
                 if prop in ["elec_cond_300k_low_doping", "therm_cond_300k_low_doping"]:
                     # Proceed if 'upper_bound' and 'lower_bound' exist for the property
                     if "upper_bound" in bounds and "lower_bound" in bounds:
-                        query_carrier_transport[prop] = (bounds["lower_bound"], bounds["upper_bound"])
+                        query_carrier_transport[prop] = (bounds["lower_bound"],
+                                                         bounds["upper_bound"])
 
             tables = client.query_contributions(
                 {"project":"carrier_transport",
@@ -356,11 +376,11 @@ class MatchFinder:
             # corresponding to the material_id as None
             # Iterate over the tables returned and map the data to the result_dict
             for table in tables["data"]:
-                #print(f"Table: {table}")
                 material_id = table["identifier"]  # Material ID from the table
-                if material_id in result_dict["material_id"]:  # Only map for materials already in result_dict
+
+                # Only map for materials already in result_dict
+                if material_id in result_dict["material_id"]:
                     index = result_dict["material_id"].index(material_id)
-                    #print(f"Index: {index}")
 
                     # Access the electrical conductivity and thermal conductivity values
                     sigma_value = table["data"]["sigma"]["p"]["value"]  # Electrical conductivity
@@ -379,7 +399,8 @@ class MatchFinder:
                 for key in result_dict:
                     result_dict[key].pop(i)
 
-            # Change the key name of bulk_modulus_vrh to bulk_modulus & shear_modulus_vrh to shear_modulus
+            # Change the key name of bulk_modulus_vrh to bulk_modulus
+            # & shear_modulus_vrh to shear_modulus
             if "bulk_modulus_vrh" in result_dict:
                 result_dict["bulk_modulus"] = result_dict.pop("bulk_modulus_vrh")
             if "shear_modulus_vrh" in result_dict:
@@ -387,7 +408,8 @@ class MatchFinder:
 
         # Save the consolidated results to a JSON file
         now = datetime.now()
-        my_file_name = f"{MODULE_DIR}/../io/outputs/consolidated_dict_" + now.strftime("%m_%d_%Y_%H_%M_%S")
+        my_file_name = f"{MODULE_DIR}/../io/outputs/consolidated_dict_" \
+                       + now.strftime("%m_%d_%Y_%H_%M_%S")
         with open(my_file_name, "w") as my_file:
             json.dump(result_dict, my_file)
 
@@ -399,7 +421,15 @@ class MatchFinder:
         """
         Evaluates the 'real' candidate composites.
 
-        Performs this evaluationm using the same cost function used in the optimization process.
+        Args:
+            matches_dict (dict)
+            consolidated_dict (dict)
+
+        Returns
+        -------
+            go.Figure
+            - A table of the matches and their costs as evaluated by
+              the genetic algorithm
         """
         if consolidated_dict is None:
             consolidated_dict = {}
@@ -443,20 +473,19 @@ class MatchFinder:
             population_values = np.tile(material_values, (len(all_vol_frac_combos),1))
 
             # Vary the volume fractions across the population
-            volume_fractions = np.array(all_vol_frac_combos).reshape(len(all_vol_frac_combos),
-                                                                         self.optimization_params.num_materials)
+            num_vol_frac_combos = len(all_vol_frac_combos)
+            num_materials = self.optimization_params.num_materials
+            volume_fractions = np.array(all_vol_frac_combos).reshape(num_vol_frac_combos,
+                                                                     num_materials)
 
             # Include the random mixing parameters and volume fractions in the population
             values = np.c_[population_values, volume_fractions]
 
             # Instantiate the population and find the best performers
-            population = Population(num_materials=self.optimization_params.num_materials,
+            population = Population(optimization_params=self.optimization_params,
+                                    ga_params=self.ga_params,
                                     num_properties=self.optimization_params.num_properties,
-                                    values=values,
-                                    property_categories=self.optimization_params.property_categories,
-                                    property_docs=self.optimization_params.property_docs,
-                                    desired_props=self.optimization_params.desired_props,
-                                    ga_params=self.ga_params)
+                                    values=values)
             population.set_costs()
             [sorted_costs, sorted_indices] = population.sort_costs()
             population.set_order_by_costs(sorted_indices)
@@ -510,8 +539,8 @@ class MatchFinder:
                 font=dict(size=12),
                 height=30
             ),
-            cells=dict(
-                values=[list(col) for col in zip(*top_rows, strict=False)],  # Transpose top_rows to get columns
+            cells=dict( # Transpose top_rows to get columns
+                values=[list(col) for col in zip(*top_rows, strict=False)],
                 fill_color=cells_color,
                 align="left",
                 font=dict(size=12),

@@ -49,7 +49,8 @@ class Member:
         # Extract attributes from self
         tolerance          = self.ga_params.tolerance / self.opt_params.num_materials
         weight_eff_prop    = 1/(self.opt_params.num_materials)
-        weight_conc_factor = 1/(2 * (self.opt_params.num_properties - 1) * self.opt_params.num_materials)
+        weight_conc_factor = 1/(2 * (self.opt_params.num_properties - 1) * \
+                                self.opt_params.num_materials)
         weight_domains     = 1/(2 * len(self.opt_params.property_categories))
 
         # Initialize effective property, concentration factor, and weight arrays
@@ -100,9 +101,11 @@ class Member:
 
         # Assemble the cost function
         costs_eff_props = abs(np.divide(des_props - effective_properties, effective_properties))
-        costs_cfs = np.multiply(cost_func_weights, abs(np.divide(concentration_factors - tolerance, tolerance)))
+        costs_cfs = np.multiply(cost_func_weights,
+                                abs(np.divide(concentration_factors - tolerance, tolerance)))
 
-        cost = weight_domains * (weight_eff_prop * np.sum(costs_eff_props) + weight_conc_factor * np.sum(costs_cfs))
+        cost = weight_domains * (weight_eff_prop * np.sum(costs_eff_props) + \
+                                 weight_conc_factor * np.sum(costs_cfs))
 
         if include_cost_breakdown:
             return cost, costs_eff_props, costs_cfs
@@ -161,35 +164,35 @@ class Member:
                            {},
                            {"phase_n": phase_n})
 
-        A1 = 0
+        a_1 = 0
         for i in range(1, self.opt_params.num_materials):
             phase_i_vol_frac = sorted_vol_fracs[i]
             phase_i = sorted_properties[i]
             if phase_1 == phase_i:
-                A1_term_i = 0
+                a_1_term_i = 0
             else:
-                A1_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["A1_term_i"],
-                                 {},
-                                 {"phase_1":          phase_1,
-                                  "phase_i":          phase_i,
-                                  "phase_i_vol_frac": phase_i_vol_frac,
-                                  "alpha_1":          alpha_1})
-            A1 += A1_term_i
+                a_1_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["a_1_term_i"],
+                                  {},
+                                  {"phase_1":          phase_1,
+                                   "phase_i":          phase_i,
+                                   "phase_i_vol_frac": phase_i_vol_frac,
+                                   "alpha_1":          alpha_1})
+            a_1 += a_1_term_i
 
-        An = 0
+        a_n = 0
         for i in range(self.opt_params.num_materials - 1):
             phase_i_vol_frac = sorted_vol_fracs[i]
             phase_i = sorted_properties[i]
             if phase_i == phase_n:
-                An_term_i = 0
+                a_n_term_i = 0
             else:
-                An_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["An_term_i"],
-                                 {},
-                                 {"phase_n":          phase_n,
-                                  "phase_i":          phase_i,
-                                  "phase_i_vol_frac": phase_i_vol_frac,
-                                  "alpha_n":          alpha_n})
-            An += An_term_i
+                a_n_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["a_n_term_i"],
+                                  {},
+                                 {"phase_n":           phase_n,
+                                   "phase_i":          phase_i,
+                                   "phase_i_vol_frac": phase_i_vol_frac,
+                                   "alpha_n":          alpha_n})
+            a_n += a_n_term_i
 
         # Compute effective property bounds with Hashin-Shtrikman
         if phase_1 == phase_n:
@@ -201,13 +204,13 @@ class Member:
                                       {"phase_1": phase_1,
                                        "phase_n": phase_n,
                                        "alpha_1": alpha_1,
-                                       "A1":      A1})
+                                       "a_1":     a_1})
             effective_prop_max = eval(COMPILED_CALC_GUIDE["effective_props"]["eff_max"],
                                       {},
                                       {"phase_1": phase_1,
                                        "phase_n": phase_n,
                                        "alpha_n": alpha_n,
-                                       "An":      An})
+                                       "a_n":     a_n})
 
         mixing_param = self.ga_params.mixing_param
         effective_prop = mixing_param * effective_prop_max + (1 - mixing_param) * effective_prop_min
@@ -225,17 +228,21 @@ class Member:
             else:
                 # if cf_load_i has div by zero error, then set cf_load_i to 0
                 try:
-                    cf_load_i = eval(COMPILED_CALC_GUIDE["concentration_factors"]["cf_load_i"],
-                                     {},
-                                     {"phase_1":          phase_1,
-                                      "phase_i":          phase_i,
-                                      "phase_i_vol_frac": phase_i_vol_frac,
-                                      "eff_prop":         effective_prop})
-                    cf_response_i = eval(COMPILED_CALC_GUIDE["concentration_factors"]["cf_response_i"],
-                                         {},
-                                         {"phase_i":   phase_i,
-                                          "cf_load_i": cf_load_i,
-                                          "eff_prop":  effective_prop})
+                    cf_load_i = eval(
+                        COMPILED_CALC_GUIDE["concentration_factors"]["cf_load_i"],
+                        {},
+                        {"phase_1":          phase_1,
+                         "phase_i":          phase_i,
+                         "phase_i_vol_frac": phase_i_vol_frac,
+                         "eff_prop":         effective_prop}
+                    )
+                    cf_response_i = eval(
+                        COMPILED_CALC_GUIDE["concentration_factors"]["cf_response_i"],
+                        {},
+                        {"phase_i":   phase_i,
+                         "cf_load_i": cf_load_i,
+                         "eff_prop":  effective_prop}
+                    )
                 except FloatingPointError:
                     cf_load_i = 0
                     cf_response_i = 0
@@ -320,7 +327,7 @@ class Member:
                                  {"phase_1_bulk":  phase_1_bulk,
                                   "phase_1_shear": phase_1_shear})
         if (phase_n_bulk == 0) and (phase_n_shear == 0):
-            bulk_alpha_1 = 0
+            bulk_alpha_n = 0
         else:
             bulk_alpha_n  = eval(COMPILED_CALC_GUIDE["effective_props"]["bulk_alpha_n"],
                                  {},
@@ -341,61 +348,61 @@ class Member:
                                  {"phase_n_bulk":  phase_n_bulk,
                                   "phase_n_shear": phase_n_shear})
 
-        A1_bulk = 0
-        A1_shear = 0
+        a_1_bulk = 0
+        a_1_shear = 0
         for i in range(1, self.opt_params.num_materials):
             phase_i_vol_frac = sorted_vol_fracs[i]
             phase_i_bulk = sorted_bulk[i]
             if phase_1_bulk == phase_i_bulk:
-                A1_term_i = 0
+                a_1_term_i = 0
             else:
-                A1_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["A1_term_i"],
-                                 {},
-                                 {"phase_1":          phase_1_bulk,
-                                  "phase_i":          phase_i_bulk,
-                                  "phase_i_vol_frac": phase_i_vol_frac,
-                                  "alpha_1":          bulk_alpha_1})
-            A1_bulk += A1_term_i
+                a_1_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["a_1_term_i"],
+                                  {},
+                                  {"phase_1":          phase_1_bulk,
+                                   "phase_i":          phase_i_bulk,
+                                   "phase_i_vol_frac": phase_i_vol_frac,
+                                   "alpha_1":          bulk_alpha_1})
+            a_1_bulk += a_1_term_i
 
             phase_i_shear = sorted_shear[i]
             if phase_1_shear == phase_i_shear:
-                A1_term_i = 0
+                a_1_term_i = 0
             else:
-                A1_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["A1_term_i"],
-                                 {},
-                                 {"phase_1":          phase_1_shear,
-                                  "phase_i":          phase_i_shear,
-                                  "phase_i_vol_frac": phase_i_vol_frac,
-                                  "alpha_1":          shear_alpha_1})
-            A1_shear += A1_term_i
+                a_1_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["a_1_term_i"],
+                                  {},
+                                  {"phase_1":          phase_1_shear,
+                                   "phase_i":          phase_i_shear,
+                                   "phase_i_vol_frac": phase_i_vol_frac,
+                                   "alpha_1":          shear_alpha_1})
+            a_1_shear += a_1_term_i
 
-        An_bulk = 0
-        An_shear = 0
+        a_n_bulk = 0
+        a_n_shear = 0
         for i in range(self.opt_params.num_materials - 1):
             phase_i_vol_frac = sorted_vol_fracs[i]
             phase_i_bulk = sorted_bulk[i]
             if phase_i_bulk == phase_n_bulk:
-                An_term_i = 0
+                a_n_term_i = 0
             else:
-                An_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["An_term_i"],
-                                 {},
-                                 {"phase_n":          phase_n_bulk,
-                                  "phase_i":          phase_i_bulk,
-                                  "phase_i_vol_frac": phase_i_vol_frac,
-                                  "alpha_n":          bulk_alpha_n})
-            An_bulk += An_term_i
+                a_n_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["a_n_term_i"],
+                                  {},
+                                  {"phase_n":          phase_n_bulk,
+                                   "phase_i":          phase_i_bulk,
+                                   "phase_i_vol_frac": phase_i_vol_frac,
+                                   "alpha_n":          bulk_alpha_n})
+            a_n_bulk += a_n_term_i
 
             phase_i_shear = sorted_shear[i]
             if phase_i_shear == phase_n_shear:
-                An_term_i = 0
+                a_n_term_i = 0
             else:
-                An_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["An_term_i"],
-                                 {},
-                                 {"phase_n":          phase_n_shear,
-                                  "phase_i":          phase_i_shear,
-                                  "phase_i_vol_frac": phase_i_vol_frac,
-                                  "alpha_n":          shear_alpha_n})
-            An_shear += An_term_i
+                a_n_term_i = eval(COMPILED_CALC_GUIDE["effective_props"]["a_n_term_i"],
+                                  {},
+                                  {"phase_n":          phase_n_shear,
+                                   "phase_i":          phase_i_shear,
+                                   "phase_i_vol_frac": phase_i_vol_frac,
+                                   "alpha_n":          shear_alpha_n})
+            a_n_shear += a_n_term_i
 
         # Compute effective bulk modulus bounds with Hashin-Shtrikman
         if phase_1_bulk == phase_n_bulk:
@@ -403,16 +410,17 @@ class Member:
             effective_bulk_max = phase_n_bulk
         else:
             effective_bulk_min = eval(COMPILED_CALC_GUIDE["effective_props"]["eff_min"],
-                                      {}, {"phase_1": phase_1_bulk,
-                                           "phase_n": phase_n_bulk,
-                                           "alpha_1": bulk_alpha_1,
-                                           "A1":      A1_bulk})
+                                      {},
+                                      {"phase_1": phase_1_bulk,
+                                       "phase_n": phase_n_bulk,
+                                       "alpha_1": bulk_alpha_1,
+                                       "a_1":     a_1_bulk})
             effective_bulk_max = eval(COMPILED_CALC_GUIDE["effective_props"]["eff_max"],
                                       {},
                                       {"phase_1": phase_1_bulk,
                                        "phase_n": phase_n_bulk,
                                        "alpha_n": bulk_alpha_n,
-                                       "An":      An_bulk})
+                                       "a_n":     a_n_bulk})
 
         # Compute effective shear modulus bounds with Hashin-Shtrikman
         if phase_1_bulk == phase_n_bulk:
@@ -424,19 +432,21 @@ class Member:
                                        {"phase_1": phase_1_shear,
                                         "phase_n": phase_n_shear,
                                         "alpha_1": shear_alpha_1,
-                                        "A1":      A1_shear})
+                                        "a_1":     a_1_shear})
             effective_shear_max = eval(COMPILED_CALC_GUIDE["effective_props"]["eff_max"],
                                        {},
                                        {"phase_1": phase_1_shear,
                                         "phase_n": phase_n_shear,
                                         "alpha_n": shear_alpha_n,
-                                        "An":      An_shear})
+                                        "a_n":     a_n_shear})
 
         # Compute concentration factors for load sharing
         mixing_param = self.ga_params.mixing_param
-        effective_bulk  = mixing_param * effective_bulk_max +  (1 - mixing_param) * effective_bulk_min
+        effective_bulk  = mixing_param * effective_bulk_max +  \
+                          (1 - mixing_param) * effective_bulk_min
         effective_properties.append(effective_bulk)
-        effective_shear = mixing_param * effective_shear_max + (1 - mixing_param) * effective_shear_min
+        effective_shear = mixing_param * effective_shear_max + \
+                          (1 - mixing_param) * effective_shear_min
         effective_properties.append(effective_shear)
 
         vf_weighted_sum_cf_bulk_i = 0
@@ -520,7 +530,7 @@ class Member:
 
             else:
                 # Loop through all properties in the category
-                for p in range(idx, idx + len(self.opt_params.property_docs[category])): 
+                for p in range(idx, idx + len(self.opt_params.property_docs[category])):
                     new_eff_props, _ = self.get_general_eff_prop_and_cfs(idx=p)
                     effective_properties.extend(new_eff_props)
 

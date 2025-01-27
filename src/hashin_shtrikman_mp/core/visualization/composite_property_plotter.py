@@ -8,6 +8,7 @@ import plotly.graph_objects as go
 import yaml
 
 from pathlib import Path
+from scipy.interpolate import griddata
 
 from ..genetic_algorithm import GeneticAlgorithmResult, Population
 
@@ -43,39 +44,33 @@ class CompositePropertyPlotter():
 
     def get_all_possible_vol_frac_combos(self, num_fractions: int = 30):
         """
-        Generates all possible volume fraction combinations for a given number of materials, 
+        Generates all possible unique volume fraction combinations for a given number of materials, 
         ensuring that the sum of fractions equals 1. 
 
         Args:
             num_fractions (int, optional)
 
-        Returns:
+        Returns
+        -------
             all_vol_frac_combos (list of list of float)
-
-        Notes:
-            - The final material's volume fraction is computed by subtracting the sum of 
-              the previous fractions from 1 to ensure the total sum constraint.
         """
-        
-        all_vol_frac_ranges = []
-        for _ in range(self.opt_params.num_materials - 1):
-            all_vol_frac_ranges.append(list(np.linspace(0.01, 0.99, num_fractions)))
 
-        all_vol_frac_combos = []
-        all_vol_frac_combo_tups = list(itertools.product(*all_vol_frac_ranges))
-        for vol_frac_tup in all_vol_frac_combo_tups:
-            new_combo = []
-            new_element = 1.0
-            for element in vol_frac_tup:
-                new_combo.append(element)
-                new_element = new_element - element
-            new_combo.append(new_element)
-            all_vol_frac_combos.append(new_combo)
-  
+        spacing = np.linspace(0.0, 1.0, num_fractions + 1)
+        combinations = itertools.product(spacing, repeat=self.opt_params.num_materials)
+
+        # Convert to set to ensure uniqueness, tuples are hashable
+        unique_combos = {tuple(combo) for combo in combinations if np.isclose(sum(combo), 1)}
+
+        # Convert tuples back to lists
+        all_vol_frac_combos = [list(combo) for combo in unique_combos]
+
         return all_vol_frac_combos
 
 
-    def visualize_composite_eff_props(self, match, consolidated_dict: dict, num_fractions: int = 99):
+    def visualize_composite_eff_props(self,
+                                      match,
+                                      consolidated_dict: dict,
+                                      num_fractions: int = 49):
         """
         Generates visualizations of effective properties for composite materials.
 
@@ -88,21 +83,27 @@ class CompositePropertyPlotter():
             num_fractions (int, optional)
             - The number of discrete volume fraction values to consider.
 
-        Returns:
+        Returns
+        -------
             None
 
         Notes:
-            - The function does not support visualization for single-phase or five-or-more-phase composites.
+            - The function does not support visualization for 
+              single-phase or five-or-more-phase composites.
         """
 
         # Too much computation to use the default for 4 phase, so reduce num_fractions
         if len(match) == 1:
-            warnings.warn(UserWarning("No visualizations available for single materials (not a composite)."))
+            warnings.warn(UserWarning(
+                "No visualizations available for single materials (not a composite)."
+                ))
             return
         if len(match) == 4:
             num_fractions = 20
         if len(match) > 4:
-            warnings.warn(UserWarning("No visualizations available for composites with 5 or more phases."))
+            warnings.warn(UserWarning(
+                "No visualizations available for composites with 5 or more phases."
+                ))
             return
 
         all_vol_frac_combos = self.get_all_possible_vol_frac_combos(num_fractions=num_fractions)
@@ -116,21 +117,19 @@ class CompositePropertyPlotter():
                         material_values.append(consolidated_dict[property][m])
 
         # Create population of same properties for all members based on material match combination
-        population_values = np.tile(material_values, (len(all_vol_frac_combos),1))
+        population_values = np.tile(material_values, (len(all_vol_frac_combos), 1))
 
         # Only the vary the volume fractions across the population
-        # Create uniform volume fractions from 0 to 1 with a spacing of 0.02 but with a shape of self.ga_params.get_num_members() & 1
-        volume_fractions = np.array(all_vol_frac_combos).reshape(len(all_vol_frac_combos), self.opt_params.num_materials)
+        # Create uniform volume fractions from 0 to 1 with a spacing of 1/num_fractions
+        volume_fractions = np.array(all_vol_frac_combos).reshape(len(all_vol_frac_combos),
+                                                                 self.opt_params.num_materials)
 
         # Include the random mixing parameters and volume fractions in the population
         values = np.c_[population_values, volume_fractions]
 
         # Instantiate the population and find the best performers
-        # For 2 phases and x volume fractions, there are x   possible volume fraction combinations
-        # For 3 phases and x volume fractions, there are x^2 possible volume fraction combinations
-        # for 4 phases and x volume fractions, there are x^3 possible volume fraction combinations
         this_pop_ga_params = self.ga_params
-        this_pop_ga_params.num_members = num_fractions**(len(match) - 1)
+        this_pop_ga_params.num_members = len(all_vol_frac_combos)#num_fractions**(len(match) - 1)
         population = Population(optimization_params=self.opt_params,
                                 values=values,
                                 ga_params=this_pop_ga_params)
@@ -160,24 +159,43 @@ class CompositePropertyPlotter():
 
         for i, property_string in enumerate(property_strings):
 
-            property = extract_property(property_string)
+            prop = extract_property(property_string)
             units = extract_units(property_string)
             effective_properties = all_effective_properties[:, i]
 
             if len(match) == 2:
-                self.visualize_composite_eff_props_2_phase(match, property, units, volume_fractions, effective_properties)
+                self.visualize_composite_eff_props_2_phase(match,
+                                                           prop,
+                                                           units,
+                                                           volume_fractions,
+                                                           effective_properties)
             elif len(match) == 3:
-                self.visualize_composite_eff_props_3_phase(match, property, units, volume_fractions, effective_properties)
+                self.visualize_composite_eff_props_3_phase(match,
+                                                           prop,
+                                                           units,
+                                                           volume_fractions,
+                                                           effective_properties)
             elif len(match) == 4:
-                self.visualize_composite_eff_props_4_phase(match, property, units, volume_fractions, effective_properties)
+                self.visualize_composite_eff_props_4_phase(match,
+                                                           prop,
+                                                           units,
+                                                           volume_fractions,
+                                                           effective_properties)
             else:
-                warnings.warn("No visualizations available for composites with 5 or more phases.")
+                warnings.warn(
+                    f"No visualizations available for composites with {len(match)} phase(s)."
+                )
                 return
 
         return
 
 
-    def visualize_composite_eff_props_2_phase(self, match, property, units, volume_fractions, effective_properties):
+    def visualize_composite_eff_props_2_phase(self,
+                                              match,
+                                              prop,
+                                              units,
+                                              volume_fractions,
+                                              effective_properties):
         """
         Generates a 2D line plot to visualize the effective properties of a two-phase composite. 
 
@@ -188,17 +206,24 @@ class CompositePropertyPlotter():
             volume_fractions (ndarray)
             effective_properties (ndarray)
 
-        Returns:
+        Returns
+        -------
             fig (plotly.graph_objects.Figure)
         """
 
+        sorted_indices = np.argsort(volume_fractions[:, 0])
+        sorted_volume_fractions = volume_fractions[sorted_indices]
+        sorted_effective_properties = effective_properties[sorted_indices]
+
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=volume_fractions[:, 0], y=effective_properties, mode="lines"))
+        fig.add_trace(go.Scatter(x=sorted_volume_fractions[:, 0],
+                                 y=sorted_effective_properties,
+                                 mode="lines"))
 
         fig.update_layout(
             xaxis_title=f"Volume fraction, {match[0]}",
             yaxis_title=f"{units}",
-            title=f"{property}\n{match}",
+            title=f"{prop}\n{match}",
             title_font_size=24,
             xaxis_title_font_size=20,
             yaxis_title_font_size=20,
@@ -210,9 +235,15 @@ class CompositePropertyPlotter():
         return fig
 
 
-    def visualize_composite_eff_props_3_phase(self, match, property, units, volume_fractions, effective_properties):
+    def visualize_composite_eff_props_3_phase(self,
+                                              match,
+                                              prop,
+                                              units,
+                                              volume_fractions,
+                                              effective_properties):
         """
-        Generates a 3D surface plot to visualize the effective properties of a three-phase composite. 
+        Generates a 3D surface plot to visualize the effective properties
+        of a three-phase composite. 
 
         Args:
             match (list)
@@ -221,16 +252,16 @@ class CompositePropertyPlotter():
             volume_fractions (ndarray)
             effective_properties (ndarray)
 
-        Returns:
+        Returns
+        -------
             fig (plotly.graph_objects.Figure)
         """
 
-        phase1_vol_fracs = np.unique(volume_fractions[:, 0])
-        phase2_vol_fracs = np.unique(volume_fractions[:, 1])
-        X, Y = np.meshgrid(phase1_vol_fracs, phase2_vol_fracs)
-        Z = effective_properties.reshape(len(phase1_vol_fracs), len(phase2_vol_fracs))
+        # Interpolate scattered effective property data to grid
+        x_data, y_data = np.mgrid[0:1:100j, 0:1:100j]
+        z_data = griddata(volume_fractions[:, 0:-1], effective_properties, (x_data, y_data), method='linear')
 
-        fig = go.Figure(data=[go.Surface(z=Z, x=X, y=Y, colorscale="Viridis")])
+        fig = go.Figure(data=[go.Surface(z=z_data, x=x_data, y=y_data, colorscale="Viridis")])
 
         fig.update_layout(
             scene=dict(
@@ -238,7 +269,7 @@ class CompositePropertyPlotter():
                 yaxis_title=f"Volume fraction, {match[1]}",
                 zaxis_title=f"{units}",
             ),
-            title=f"{property}\n{match}",
+            title=f"{prop}\n{match}",
             width=600,
             height=600,
             margin=dict(l=50, r=50, t=50, b=50)
@@ -247,7 +278,12 @@ class CompositePropertyPlotter():
         return fig
 
 
-    def visualize_composite_eff_props_4_phase(self, match, property, units, volume_fractions, effective_properties):
+    def visualize_composite_eff_props_4_phase(self,
+                                              match,
+                                              prop,
+                                              units,
+                                              volume_fractions,
+                                              effective_properties):
         """
         Generates a 3D scatter plot to visualize the effective properties of a four-phase composite. 
 
@@ -258,33 +294,26 @@ class CompositePropertyPlotter():
             volume_fractions (ndarray)
             effective_properties (ndarray)
 
-        Returns:
+        Returns
+        -------
             fig (plotly.graph_objects.Figure)
         """
 
-        phase1_vol_fracs = np.unique(volume_fractions[:, 0])
-        phase2_vol_fracs = np.unique(volume_fractions[:, 1])
-        phase3_vol_fracs = np.unique(volume_fractions[:, 2])
-        X, Y, Z = np.meshgrid(phase1_vol_fracs, phase2_vol_fracs, phase3_vol_fracs)
-        X_flat = X.flatten()
-        Y_flat = Y.flatten()
-        Z_flat = Z.flatten()
-
+        # Create a 3D surface plot
         fig = go.Figure()
-
-        fig.add_trace(go.Scatter3d(
-            x=X_flat,
-            y=Y_flat,
-            z=Z_flat,
+        fig = go.Figure(data=[go.Scatter3d(
+            x=volume_fractions[:, 0],
+            y=volume_fractions[:, 1],
+            z=volume_fractions[:, 2],
             mode="markers",
             marker=dict(
                 size=5,
-                color=effective_properties.flatten(),
+                color=effective_properties,
                 colorscale="Viridis",
                 colorbar=dict(title=f"{units}"),
                 opacity=0.8
             )
-        ))
+        )])
 
         fig.update_layout(
             scene=dict(
@@ -292,7 +321,7 @@ class CompositePropertyPlotter():
                 yaxis_title=f"Volume fraction, {match[1]}",
                 zaxis_title=f"Volume fraction, {match[2]}",
             ),
-            title=f"{property}\n{match}",
+            title=f"{prop}\n{match}",
             title_font_size=14,
             width=600,
             height=600,

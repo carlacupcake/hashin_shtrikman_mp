@@ -6,14 +6,7 @@ from .optimization_params import OptimizationParams
 from .population import Population
 
 class GeneticAlgorithmResult():
-
-    def __init__(self,
-                 algo_parameters:  GeneticAlgorithmParams,
-                 opt_parameters:   OptimizationParams,
-                 final_population: Population,
-                 lowest_costs:     np.ndarray,
-                 avg_parent_costs: np.ndarray):
-        """
+    """
         Represents the result of a genetic algorithm run.
 
         Parameters:
@@ -25,6 +18,14 @@ class GeneticAlgorithmResult():
             - Average cost of the top-performing parents across generations.
             optimization_params (OptimizationParams)
         """
+
+    def __init__(self,
+                 algo_parameters:  GeneticAlgorithmParams,
+                 opt_parameters:   OptimizationParams,
+                 final_population: Population,
+                 lowest_costs:     np.ndarray,
+                 avg_parent_costs: np.ndarray):
+
         self.algo_parameters     = algo_parameters
         self.final_population    = final_population
         self.lowest_costs        = lowest_costs

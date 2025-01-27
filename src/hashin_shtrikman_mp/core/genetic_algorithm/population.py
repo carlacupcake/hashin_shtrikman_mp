@@ -23,7 +23,7 @@ class Population:
         self.opt_params = optimization_params
         self.ga_params = ga_params
 
-        num_members = ga_params.num_members  # Assuming GAParams model has a num_members field directly accessible
+        num_members = ga_params.num_members
         num_properties = self.opt_params.num_properties
         num_materials = self.opt_params.num_materials
 
@@ -60,7 +60,7 @@ class Population:
         Calculates the effective properties for each member in the population.
 
         Returns:
-            self (Population)
+            all_effective_properties (ndarray)
         """
 
         population_values = self.values
@@ -128,7 +128,8 @@ class Population:
         num_materials = len(lower_bounds.keys()) - 1 # subtract the entry for the mixture properties
         population_size = len(self.values)
         for i in range(start_member, population_size):
-            self.values[i, :-num_materials] = np.random.uniform(lower_bounds_array, upper_bounds_array)
+            self.values[i, :-num_materials] = np.random.uniform(lower_bounds_array,
+                                                                upper_bounds_array)
 
         # Adjust for bulk and shear moduli, if they are present
         # (cannot have bulk_i < bulk_j and shear_i > shear_j simultaneously)
@@ -148,7 +149,8 @@ class Population:
         for i in range(start_member, population_size):
             member = self.values[i, :]
             sorted_bulk_indices = np.argsort(member[bulk_idx:stop:step])
-            unsorted_member = np.zeros((self.opt_params.num_materials, (self.opt_params.num_properties - 1)))
+            unsorted_member = np.zeros((self.opt_params.num_materials,
+                                        (self.opt_params.num_properties - 1)))
             for m in range(self.opt_params.num_materials):
                 start = m * (self.opt_params.num_properties - 1)
                 end = start + (self.opt_params.num_properties - 1)

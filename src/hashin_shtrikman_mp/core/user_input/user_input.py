@@ -68,7 +68,8 @@ class UserInput(BaseModel):
         """
         Returns an iterator over the items of the dictionary representation of the object.
 
-        This method allows for iteration over key-value pairs in the dictionary representation of the object.
+        This method allows for iteration over key-value pairs
+        in the dictionary representation of the object.
         """
         return iter(self.build_dict().items())
 

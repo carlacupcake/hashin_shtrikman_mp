@@ -4,7 +4,10 @@ from .material_property import MaterialProperty
 
 
 class Material(BaseModel):
-    """Represents a material with a list of property constraints represented by MaterialPropertys."""
+    """
+    Represents a material with a list of property
+    constraints represented by MaterialPropertys.
+    """
 
     name: str
     properties: list[MaterialProperty]

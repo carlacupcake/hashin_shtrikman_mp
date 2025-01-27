@@ -1,8 +1,12 @@
 """test_match_finder.py."""
+import pytest
+
+from unittest import mock
+from math import comb
+
 from hashin_shtrikman_mp.core.match_finder import MatchFinder
 from hashin_shtrikman_mp.core.genetic_algorithm import GeneticAlgorithmResult, Population
-import pytest
-from unittest import mock
+
 
 @pytest.fixture
 def mock_consolidated_dict():
@@ -14,6 +18,7 @@ def mock_consolidated_dict():
         "shear_modulus": [1.0, 2.5, 4.0],
         "universal_anisotropy": [1.0, 2.5, 4.0]
     }
+
 
 @pytest.fixture
 def mock_best_designs_dict():
@@ -27,6 +32,7 @@ def mock_best_designs_dict():
             "elastic": {"bulk_modulus": [60], "shear_modulus": [30], "universal_anisotropy": [1.0]}
         }
     }
+
 
 @pytest.fixture
 def mock_ga_result():
@@ -67,10 +73,12 @@ def mock_ga_result():
     
     return mock_ga_result
 
+
 @pytest.fixture
 def mock_match_finder(mock_ga_result, mock_best_designs_dict, mock_consolidated_dict):
     mock_match_finder = MatchFinder(mock_ga_result)
     return mock_match_finder
+
 
 # Verify the structure and contents of the best_designs_dict
 def test_get_dict_of_best_designs(mock_match_finder):
@@ -100,6 +108,7 @@ def test_get_dict_of_best_designs(mock_match_finder):
     assert len(best_designs_dict["mat1"]["Category1"]["prop1"]) == 1
     assert len(best_designs_dict["mat1"]["Category2"]["prop4"]) == 1
 
+
 # Test edge case with empty unique_costs or unique_members
 def test_empty_unique_members_or_costs(mock_match_finder):
     mock_match_finder.optimized_population.get_unique_designs.return_value = ([], [])
@@ -110,6 +119,7 @@ def test_empty_unique_members_or_costs(mock_match_finder):
         for category in mat.values():
             for prop in category.values():
                 assert len(prop) == 0
+
 
 @mock.patch("builtins.open", new_callable=mock.mock_open)
 @mock.patch.object(MatchFinder, "generate_consolidated_dict")
@@ -130,6 +140,7 @@ def test_get_material_matches(mock_get_dict_of_best_designs, mock_generate_conso
     }
     assert result == expected_result
 
+
 @mock.patch("builtins.open", new_callable=mock.mock_open)
 @mock.patch.object(MatchFinder, "generate_consolidated_dict")
 @mock.patch.object(MatchFinder, "get_dict_of_best_designs")
@@ -144,6 +155,7 @@ def test_no_matches(mock_get_dict_of_best_designs, mock_generate_consolidated_di
 
     # Assert that no matches are found
     assert result == {}
+
 
 @mock.patch("builtins.open", new_callable=mock.mock_open)
 @mock.patch.object(MatchFinder, "generate_consolidated_dict")
@@ -163,3 +175,24 @@ def test_threshold_effect(mock_get_dict_of_best_designs, mock_generate_consolida
     # Test for a higher threshold where no matches should be found
     result_none = mock_match_finder.get_material_matches(overall_bounds_dict={}, consolidated_dict=mock_consolidated_dict, threshold=0.0)
     assert result_none == {}
+
+
+@pytest.mark.parametrize("num_materials, num_fractions, expected_combos", [
+    (3, 30, comb(3 + 30 - 1, 30)),  # Standard case: 3 materials, 30 fractions
+    (3, 10, comb(3 + 10 - 1, 10)),  # Custom case: 3 materials, 10 fractions
+    (1, 30, 1),                     # Edge case: 1 material (only one possible combination)
+])
+def test_get_all_possible_vol_frac_combos(num_materials, num_fractions, expected_combos):
+    
+    # Mock GeneticAlgorithmResult and MatchFinder
+    mock_ga_result = mock.MagicMock()
+    match_finder = MatchFinder(mock_ga_result)
+    match_finder.optimization_params.num_materials = num_materials
+    result = match_finder.get_all_possible_vol_frac_combos(num_fractions)
+
+    # Check the number of combinations generated
+    assert len(result) == expected_combos
+
+    # Verify that each combination sums to approximately 1.0
+    for combo in result:
+        assert pytest.approx(sum(combo), rel=1e-6) == 1.0

@@ -28,10 +28,11 @@ class GeneticAlgorithm:
             ga_algo_params (GeneticAlgorithmParams, optional)
             gen_counter (bool, optional)
 
-        Returns:
+        Returns
+        -------
             GeneticAlgorithmResult
         """
-        
+
         optimization_parameters = OptimizationParams.from_user_input(user_inputs)
 
         if ga_algo_params is None:
@@ -62,10 +63,12 @@ class GeneticAlgorithm:
         # Randomly populate first generation
         population = Population(optimization_params=optimization_parameters,
                                 ga_params=ga_algo_params)
-        population.set_random_values(lower_bounds=lower_bounds,
-                                     upper_bounds=upper_bounds,
-                                     start_member=0,
-                                     indices_elastic_moduli=optimization_parameters.indices_elastic_moduli)
+        population.set_random_values(
+            lower_bounds=lower_bounds,
+            upper_bounds=upper_bounds,
+            start_member=0,
+            indices_elastic_moduli=optimization_parameters.indices_elastic_moduli
+        )
 
         # Calculate the costs of the first generation
         population.set_costs()
@@ -87,7 +90,8 @@ class GeneticAlgorithm:
             if gen_counter:
                 print(f"Generation {g} of {num_generations}")
 
-            costs[0:num_parents] = sorted_costs[0:num_parents] # retain the parents from the previous generation
+            # Retain the parents from the previous generation
+            costs[0:num_parents] = sorted_costs[0:num_parents]
 
             # Select top parents from population to be breeders
             for p in range(0, num_parents, 2):
@@ -111,10 +115,12 @@ class GeneticAlgorithm:
 
             # Randomly generate new members to fill the rest of the population
             parents_plus_kids = num_parents + num_kids
-            population.set_random_values(lower_bounds=lower_bounds,
-                                         upper_bounds=upper_bounds,
-                                         start_member=parents_plus_kids,
-                                         indices_elastic_moduli=optimization_parameters.indices_elastic_moduli)
+            population.set_random_values(
+                lower_bounds=lower_bounds,
+                upper_bounds=upper_bounds,
+                start_member=parents_plus_kids,
+                indices_elastic_moduli=optimization_parameters.indices_elastic_moduli
+            )
 
             # Calculate the costs of the gth generation
             population.set_costs()

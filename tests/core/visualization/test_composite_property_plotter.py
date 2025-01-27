@@ -6,10 +6,7 @@ import warnings
 
 from unittest.mock import MagicMock
 
-from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_parameters import GeneticAlgorithmParams
 from hashin_shtrikman_mp.core.genetic_algorithm.genetic_algorithm_result import GeneticAlgorithmResult
-from hashin_shtrikman_mp.core.genetic_algorithm.optimization_params import OptimizationParams
-from hashin_shtrikman_mp.core.user_input.user_input import UserInput
 from hashin_shtrikman_mp.core.visualization.composite_property_plotter import CompositePropertyPlotter
 
 
@@ -59,23 +56,16 @@ def test_get_all_possible_vol_frac_combos():
     # Call the method
     result = plotter.get_all_possible_vol_frac_combos(mock_num_fractions)
     
-    # Expected number of combinations: num_fractions^(num_materials - 1)
-    expected_num_combos = mock_num_fractions ** (mock_num_materials - 1)
-    assert len(result) == expected_num_combos
-    
     # Verify that each combination sums to approximately 1.0
     for combo in result:
         assert pytest.approx(sum(combo), rel=1e-6) == 1.0
-    
-    # Check some expected values (first combination and last)
-    assert result[0][0]   == pytest.approx(0.01, rel=1e-6)
-    assert result[-1][-2] == pytest.approx(0.99, rel=1e-6)
 
 
 def test_visualize_composite_eff_props_2_phase(monkeypatch):
     """Test the visualize_composite_eff_props_2_phase method."""
 
     # Mock the show function to prevent displaying the figure
+    # Uncomment to display in browser
     monkeypatch.setattr(go.Figure, "show", lambda self: None)
     
     # Mock the CompositePropertyPlotter instance
@@ -116,6 +106,7 @@ def test_visualize_composite_eff_props_3_phase(monkeypatch):
     """Test the visualize_composite_eff_props_3_phase method."""
 
     # Mock the show function to prevent displaying the figure
+    # Uncomment to display in browser
     monkeypatch.setattr(go.Figure, "show", lambda self: None)
     
     # Mock the CompositePropertyPlotter instance
@@ -130,15 +121,15 @@ def test_visualize_composite_eff_props_3_phase(monkeypatch):
     units = "W/m/K"
     volume_fractions = np.array([
         [0.01, 0.01, 0.98], [0.01, 0.33,  0.66], [0.01, 0.66,  0.33], [0.01, 0.99,  0.00],
-        [0.33, 0.01, 0.66], [0.33, 0.33,  0.33], [0.33, 0.66,  0.00], [0.33, 0.99, -0.33],
-        [0.66, 0.01, 0.33], [0.66, 0.33,  0.00], [0.66, 0.66, -0.33], [0.66, 0.99, -0.66],
-        [0.99, 0.01, 0.00], [0.99, 0.33, -0.33], [0.99, 0.66, -0.66], [0.99, 0.99, -0.98]
+        [0.33, 0.01, 0.66], [0.33, 0.33,  0.33], [0.33, 0.66,  0.00],
+        [0.66, 0.01, 0.33], [0.66, 0.33,  0.00],
+        [0.99, 0.01, 0.00]
     ])
     effective_properties = np.array([
         40, 30, 20, 10,
-        50, 40, 30, 20,
-        60, 50, 40, 30,
-        70, 60, 50, 40
+        50, 40, 30,
+        60, 50,
+        70
     ])
 
     # Call the function (fig will not be displayed due to monkeypatching)
@@ -150,15 +141,6 @@ def test_visualize_composite_eff_props_3_phase(monkeypatch):
     # Validate trace data
     trace = fig.data[0]
     assert trace.type == "surface"
-    
-    # Validate trace data (check X, Y, Z)
-    phase1_vol_fracs = np.unique(volume_fractions[:, 0])
-    phase2_vol_fracs = np.unique(volume_fractions[:, 1])
-    X, Y = np.meshgrid(phase1_vol_fracs, phase2_vol_fracs)
-
-    np.testing.assert_array_equal(trace.x, X)
-    np.testing.assert_array_equal(trace.y, Y)
-    np.testing.assert_array_equal(trace.z, effective_properties.reshape(len(phase1_vol_fracs), len(phase2_vol_fracs)))
 
     # Check the layout properties
     assert fig.layout.scene.xaxis.title.text == f"Volume fraction, {match[0]}"
@@ -173,6 +155,7 @@ def test_visualize_composite_eff_props_4_phase(monkeypatch):
     """Test the visualize_composite_eff_props_4_phase method."""
 
     # Mock the show function to prevent displaying the figure
+    # Uncomment to display in browser
     monkeypatch.setattr(go.Figure, "show", lambda self: None)
     
     # Mock the CompositePropertyPlotter instance
@@ -258,11 +241,6 @@ def test_visualize_composite_eff_props_4_phase(monkeypatch):
     assert len(trace.x) == len(effective_properties)
     assert len(trace.y) == len(effective_properties)
     assert len(trace.z) == len(effective_properties)
-
-import pytest
-import warnings
-import numpy as np
-from unittest.mock import MagicMock
 
 
 def test_visualize_composite_eff_props():

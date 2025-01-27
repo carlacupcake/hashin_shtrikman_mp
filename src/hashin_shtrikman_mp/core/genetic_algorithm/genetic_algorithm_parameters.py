@@ -4,7 +4,9 @@ from pydantic import BaseModel, Field, PositiveInt
 
 
 class GeneticAlgorithmParams(BaseModel):
-    """Class to hold the parameters used for the genetic algorithm."""
+    """
+    Class to hold the parameters used for the genetic algorithm.
+    """
 
     num_parents: PositiveInt = Field(
         default=10,

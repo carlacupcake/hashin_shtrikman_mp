@@ -9,23 +9,30 @@ import hashin_shtrikman_mp.io.inputs.data as io_data
 
 from ..log import logger
 
+
 HEADERS_PATH = str(impresources.files(io_data) / "display_table_headers.yaml")
 PROPERTY_CATEGORIES = str(impresources.files(io_data) / "mp_property_docs.yaml")
 COST_FORMULAS_PATH = str(impresources.files(io_data) / "cost_calculation_formulas.yaml")
 
 
-def get_headers(num_materials: int, property_categories: list[str], include_mpids: bool = False) -> list:
+def get_headers(num_materials: int,
+                property_categories: list[str],
+                include_mpids: bool = False) -> list:
     """
-    Generates headers for a data table based on the number of materials and selected property categories.
+    Generates headers for a data table based on the number of materials
+    and selected property categories.
 
     Args:
-        num_materials (int): The number of materials to include in the headers.
-        property_categories (list[str]): List of property categories to include.
-        include_mpids (bool, optional): Whether to include MP-ID headers. Defaults to False.
+        num_materials (int)
+        - The number of materials to include in the headers.
+        property_categories (list[str])
+        - List of property categories to include.
+        include_mpids (bool, optional)
+        - Whether to include MP-ID headers. Defaults to False.
 
     Returns
     -------
-        list: A list of headers as strings.
+        headers (list)
     """
     with open(HEADERS_PATH) as stream:
         try:
@@ -57,13 +64,15 @@ def get_headers(num_materials: int, property_categories: list[str], include_mpid
 
     return headers
 
+
 def load_property_docs() -> dict:
     """
     Loads property documentation from a predefined YAML file.
 
     Returns
     -------
-        dict: A dictionary containing property documentation.
+        dict
+        - A dictionary containing property documentation.
     """
     return loadfn(PROPERTY_CATEGORIES)
 
@@ -74,7 +83,8 @@ def load_property_categories(user_input: dict[Any, Any] | None = None) -> tuple[
     with predefined property documentation.
 
     Args:
-        user_input (dict[Any, Any] | None, optional): A dictionary of user-defined properties. Defaults to None.
+        user_input (dict[Any, Any] | None, optional)
+        - A dictionary of user-defined properties. Defaults to None.
 
     Returns
     -------
@@ -107,17 +117,20 @@ def load_property_categories(user_input: dict[Any, Any] | None = None) -> tuple[
     logger.info(f"property_categories = {property_categories}")
     return property_categories, property_docs
 
+
 def compile_formulas(formulas_dict: dict[Any, Any] | None = None) -> dict:
     """
     Compiles mathematical formulas defined as strings in a dictionary into executable Python code.
 
     Args:
-        formulas_dict (dict): A dictionary where the keys are formula names and the values are
-                              formulas as strings or nested dictionaries.
+        formulas_dict (dict)
+        - A dictionary where the keys are formula names and the values are
+          formulas as strings or nested dictionaries.
 
     Returns
     -------
-        dict: A dictionary with the same structure as `formulas_dict`, but with formulas compiled.
+        compiled_formulas (dict)
+        - A dictionary with the same structure as `formulas_dict`, but with formulas compiled.
     """
     if formulas_dict is None:
         formulas_dict = {}
@@ -127,10 +140,10 @@ def compile_formulas(formulas_dict: dict[Any, Any] | None = None) -> dict:
         if isinstance(formula, str):
             # List all variables used in cost_calculation_formulas.yaml as Python variables
             compiled_formula = formula.format(
-                A1="A1",
-                An="An",
-                A1_term_i="A1_term_i",
-                An_term_i="An_term_i",
+                a_1="a_1",
+                a_n="a_n",
+                a_1_term_i="a_1_term_i",
+                a_n_term_i="a_n_term_i",
                 alpha_1="alpha_1",
                 alpha_n="alpha_n",
                 bulk_alpha_1="bulk_alpha_1",

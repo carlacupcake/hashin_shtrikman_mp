@@ -65,7 +65,7 @@ class OptimizationParams(BaseModel):
         """
         Initializes the `OptimizationParams` class from the user input dictionary.
         """
-        
+
         params = {}
         # Load property categories and docs
         property_categories, property_docs = load_property_categories(user_input=user_input)
