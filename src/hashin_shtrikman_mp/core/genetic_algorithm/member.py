@@ -44,11 +44,13 @@ class Member:
         Notes:
             - There is one effective property per property
             - There are two concentration factors per property per material
+            - Except for bulk and shear which collectively have two
+              concentration factors instead of four
         """
 
         # Extract attributes from self
         tolerance          = self.ga_params.tolerance / self.opt_params.num_materials
-        weight_eff_prop    = 1/(self.opt_params.num_materials)
+        weight_eff_prop    = 1/(self.opt_params.num_properties - 1)
         weight_conc_factor = 1/(2 * (self.opt_params.num_properties - 1) * \
                                 self.opt_params.num_materials)
         weight_domains     = 1/(2 * len(self.opt_params.property_categories))

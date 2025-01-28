@@ -362,14 +362,15 @@ class MatchFinder:
 
             tables = client.query_contributions(
                 {"project":"carrier_transport",
-                 "data__sigma__p__value__gt": query_carrier_transport["elec_cond_300k_low_doping"][0] / 1e15 / 1e-14,
-                 "data__sigma__p__value__lt": query_carrier_transport["elec_cond_300k_low_doping"][1] / 1e15 / 1e-14,
-                 "data__kappa__p__value__gt": query_carrier_transport["therm_cond_300k_low_doping"][0] / 1e9 / 1e-14,
-                 "data__kappa__p__value__lt": query_carrier_transport["therm_cond_300k_low_doping"][1] / 1e9 / 1e-14,
+                 "data__sigma__p__value__gt": query_carrier_transport["elec_cond_300k_low_doping"][0]/ 1e15 / 1e-14,
+                 "data__sigma__p__value__lt": query_carrier_transport["elec_cond_300k_low_doping"][1]/ 1e15 / 1e-14,
+                 "data__kappa__p__value__gt": query_carrier_transport["therm_cond_300k_low_doping"][0]/ 1e9 / 1e-14,
+                 "data__kappa__p__value__lt": query_carrier_transport["therm_cond_300k_low_doping"][1]/ 1e9 / 1e-14,
                  "identifier__in": result_dict["material_id"],
                  },
                 fields=["identifier", "formula", "data.sigma.p", "data.kappa.p"],
-                sort="+formula")
+                sort="+formula"
+            )
 
             # Only append the values to the corresponding material_id from
             # the result_dict. At the end, make all the remaining values
