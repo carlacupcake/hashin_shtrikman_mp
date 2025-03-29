@@ -5,7 +5,6 @@ __pycache__
 site/
 **.egg-info
 
-
 # Distribution / packaging
 .Python
 build/
@@ -28,4 +27,4 @@ share/python-wheels/
 MANIFEST
 
 .pytest_cache/
-.ruff_cache/
+.ruff_cache/site/

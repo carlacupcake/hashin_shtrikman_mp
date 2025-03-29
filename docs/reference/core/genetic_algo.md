@@ -1,1 +1,0 @@
-::: hashin_shtrikman_mp.core.genetic_algo.GAParams

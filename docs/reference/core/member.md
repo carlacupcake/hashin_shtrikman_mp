@@ -1,1 +1,0 @@
-::: hashin_shtrikman_mp.core.member.Member
