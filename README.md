@@ -1,4 +1,4 @@
-# Composites Discoverer: A Computational Tool for the Optimal Design and Discovery of Multi-phase Composite Materials
+# A Computational Tool for the Optimal Design and Discovery of Multi-phase Composite Materials
 
 ## Overview
 The library utilizes the tightest theoretical bounds on the effective properties of composite materials with unspecified microstructure – the Hashin-Shtrikman bounds – to identify candidate theoretical materials, find real materials that are close to the candidates, and determine the optimal volume fractions for each of the constituents in the resulting composite.
@@ -11,7 +11,7 @@ The library has been designed to handle 2- to 10-phase composite design.
 `hashin_shtrikman_mp` is a Python library which recommends optimal material combinations to achieve desired composite properties. Composites are ubiquitous in engineering, as they often exhibit enhanced material properties as compared to their individual constituents. This library is intended to be a tool for materials designers who want to explore a new space of materials without incurring huge capital cost.
 
 ---
-## Installation (🛑 under construction 🛑)
+## Installation
 `hashin_shtrikan_mp` can be installed from [PyPi source](https://pypi.org/project/hashin_shtrikman_mp/) by running:
 ```
 pip install hashin_shtrikman_mp
@@ -35,7 +35,7 @@ Example notebooks are included in [examples](https://github.com/carlacupcake/has
 - Visualization of cost versus generation can provide insights into the convergence behavior of the genetic algorithm. Expect that the exact shape of the convergence plot will change every time the algorithm is run, due to the stochastic nature of the algorithm.
 
 ### Miscallaneous features
-**mpi4py support is added to append final_dict** 🛑 <-- still true ?? 🛑
+**mpi4py support is added to append final_dict**
 
 To take advantage of `mpi` parallelization, one can run the following:
 ```
