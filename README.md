@@ -1,14 +1,13 @@
 # A Computational Tool for the Optimal Design and Discovery of Multi-phase Composite Materials
 
 ## Overview
-The library utilizes the tightest theoretical bounds on the effective properties of composite materials with unspecified microstructure – the Hashin-Shtrikman bounds – to identify candidate theoretical materials, find real materials that are close to the candidates, and determine the optimal volume fractions for each of the constituents in the resulting composite.
+Composites are ubiquitous in engineering, as they often exhibit enhanced material properties as compared to their individual constituents. This library is intended to be a tool for materials designers who want to explore a new space of materials without incurring huge capital cost.
+
+The `hashin_shtrikman_mp` library utilizes the tightest theoretical bounds on the effective properties of composite materials with unspecified microstructure – the Hashin-Shtrikman bounds – to identify candidate theoretical materials, find real materials that are close to the candidates, and determine the optimal volume fractions for each of the constituents in the resulting composite.
 
 A genetic algorithm is used to optimize over the user-specified design space. The algorithm simultaneously minimizes absolute error from the desired composite properties and optimally distributes loads across constituent phases. Once the genetic algorithm has returned theoretical candidate materials, `hashin_shtrikman_mp` searches for real materials in the [Materials Project](https://next-gen.materialsproject.org/) database with properties close to those suggested by the genetic algorithm.
 
 The library has been designed to handle 2- to 10-phase composite design.
-
-***Aim***
-`hashin_shtrikman_mp` is a Python library which recommends optimal material combinations to achieve desired composite properties. Composites are ubiquitous in engineering, as they often exhibit enhanced material properties as compared to their individual constituents. This library is intended to be a tool for materials designers who want to explore a new space of materials without incurring huge capital cost.
 
 ---
 ## Installation
@@ -17,13 +16,13 @@ The library has been designed to handle 2- to 10-phase composite design.
 pip install hashin_shtrikman_mp
 ```
 
-It can also be installed by cloning this repository, then following in the root of the repository:
+It can also be installed by cloning this repository, then running in the root of the repository:
 ```
 pip install .
 ```
 
-### Documentation (🛑 under construction 🛑)
-Detailed documentation for this library can be found [here](https://mcgalcode.github.io/hashin_shtrikman_mp/)
+### Documentation
+Detailed documentation for this library can be found [here]([https://mcgalcode.github.io/hashin_shtrikman_mp/](https://carlacupcake.github.io/hashin_shtrikman_mp/))
 
 ### Jupyter Notebook Examples
 Example notebooks are included in [examples](https://github.com/carlacupcake/hashin_shtrikman_mp/tree/master/examples).
