@@ -6,13 +6,11 @@ watch:
   - ../src/hashin_shtrikman_mp
 
 nav:
-  - Home:
-    - Welcome: index.md
-    - Getting Started: ./guides/getting_started.ipynb
-    - Reference: reference/core/optimizer.md
-    - Guides: ./guides/index.md
-  - Guides:
-    - Getting Started: ./guides/getting_started.ipynb
+  - Home: index.md
+  - Examples:
+    - Getting Started: getting_started.md
+    - 3-phase Composite Example: ./examples/example_n=3.ipynb
+    - Example Phase Diagram Visualizations: ./examples/example_plotting.ipynb
   - Reference:
     - Optimizer: ./reference/core/optimizer.md
     - GAParams: ./reference/core/genetic_algo.md
@@ -39,3 +37,27 @@ theme:
     - yaml
     - python
   locale: en
+
+plugins:
+  - search
+  - section-index
+  - mkdocs-jupyter
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ['src']
+          setup_commands:
+            - import sys
+            - sys.path.append("docs")
+          selection:
+            new_path_syntax: yes
+
+extra_css:
+  - overrides/custom.css
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+extra_javascript:
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js

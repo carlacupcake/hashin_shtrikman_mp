@@ -94,7 +94,6 @@ def load_property_categories(user_input: dict[Any, Any] | None = None) -> tuple[
     """
     if user_input is None:
         user_input = {}
-    logger.info(f"Loading property categories from {PROPERTY_CATEGORIES}.")
 
     property_categories = []
     property_docs = load_property_docs()
@@ -114,7 +113,6 @@ def load_property_categories(user_input: dict[Any, Any] | None = None) -> tuple[
         if any(prop in user_defined_properties for prop in properties):
             property_categories.append(category)
 
-    logger.info(f"property_categories = {property_categories}")
     return property_categories, property_docs
 
 
@@ -148,27 +146,28 @@ def compile_formulas(formulas_dict: dict[Any, Any] | None = None) -> dict:
                 alpha_n="alpha_n",
                 bulk_alpha_1="bulk_alpha_1",
                 bulk_alpha_n="bulk_alpha_n",
-                shear_alpha_1="shear_alpha_1",
-                shear_alpha_n="shear_alpha_n",
-                phase_1="phase_1",
-                phase_i="phase_i",
-                phase_n="phase_n",
-                phase_1_vol_frac="phase_1_vol_frac",
-                phase_i_vol_frac="phase_i_vol_frac",
-                phase_n_vol_frac="phase_n_vol_frac",
-                phase_1_bulk="phase_1_bulk",
-                phase_1_shear="phase_1_shear",
-                phase_i_elastic="phase_i_elastic",
-                phase_n_bulk="phase_n_bulk",
-                phase_n_shear="phase_n_shear",
+                cf_load_i="cf_load_i",
+                cf_response_i="cf_response_i",
+                cf_elastic_i="cf_eleastic_i",
                 eff_max="eff_max",
                 eff_min="eff_min",
                 eff_prop="eff_prop",
                 eff_elastic="eff_elastic",
                 mixing_param="mixing_param",
-                cf_load_i="cf_load_i",
-                cf_response_i="cf_response_i",
-                cf_elastic_i="cf_eleastic_i",
+                n="n",
+                phase_1="phase_1",
+                phase_1_vol_frac="phase_1_vol_frac",
+                phase_1_bulk="phase_1_bulk",
+                phase_1_shear="phase_1_shear",
+                phase_i="phase_i",
+                phase_i_elastic="phase_i_elastic",
+                phase_i_vol_frac="phase_i_vol_frac",
+                phase_n="phase_n",
+                phase_n_bulk="phase_n_bulk",
+                phase_n_shear="phase_n_shear",
+                phase_n_vol_frac="phase_n_vol_frac",
+                shear_alpha_1="shear_alpha_1",
+                shear_alpha_n="shear_alpha_n",
                 vf_weighted_sum_cfs="vf_weighted_sum_cfs"
             )
             # Compile the formula

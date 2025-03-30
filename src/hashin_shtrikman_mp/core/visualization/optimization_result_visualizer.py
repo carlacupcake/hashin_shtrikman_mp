@@ -157,7 +157,7 @@ class OptimizationResultVisualizer():
                              values=self.ga_result.final_population.values[0],
                              ga_params=self.ga_params)
         cost, costs_eff_props, costs_cfs = best_design.get_cost(include_cost_breakdown=True)
-        print(f"Cost of best design: {cost}")
+        print(f"Cost: {cost}, Number effective properties: {len(costs_eff_props)}, Number of concentration factors: {len(costs_cfs)}") # temporary
 
         # Scale the costs of the effective properties and concentration factors
         # Scale according to weights from GAParams
@@ -170,13 +170,14 @@ class OptimizationResultVisualizer():
         for category in self.opt_params.property_categories:
             for property in self.opt_params.property_docs[category]:
                 eff_prop_labels.append(f"eff. {property}")
-                if property == "bulk_modulus":
-                    cf_labels.append("cf hydrostatic stress")
-                elif property == "shear_modulus":
-                    cf_labels.append("cf deviatoric stress")
-                else:
-                    cf_labels.append(f"cf load on {property}")
-                    cf_labels.append(f"cf response from {property}")
+                for m in range(self.opt_params.num_materials):
+                    if property == "bulk_modulus":
+                        cf_labels.append(f"cf hydrostatic stress, mat {m}")
+                    elif property == "shear_modulus":
+                        cf_labels.append(f"cf deviatoric stress, mat {m}")
+                    else:
+                        cf_labels.append(f"cf load on {property}, mat {m}")
+                        cf_labels.append(f"cf response from {property}, mat {m}")
         labels = eff_prop_labels + cf_labels
 
         # Combine the data and labels for the eff props and concentration factors
@@ -192,7 +193,7 @@ class OptimizationResultVisualizer():
 
         fig.update_layout(
             title_text="Cost Function Contributions",
-            showlegend=True
+            showlegend=True,
         )
 
         # Display the chart

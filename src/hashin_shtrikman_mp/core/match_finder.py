@@ -108,10 +108,6 @@ class MatchFinder:
         # Generate a dictionary of the best designs - same format as consolidated_dict
         best_designs_dict = self.get_dict_of_best_designs()
 
-        # Save consolidated_dict to file
-        with open(f"consolidated_dict_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S')}", "w") as f:
-            json.dump(consolidated_dict, f)
-
         # Initialize an empty dictionary to store the output in the required format
         final_matching_materials = {}
 
@@ -439,7 +435,7 @@ class MatchFinder:
             return None
 
         if consolidated_dict == {}:
-            with open("consolidated_dict_02_11_2024_23_45_58") as f:
+            with open("test_consolidated_dict") as f:
                 consolidated_dict = json.load(f)
 
         all_vol_frac_combos = self.get_all_possible_vol_frac_combos()

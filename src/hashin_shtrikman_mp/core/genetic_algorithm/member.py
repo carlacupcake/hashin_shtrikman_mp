@@ -233,7 +233,8 @@ class Member:
                     cf_load_i = eval(
                         COMPILED_CALC_GUIDE["concentration_factors"]["cf_load_i"],
                         {},
-                        {"phase_1":          phase_1,
+                        {"n":                self.opt_params.num_materials,
+                         "phase_1":          phase_1,
                          "phase_i":          phase_i,
                          "phase_i_vol_frac": phase_i_vol_frac,
                          "eff_prop":         effective_prop}

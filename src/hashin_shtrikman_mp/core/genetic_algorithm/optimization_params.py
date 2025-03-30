@@ -209,7 +209,6 @@ class OptimizationParams(BaseModel):
 
         # Extracting the desired properties from the 'mixture' part of final_dict
         mixture_props = user_input.get("mixture", {})
-        logger.info(f"mixture_props = {mixture_props}")
 
         # Iterate through each property category and its associated properties
         for category, properties in property_docs.items():
