@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="/img/favicon.ico">
-        <title>Hashin-Shtrikman MP documentation</title>
+        <title>hashin_shtrikman_mp</title>
         <link href="/css/bootstrap.min.css" rel="stylesheet">
         <link href="/css/fontawesome.min.css" rel="stylesheet">
         <link href="/css/brands.min.css" rel="stylesheet">
@@ -17,6 +17,8 @@
         <link href="/css/base.css" rel="stylesheet">
         <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
         <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="/assets/_mkdocstrings.css" rel="stylesheet">
+        <link href="/overrides/custom.css" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/yaml.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
@@ -26,7 +28,7 @@
     <body>
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="/.">Hashin-Shtrikman MP documentation</a>
+                <a class="navbar-brand" href="/.">hashin_shtrikman_mp</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -36,33 +38,23 @@
                 <div id="navbar-collapse" class="navbar-collapse collapse">
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
-                            <li class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Home</a>
-                                <ul class="dropdown-menu">
-                                    
-<li>
-    <a href="/." class="dropdown-item">Welcome</a>
-</li>
-                                    
-<li>
-    <a href="/./guides/getting_started.ipynb" class="dropdown-item">Getting Started</a>
-</li>
-                                    
-<li>
-    <a href="/reference/core/optimizer.md" class="dropdown-item">Reference</a>
-</li>
-                                    
-<li>
-    <a href="/./guides/index.md" class="dropdown-item">Guides</a>
-</li>
-                                </ul>
+                            <li class="nav-item">
+                                <a href="/." class="nav-link">Home</a>
                             </li>
                             <li class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Guides</a>
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Examples</a>
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="/./guides/getting_started.ipynb" class="dropdown-item">Getting Started</a>
+    <a href="/getting_started/" class="dropdown-item">Getting Started</a>
+</li>
+                                    
+<li>
+    <a href="/examples/example_n%3D3/" class="dropdown-item">3-phase Composite Example</a>
+</li>
+                                    
+<li>
+    <a href="/examples/example_plotting/" class="dropdown-item">Example Visualizations for 2-, 3-, and 4-phase Composites</a>
 </li>
                                 </ul>
                             </li>
@@ -170,6 +162,8 @@
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
         <script src="/js/base.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
         <script src="/search/main.js"></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">

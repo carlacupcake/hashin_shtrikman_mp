@@ -4,11 +4,11 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
+        <meta name="description" content="Documentation for the hashin-shtrikman-mp package">
         
         
         <link rel="shortcut icon" href="img/favicon.ico">
-        <title>Welcome - Hashin-Shtrikman MP documentation</title>
+        <title>hashin_shtrikman_mp</title>
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/fontawesome.min.css" rel="stylesheet">
         <link href="css/brands.min.css" rel="stylesheet">
@@ -17,16 +17,18 @@
         <link href="css/base.css" rel="stylesheet">
         <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
         <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
+        <link href="assets/_mkdocstrings.css" rel="stylesheet">
+        <link href="overrides/custom.css" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/yaml.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
         <script>hljs.highlightAll();</script> 
     </head>
 
-    <body>
+    <body class="homepage">
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href=".">Hashin-Shtrikman MP documentation</a>
+                <a class="navbar-brand" href=".">hashin_shtrikman_mp</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -36,33 +38,23 @@
                 <div id="navbar-collapse" class="navbar-collapse collapse">
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
-                            <li class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle active" aria-current="page" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Home</a>
-                                <ul class="dropdown-menu">
-                                    
-<li>
-    <a href="." class="dropdown-item active" aria-current="page">Welcome</a>
-</li>
-                                    
-<li>
-    <a href="guides/getting_started.ipynb" class="dropdown-item">Getting Started</a>
-</li>
-                                    
-<li>
-    <a href="reference/core/optimizer.md" class="dropdown-item">Reference</a>
-</li>
-                                    
-<li>
-    <a href="guides/index.md" class="dropdown-item">Guides</a>
-</li>
-                                </ul>
+                            <li class="nav-item">
+                                <a href="." class="nav-link active" aria-current="page">Home</a>
                             </li>
                             <li class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Guides</a>
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Examples</a>
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="guides/getting_started.ipynb" class="dropdown-item">Getting Started</a>
+    <a href="getting_started/" class="dropdown-item">Getting Started</a>
+</li>
+                                    
+<li>
+    <a href="examples/example_n%3D3/" class="dropdown-item">3-phase Composite Example</a>
+</li>
+                                    
+<li>
+    <a href="examples/example_plotting/" class="dropdown-item">Example Visualizations for 2-, 3-, and 4-phase Composites</a>
 </li>
                                 </ul>
                             </li>
@@ -107,6 +99,16 @@
                                 <i class="fa fa-search"></i> Search
                             </a>
                         </li>
+                            <li class="nav-item">
+                                <a rel="prev" class="nav-link disabled">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="getting_started/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a href="https://github.com/carlacupcake/hashin_shtrikman_mp/edit/master/docs/index.md" class="nav-link">Edit on Github
                                     </a>
@@ -197,11 +199,9 @@
 <p><code>hashin_shtrikan_mp</code> can be installed from <a href="https://pypi.org/project/hashin_shtrikman_mp/">PyPi source</a> by running:</p>
 <pre><code>pip install hashin_shtrikman_mp
 </code></pre>
-<p>It can also be installed by cloning <a href="https://github.com/carlacupcake/hashin_shtrikman_mp/tree/main">this repository</a>, then in the root of the repository running:</p>
+<p>It can also be installed by cloning <a href="https://github.com/carlacupcake/hashin_shtrikman_mp/tree/main">this repository</a>, then running in the root of the repository:</p>
 <pre><code>pip install .
 </code></pre>
-<h3 id="documentation-under-construction">Documentation (🛑 under construction 🛑)</h3>
-<p>Detailed documentation for this library can be found <a href="https://mcgalcode.github.io/hashin_shtrikman_mp/">here</a></p>
 <h3 id="jupyter-notebook-examples">Jupyter Notebook Examples</h3>
 <p>Example notebooks are included in <a href="https://github.com/carlacupcake/hashin_shtrikman_mp/tree/master/examples">examples</a>.</p>
 <h3 id="implementation-notes">Implementation Notes</h3>
@@ -273,6 +273,8 @@ pip install mpi4py
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
         <script src="js/base.js"></script>
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
         <script src="search/main.js"></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
@@ -338,3 +340,8 @@ pip install mpi4py
 
     </body>
 </html>
+
+<!--
+MkDocs version : 1.6.1
+Build Date UTC : 2025-03-30 22:00:59.029961+00:00
+-->
