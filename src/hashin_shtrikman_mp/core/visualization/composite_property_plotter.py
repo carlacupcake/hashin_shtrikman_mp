@@ -25,10 +25,7 @@ np.seterr(divide="raise")
 
 class CompositePropertyPlotter():
     """
-    Visualizer class for Hashin-Shtrikman optimization.
-
-    This class extends the HashinShtrikman class to include methods
-    for visualizing optimization results.
+    Visualization class for phase diagrams.
     """
 
     def __init__(self, ga_result: GeneticAlgorithmResult) -> None:

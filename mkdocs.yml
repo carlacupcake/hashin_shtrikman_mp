@@ -8,21 +8,25 @@ watch:
 nav:
   - Home: index.md
   - Examples:
-    - Getting Started: getting_started.md
-    - 3-phase Composite Example: ./examples/example_n=3.ipynb
+    - 3-phase Composite Example:            ./examples/example_n=3.ipynb
     - Example Phase Diagram Visualizations: ./examples/example_plotting.ipynb
   - Documentation:
     - Genetic Algorithm:
       - GeneticAlgorithmParams: ./reference/core/genetic_algorithm/genetic_algorithm_parameters.md
       - GeneticAlgorithmResult: ./reference/core/genetic_algorithm/genetic_algorithm_result.md
-      - GeneticAlgorithm: ./reference/core/genetic_algorithm/genetic_algorithm.md
-      - Member: ./reference/core/genetic_algorithm/member.md
-      - OptimizationParams: ./reference/core/genetic_algorithm/optimization_params.md
-      - Population: ./reference/core/genetic_algorithm/population.md
+      - GeneticAlgorithm:       ./reference/core/genetic_algorithm/genetic_algorithm.md
+      - Member:                 ./reference/core/genetic_algorithm/member.md
+      - OptimizationParams:     ./reference/core/genetic_algorithm/optimization_params.md
+      - Population:             ./reference/core/genetic_algorithm/population.md
     - User Input:
-      - Aggregate: ./reference/core/user_input/aggregate.md
+      - Aggregate:        ./reference/core/user_input/aggregate.md
+      - MaterialProperty: ./reference/core/user_input/material_property.md
+      - Material:         ./reference/core/user_input/material.md
+      - MixtureProperty:  ./reference/core/user_input/mixture_property.md
+      - Mixture:          ./reference/core/user_input/mixture.md
+      - UserInput:        ./reference/core/user_input/user_input.md
     - Visualization:
-      - CompositePropertyPlotter: ./reference/core/visualization/composite_property_plotter.md
+      - CompositePropertyPlotter:     ./reference/core/visualization/composite_property_plotter.md
       - OptimizationResultVisualizer: ./reference/core/visualization/optimization_result_visualizer.md
     - MatchFinder: ./reference/core/match_finder.md
 

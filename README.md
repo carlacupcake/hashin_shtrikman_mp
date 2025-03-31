@@ -10,7 +10,9 @@ A genetic algorithm is used to optimize over the user-specified design space. Th
 The library has been designed to handle 2- to 10-phase composite design.
 
 ---
-## Installation
+## Getting Started
+
+### Installation
 `hashin_shtrikan_mp` can be installed from [PyPi source](https://pypi.org/project/hashin_shtrikman_mp/) by running:
 ```
 pip install hashin_shtrikman_mp
@@ -21,11 +23,8 @@ It can also be installed by cloning this repository, then running in the root of
 pip install .
 ```
 
-### Documentation
-Detailed documentation for this library can be found [here]([https://mcgalcode.github.io/hashin_shtrikman_mp/](https://carlacupcake.github.io/hashin_shtrikman_mp/))
-
-### Jupyter Notebook Examples
-Example notebooks are included in [examples](https://github.com/carlacupcake/hashin_shtrikman_mp/tree/master/examples).
+### Documentation and Examples
+Detailed documentation and example usages for this library can be found [here](https://carlacupcake.github.io/hashin_shtrikman_mp/).
 
 ### Implementation Notes
 - Ensure you have valid credentials for the Materials Project API, which you can find by registering yourself with Materials Project – [https://next-gen.materialsproject.org/](https://next-gen.materialsproject.org/).

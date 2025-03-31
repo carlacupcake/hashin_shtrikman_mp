@@ -10,8 +10,8 @@ class Population:
     """
     Class to hold the population of members.
 
-    The class also implements methods to generate the initial population,
-    set the costs of the members, and sort the members based on their costs.
+    The class also implements methods to generate the initial population
+    and sort the members based on their costs.
     """
 
     def __init__(self,

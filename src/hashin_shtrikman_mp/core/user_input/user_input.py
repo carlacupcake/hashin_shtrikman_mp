@@ -10,7 +10,7 @@ from .mixture import Mixture
 
 class UserInput(BaseModel):
     """
-    The definition for an optimization problem.
+    Class to store user input needed to run an optimal composite optimization study.
 
     This class allows the user to define an optimization problem in terms of the number
     of material components in the optimized composite (and the bounds on the properties

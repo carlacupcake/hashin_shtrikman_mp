@@ -1,7 +1,7 @@
-# Class: `GeneticAlgorithmParams`
+# Class: `Member`
 
 Class to represent a member of the population in genetic algorithm optimization. <br>
-Stores the properties and configuration for genetic algorithm operations. <br>
+Stores the functions for cost function calculation. <br>
 Built on the `Pydantic BaseModel`.
 
 ## Attributes
@@ -23,7 +23,7 @@ Built on the `Pydantic BaseModel`.
     - **Returns:** cost (float)
 
 * `get_general_eff_prop_and_cfs`
-    - Compute the effective non-elastic properties and concentration factors of a composite material using the Hashin-Shtrikman bounds.
+    - Compute the effective non-modulus properties and concentration factors of a composite material using the Hashin-Shtrikman bounds.
     - **Notes**
         + `idx` is the index in self.values where category properties begin
     - **Args:** idx (int, optional)
@@ -31,3 +31,17 @@ Built on the `Pydantic BaseModel`.
         + A tuple containing:
             - effective_properties (list)
             - concentration_factors (list)
+
+* `get_elastic_eff_props_and_cfs`
+    - Compute the effective modulus properties and concentration factors of a composite material using the Hashin-Shtrikman bounds.
+    - **Notes**
+        + `idx` is the index in self.values where category properties begin
+    - **Args:** idx (int, optional)
+    - **Returns:**
+        + A tuple containing:
+            - effective_properties (list)
+            - concentration_factors (list)
+
+* `get_effective_properties`
+    - Computes the effective properties of a material system based on the Hashin-Shtrikman bounds for various property categories.
+    - **Returns:** effective properties (ndarray)

@@ -25,7 +25,8 @@ np.seterr(divide="raise")
 
 class MatchFinder:
     """
-    MatchFinder class for Hashin-Shtrikman optimization.
+    A class which uses optimization results to find real material matches
+    in the Materials Project databases, using the Materials Project API.
     """
 
 
@@ -416,7 +417,8 @@ class MatchFinder:
                                  matches_dict: dict,
                                  consolidated_dict: dict = None) -> go.Figure:
         """
-        Evaluates the 'real' candidate composites.
+        Evaluates the 'real' candidate composites with
+        the same cost function used for optimization.
 
         Args:
             matches_dict (dict)
@@ -424,7 +426,7 @@ class MatchFinder:
 
         Returns
         -------
-            go.Figure
+            plotly.graph_objects.Figure
             - A table of the matches and their costs as evaluated by
               the genetic algorithm
         """

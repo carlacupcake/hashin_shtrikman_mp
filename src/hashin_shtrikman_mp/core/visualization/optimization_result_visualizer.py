@@ -8,10 +8,7 @@ from ..utilities import get_headers
 
 class OptimizationResultVisualizer():
     """
-    Visualizer class for Hashin-Shtrikman optimization.
-
-    This class extends the HashinShtrikman class to include methods
-    for visualizing optimization results.
+    Visualization class for plotting results of genetic algorithm optimization.
     """
 
     def __init__(self, ga_result: GeneticAlgorithmResult) -> None:
@@ -97,7 +94,7 @@ class OptimizationResultVisualizer():
 
     def plot_optimization_results(self):
         """
-        Generates a plot visualizing the optimization results over generations.
+        Generates a plot visualizing the optimization convergence over generations.
 
         Returns:
             plotly.graph_objects.Figure

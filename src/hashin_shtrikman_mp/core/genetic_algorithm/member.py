@@ -10,7 +10,7 @@ from .optimization_params import OptimizationParams
 class Member:
     """
     Class to represent a member of the population in genetic algorithm optimization.
-    Stores the properties and configuration for genetic algorithm operations.
+    Stores the functions for cost function calculation.
     """
 
     def __init__(self,
@@ -117,7 +117,7 @@ class Member:
 
     def get_general_eff_prop_and_cfs(self, idx = 0):
         """
-        Compute the effective non-elastic properties and concentration factors of a
+        Compute the effective non-modulus properties and concentration factors of a
         composite material using the Hashin-Shtrikman bounds.
 
         Args:
@@ -276,7 +276,7 @@ class Member:
 
     def get_elastic_eff_props_and_cfs(self, idx = 0):
         """
-        Compute the effective elastic properties and concentration factors of a composite
+        Compute the effective modulus properties and concentration factors of a composite
         material using the Hashin-Shtrikman bounds.
 
         Args:
@@ -510,7 +510,7 @@ class Member:
         Hashin-Shtrikman bounds for various property categories.
 
         Returns:
-            effective properties (np.ndarray)
+            effective properties (ndarray)
         """
 
         # Initialize effective property array

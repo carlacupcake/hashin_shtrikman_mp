@@ -3,7 +3,7 @@ from pydantic import BaseModel, model_validator
 
 
 class MaterialProperty(BaseModel):
-    """Represents a single property and its bounds."""
+    """Represents a single property for a single material and its bounds."""
 
     prop: str
     upper_bound: float

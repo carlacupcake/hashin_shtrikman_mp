@@ -1,101 +1,55 @@
-# Class: `GeneticAlgorithmParams`
+# Class: `Population`
 
-Class to hold the parameters used for the genetic algorithm. <br>
+Class to hold the population of members.<br>
+The class also implements methods to generate the initial population and sort the members based on their costs. <br>
 Built on the `Pydantic BaseModel`.
 
 ## Attributes
 
-* `property_categories`, `list[str]` <br>
-    List of property categories considered for optimization.
-
-* `num_parents`, `PositiveInt` <br>
-    Number of parent members to retain in each generation."
-
-* `num_kids`, `PositiveInt` <br>
-    Number of children to produce from the parent members.
-
-num_generations: PositiveInt = Field(
-    default=100,
-    description="Total number of generations to simulate in the genetic algorithm."
-)
-num_members: PositiveInt = Field(
-    default=200,
-    description="Total number of members in each generation of the population."
-)
-mixing_param: Annotated[float, Field(strict=True, ge=0, le=1)] = Field(
-    default = 0.5,
-    description ="For linear scaling between effective min and max."
-                    "It is recommended to use 0.5 in the absence of experimental data"
-)
-tolerance: Annotated[float, Field(strict=True, ge=0)] = Field(
-    default=1.0,
-    description="This parameter sets the threshold for considering the deviation of "
-                "concentration factors from their ideal values. It is used to adjust "
-                "the sensitivity of the cost function to variations in material "
-                "property concentrations, with a lower tolerance indicating "
-                "stricter requirements for concentration matching. In the cost "
-                "function, tolerance helps to determine the weight applied to "
-                "concentration factors, influencing the penalty for deviations in "
-                "material properties from their desired values."
-)
-weight_eff_prop: Annotated[float, Field(strict=True, ge=0)] = Field(
-    default=1.0,
-    description="This weight factor scales the importance of the effective property "
-                "matching component of the cost function. It determines how "
-                "strongly the difference between the calculated effective "
-                "properties of the composite material and the desired properties "
-                "influences the total cost. A higher value places more emphasis "
-                "on accurately matching these effective properties, aiming to "
-                "optimize the material composition towards achieving specific "
-                "property targets."
-)
-weight_conc_factor: Annotated[float, Field(strict=True, ge=0)] = Field(
-    default=1.0,
-    description="This weight factor controls the significance of the "
-                "concentration factor matching in the cost function. It scales "
-                "the penalty applied for deviations of concentration factors "
-                "from their ideal or tolerated levels, thus affecting the "
-                "optimization process's focus on material distribution within "
-                "the composite. A higher value means that achieving the "
-                "desired concentration balance between the composite's "
-                "constituents is more critical to minimizing the overall cost."
-)
-
+* `optimization_params`, type: `GeneticAlgorithmParams` <br>
+* `ga_params`, type: `PositiveInt` <br>
+* `values`, type: `np.ndarray = None` <br>
+* `costs`, type: `np.ndarray = None)` <br>
 
 ---
 ## Class Methods
 
-* `from_user_input`
-    - Initializes the `OptimizationParams` class from the user input dictionary.
-
-* `get_num_properties_from_desired_props`
-    - Calculates the total number of properties from the desired properties dictionary.
-    - **Args:** desired_props (dict)
-    - **Returns:** num_properties (int)
-
-* `get_bounds_from_user_input`
-    - Extracts bounds (upper or lower) for material properties from the user input.
-    - **Args:**
-        + user_input (dict)
-        + bound_key (str)
-        + property_docs (dict[str, list[str]])
-        + num_materials (int)
+* `get_unique_designs`
+    - Retrieves the unique designs from the population based on their costs.
     - **Returns:**
-        + bounds (dict)
+        + A list containing:
+            - unique_members (ndarray), unique population members corresponding to unique_costs.
+            - uniqie_costs (ndarray)
 
-* `get_desired_props_from_user_input`
-    - Extracts the desired values for each property category.
-    - **Args:**
-        + user_input (dict)
-        + property_categories (list[str])
-        + property_docs (dict)
+* `get_effective_properties`
+    - Calculates the effective properties for each member in the population.
     - **Returns:**
-        + desired_props (dict)
+        + all_effective_properties (ndarray)
 
-* `get_elastic_idx_from_user_input`
-    - Gets the indices of elastic properties from the upper bounds.
+* `set_random_values`
+    - Sets random values for the properties of each member in the population.
     - **Args:**
-        + upper_bounds (dict)
-        + property_categories (list[str])
-    - Returns:
-        + indices (list[int]): ensures proper ordering of elastic moduli
+        + lower_bounds (ndarray, optional)
+        + upper_bounds (ndarray, optional)
+        + start_member (int, optional): index of the first member to update in the population
+        + indices_elastic_moduli (list, optional): ensures proper ordering.
+    - **Returns:**
+        + self (Population)
+
+* `set_costs`
+    - Calculates the costs for each member in the population.
+    - **Returns:**
+        + self (Population)
+
+* `set_order_by_costs`
+    - Reorders the population based on the sorted indices of costs.
+    - **Args:** sorted_indices (ndarray)
+    - **Returns:**
+        + self (Population)
+
+* `sort_costs`
+    - Sorts the costs and returns the sorted values along with their corresponding indices.
+    - **Returns:**
+        + A list containing two arrays:
+            - sorted costs (ndarray)
+            - sorted_indices (ndarray), indices that would sort the original `self.costs`.

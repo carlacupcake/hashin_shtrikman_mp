@@ -12,7 +12,9 @@ A genetic algorithm is used to optimize over the user-specified design space. Th
 The library has been designed to handle 2- to 10-phase composite design.
 
 ---
-## Installation
+## Getting Started
+
+### Installation
 `hashin_shtrikan_mp` can be installed from [PyPi source](https://pypi.org/project/hashin_shtrikman_mp/) by running:
 ```
 pip install hashin_shtrikman_mp
@@ -23,8 +25,11 @@ It can also be installed by cloning [this repository](https://github.com/carlacu
 pip install .
 ```
 
-### Jupyter Notebook Examples
-Example notebooks are included in [examples](https://github.com/carlacupcake/hashin_shtrikman_mp/tree/master/examples).
+### Examples
+Getting familiar with any codebase can be difficult and learning by example is often the most efficient. Toward this end, we have provided two example Jupyter notebooks: <br>
+
+* [3-phase Composite Example](/examples/example_n=3/): an example which explores searching for an optimal 3-phase composite with user-specified desired properties <br>
+* [Phase Diagrams for 2-, 3-, and 4-phase Composites](/examples/example_plotting/): an example demonstrating the different phase diagram visualizations for 2-, 3-, and 4-phase composites
 
 ### Implementation Notes
 - Ensure you have valid credentials for the Materials Project API, which you can find by registering yourself with Materials Project – [https://next-gen.materialsproject.org/](https://next-gen.materialsproject.org/).
@@ -77,22 +82,3 @@ mpiexec -n 4 python tests/integration/test_optimization_flow.py
 - **Find the Optimal Volume Fractions** by evaluating the  population with the same cost function used previously.
 - **Display of Top-Performing Candidates**: Repeat the process for all possible combinations of materials and display the top-performers along with their volume fractions.
 - **For 2-, 3-, and 4-phase Composites** view the phase diagram for each property of interest and view how changing constituent volume fractions changes the effective composite property.
-
----
-
-## Example Visualizations
-
-
-***Phase Diagram of Thermal Conductivity for 2-phase Composite***
-
-<img width="597" alt="elec-cond-2phase-cursor" src="https://github.com/user-attachments/assets/654f2961-7d0a-43d6-aac7-33a42a55a2b3" />
-
-***Phase Diagram of Thermal Conductivity for 3-phase Composite***
-
-<img width="572" alt="elec-cond-3phase-cursor" src="https://github.com/user-attachments/assets/6e72dce5-76a2-4b12-94c3-d74de55978d6" />
-
-***Phase Diagram of Thermal Conductivity for 4-phase Composite***
-
-<img width="563" alt="elec-cond-4phase-cursor" src="https://github.com/user-attachments/assets/a79f654d-d875-4c4d-8ee4-fa7b5a71ca86" />
-
-

@@ -7,6 +7,9 @@ from .mixture import Mixture
 class Aggregate(BaseModel):
     """
     Represents an aggregate of materials and mixtures.
+
+    Needed in order to construct the dictionary of bounds that encompass
+    all the search bounds individually defined for constituent materials.
     """
 
     name: str
