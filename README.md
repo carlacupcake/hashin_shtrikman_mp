@@ -32,7 +32,7 @@ Detailed documentation and example usages for this library can be found [here](h
 - The genetic algorithm's efficiency and effectiveness can vary greatly based on the optimization parameters and the definition of the cost function. Using defaults is recommended.
 - Visualization of cost versus generation can provide insights into the convergence behavior of the genetic algorithm. Expect that the exact shape of the convergence plot will change every time the algorithm is run, due to the stochastic nature of the algorithm.
 
-### Miscallaneous features
+### Miscellaneous features
 **mpi4py support is added to append final_dict**
 
 To take advantage of `mpi` parallelization, one can run the following:
