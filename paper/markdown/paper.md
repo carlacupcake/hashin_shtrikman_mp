@@ -1,3 +1,44 @@
+---
+title: 'hashin\_shtrikman\_mp: a package for the optimal design and discovery of multi-phase composite materials'
+tags:
+  - Python
+  - materials
+  - composites
+  - design
+  - optimization
+authors:
+  - name: Carla J. Becker
+    corresponding: true
+    affiliation: 1
+  - name: Hrushikesh Sahasrabuddhe
+    affiliation: "2, 3"
+    orcid: 0000-0001-7346-4568
+  - name: Max C. Gallant
+    affiliation: "2, 4"
+  - name: Anubhav Jain
+    affiliation: 3
+    orcid: 0000-0001-5893-9967
+  - name: Kristin A. Persson
+    affiliation: "2, 4"
+    orcid: 0000-0003-2495-5509
+  - name: Tarek I. Zohdi
+    affiliation: 1
+    orcid: 0000-0002-0844-3573
+
+affiliations:
+ - name: Department of Mechanical Engineering, University of California, Berkeley, California, United States of America
+   index: 1
+   ror: 00hx57361
+ - name: Department of Materials Science and Engineering, University of California, Berkeley, California, United States of America
+   index: 2
+ - name: Energy Technologies Area, Lawrence Berkeley National Laboratory, Berkeley, CA 94720, USA
+   index: 3
+ - name: Materials Sciences Division, Lawrence Berkeley National Laboratory, Berkeley, California, United States of America
+   index: 3
+date: 31 March 2025
+bibliography: paper.bib
+
+---
 # Summary {#sec:summary}
 
 `hashin_shtrikman_mp` is a tool for composites designers who have
