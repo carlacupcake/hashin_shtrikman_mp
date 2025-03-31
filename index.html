@@ -18,7 +18,7 @@
         <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
         <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
         <link href="assets/_mkdocstrings.css" rel="stylesheet">
-        <link href="overrides/custom.css" rel="stylesheet">
+        <link href="stylesheets/extra.css" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/yaml.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
@@ -46,10 +46,6 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="getting_started/" class="dropdown-item">Getting Started</a>
-</li>
-                                    
-<li>
     <a href="examples/example_n%3D3/" class="dropdown-item">3-phase Composite Example</a>
 </li>
                                     
@@ -59,35 +55,85 @@
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Reference</a>
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Documentation</a>
                                 <ul class="dropdown-menu">
                                     
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Genetic Algorithm</a>
+    <ul class="dropdown-menu">
+            
 <li>
-    <a href="reference/core/optimizer.md" class="dropdown-item">Optimizer</a>
+    <a href="reference/core/genetic_algorithm/genetic_algorithm_parameters/" class="dropdown-item">GeneticAlgorithmParams</a>
 </li>
+            
+<li>
+    <a href="reference/core/genetic_algorithm/genetic_algorithm_result/" class="dropdown-item">GeneticAlgorithmResult</a>
+</li>
+            
+<li>
+    <a href="reference/core/genetic_algorithm/genetic_algorithm/" class="dropdown-item">GeneticAlgorithm</a>
+</li>
+            
+<li>
+    <a href="reference/core/genetic_algorithm/member/" class="dropdown-item">Member</a>
+</li>
+            
+<li>
+    <a href="reference/core/genetic_algorithm/optimization_params/" class="dropdown-item">OptimizationParams</a>
+</li>
+            
+<li>
+    <a href="reference/core/genetic_algorithm/population/" class="dropdown-item">Population</a>
+</li>
+    </ul>
+  </li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">User Input</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="reference/core/user_input/aggregate/" class="dropdown-item">Aggregate</a>
+</li>
+            
+<li>
+    <a href="reference/core/user_input/material_property/" class="dropdown-item">MaterialProperty</a>
+</li>
+            
+<li>
+    <a href="reference/core/user_input/material/" class="dropdown-item">Material</a>
+</li>
+            
+<li>
+    <a href="reference/core/user_input/mixture_property/" class="dropdown-item">MixtureProperty</a>
+</li>
+            
+<li>
+    <a href="reference/core/user_input/mixture/" class="dropdown-item">Mixture</a>
+</li>
+            
+<li>
+    <a href="reference/core/user_input/user_input/" class="dropdown-item">UserInput</a>
+</li>
+    </ul>
+  </li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Visualization</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="reference/core/visualization/composite_property_plotter/" class="dropdown-item">CompositePropertyPlotter</a>
+</li>
+            
+<li>
+    <a href="reference/core/visualization/optimization_result_visualizer/" class="dropdown-item">OptimizationResultVisualizer</a>
+</li>
+    </ul>
+  </li>
                                     
 <li>
-    <a href="reference/core/genetic_algo.md" class="dropdown-item">GAParams</a>
-</li>
-                                    
-<li>
-    <a href="reference/core/member.md" class="dropdown-item">Member</a>
-</li>
-                                    
-<li>
-    <a href="reference/core/population.md" class="dropdown-item">Population</a>
-</li>
-                                    
-<li>
-    <a href="reference/core/user_input.md" class="dropdown-item">UserInput</a>
-</li>
-                                    
-<li>
-    <a href="reference/core/visualizer.md" class="dropdown-item">Visualizer</a>
-</li>
-                                    
-<li>
-    <a href="reference/core/match_finder.md" class="dropdown-item">MatchFinder</a>
+    <a href="reference/core/match_finder/" class="dropdown-item">MatchFinder</a>
 </li>
                                 </ul>
                             </li>
@@ -105,7 +151,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="getting_started/" class="nav-link">
+                                <a rel="next" href="examples/example_n%3D3/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -167,15 +213,11 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#installation" class="nav-link">Installation</a>
+            <li class="nav-item" data-bs-level="2"><a href="#getting-started" class="nav-link">Getting Started</a>
               <ul class="nav flex-column">
               </ul>
             </li>
             <li class="nav-item" data-bs-level="2"><a href="#workflow" class="nav-link">Workflow</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-bs-level="2"><a href="#example-visualizations" class="nav-link">Example Visualizations</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -195,15 +237,20 @@
 <p>A genetic algorithm is used to optimize over the user-specified design space. The algorithm simultaneously minimizes absolute error from the desired composite properties and optimally distributes loads across constituent phases. Once the genetic algorithm has returned theoretical candidate materials, <code>hashin_shtrikman_mp</code> searches for real materials in the <a href="https://next-gen.materialsproject.org/">Materials Project</a> database with properties close to those suggested by the genetic algorithm.</p>
 <p>The library has been designed to handle 2- to 10-phase composite design.</p>
 <hr />
-<h2 id="installation">Installation</h2>
+<h2 id="getting-started">Getting Started</h2>
+<h3 id="installation">Installation</h3>
 <p><code>hashin_shtrikan_mp</code> can be installed from <a href="https://pypi.org/project/hashin_shtrikman_mp/">PyPi source</a> by running:</p>
 <pre><code>pip install hashin_shtrikman_mp
 </code></pre>
 <p>It can also be installed by cloning <a href="https://github.com/carlacupcake/hashin_shtrikman_mp/tree/main">this repository</a>, then running in the root of the repository:</p>
 <pre><code>pip install .
 </code></pre>
-<h3 id="jupyter-notebook-examples">Jupyter Notebook Examples</h3>
-<p>Example notebooks are included in <a href="https://github.com/carlacupcake/hashin_shtrikman_mp/tree/master/examples">examples</a>.</p>
+<h3 id="examples">Examples</h3>
+<p>Getting familiar with any codebase can be difficult and learning by example is often the most efficient. Toward this end, we have provided two example Jupyter notebooks: <br></p>
+<ul>
+<li><a href="/examples/example_n=3/">3-phase Composite Example</a>: an example which explores searching for an optimal 3-phase composite with user-specified desired properties <br></li>
+<li><a href="/examples/example_plotting/">Phase Diagrams for 2-, 3-, and 4-phase Composites</a>: an example demonstrating the different phase diagram visualizations for 2-, 3-, and 4-phase composites</li>
+</ul>
 <h3 id="implementation-notes">Implementation Notes</h3>
 <ul>
 <li>Ensure you have valid credentials for the Materials Project API, which you can find by registering yourself with Materials Project – <a href="https://next-gen.materialsproject.org/">https://next-gen.materialsproject.org/</a>.</li>
@@ -211,7 +258,7 @@
 <li>The genetic algorithm's efficiency and effectiveness can vary greatly based on the optimization parameters and the definition of the cost function. Using defaults is recommended.</li>
 <li>Visualization of cost versus generation can provide insights into the convergence behavior of the genetic algorithm. Expect that the exact shape of the convergence plot will change every time the algorithm is run, due to the stochastic nature of the algorithm.</li>
 </ul>
-<h3 id="miscallaneous-features">Miscallaneous features</h3>
+<h3 id="miscellaneous-features">Miscellaneous features</h3>
 <p><strong>mpi4py support is added to append final_dict</strong></p>
 <p>To take advantage of <code>mpi</code> parallelization, one can run the following:</p>
 <pre><code>pip install mpi4py
@@ -250,15 +297,7 @@ pip install mpi4py
 <li><strong>Find the Optimal Volume Fractions</strong> by evaluating the  population with the same cost function used previously.</li>
 <li><strong>Display of Top-Performing Candidates</strong>: Repeat the process for all possible combinations of materials and display the top-performers along with their volume fractions.</li>
 <li><strong>For 2-, 3-, and 4-phase Composites</strong> view the phase diagram for each property of interest and view how changing constituent volume fractions changes the effective composite property.</li>
-</ul>
-<hr />
-<h2 id="example-visualizations">Example Visualizations</h2>
-<p><strong><em>Phase Diagram of Thermal Conductivity for 2-phase Composite</em></strong></p>
-<p><img width="597" alt="elec-cond-2phase-cursor" src="https://github.com/user-attachments/assets/654f2961-7d0a-43d6-aac7-33a42a55a2b3" /></p>
-<p><strong><em>Phase Diagram of Thermal Conductivity for 3-phase Composite</em></strong></p>
-<p><img width="572" alt="elec-cond-3phase-cursor" src="https://github.com/user-attachments/assets/6e72dce5-76a2-4b12-94c3-d74de55978d6" /></p>
-<p><strong><em>Phase Diagram of Thermal Conductivity for 4-phase Composite</em></strong></p>
-<p><img width="563" alt="elec-cond-4phase-cursor" src="https://github.com/user-attachments/assets/a79f654d-d875-4c4d-8ee4-fa7b5a71ca86" /></p></div>
+</ul></div>
             </div>
         </div>
 
@@ -343,5 +382,5 @@ pip install mpi4py
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-03-30 22:00:59.029961+00:00
+Build Date UTC : 2025-03-31 05:55:28.165444+00:00
 -->

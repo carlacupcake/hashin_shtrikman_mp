@@ -18,7 +18,7 @@
         <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
         <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
         <link href="../../assets/_mkdocstrings.css" rel="stylesheet">
-        <link href="../../overrides/custom.css" rel="stylesheet">
+        <link href="../../stylesheets/extra.css" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/yaml.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
@@ -46,10 +46,6 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="../../getting_started/" class="dropdown-item">Getting Started</a>
-</li>
-                                    
-<li>
     <a href="./" class="dropdown-item active" aria-current="page">3-phase Composite Example</a>
 </li>
                                     
@@ -59,35 +55,85 @@
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Reference</a>
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Documentation</a>
                                 <ul class="dropdown-menu">
                                     
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Genetic Algorithm</a>
+    <ul class="dropdown-menu">
+            
 <li>
-    <a href="../../reference/core/optimizer.md" class="dropdown-item">Optimizer</a>
+    <a href="../../reference/core/genetic_algorithm/genetic_algorithm_parameters/" class="dropdown-item">GeneticAlgorithmParams</a>
 </li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/genetic_algorithm_result/" class="dropdown-item">GeneticAlgorithmResult</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/genetic_algorithm/" class="dropdown-item">GeneticAlgorithm</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/member/" class="dropdown-item">Member</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/optimization_params/" class="dropdown-item">OptimizationParams</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/population/" class="dropdown-item">Population</a>
+</li>
+    </ul>
+  </li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">User Input</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../../reference/core/user_input/aggregate/" class="dropdown-item">Aggregate</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/material_property/" class="dropdown-item">MaterialProperty</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/material/" class="dropdown-item">Material</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/mixture_property/" class="dropdown-item">MixtureProperty</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/mixture/" class="dropdown-item">Mixture</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/user_input/" class="dropdown-item">UserInput</a>
+</li>
+    </ul>
+  </li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Visualization</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../../reference/core/visualization/composite_property_plotter/" class="dropdown-item">CompositePropertyPlotter</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/visualization/optimization_result_visualizer/" class="dropdown-item">OptimizationResultVisualizer</a>
+</li>
+    </ul>
+  </li>
                                     
 <li>
-    <a href="../../reference/core/genetic_algo.md" class="dropdown-item">GAParams</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/member.md" class="dropdown-item">Member</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/population.md" class="dropdown-item">Population</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/user_input.md" class="dropdown-item">UserInput</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/visualizer.md" class="dropdown-item">Visualizer</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/match_finder.md" class="dropdown-item">MatchFinder</a>
+    <a href="../../reference/core/match_finder/" class="dropdown-item">MatchFinder</a>
 </li>
                                 </ul>
                             </li>
@@ -100,7 +146,7 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../../getting_started/" class="nav-link">
+                                <a rel="prev" href="../.." class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
@@ -640,12 +686,14 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 <span class="kn">from</span><span class="w"> </span><span class="nn">hashin_shtrikman_mp.core.genetic_algorithm</span><span class="w"> </span><span class="kn">import</span> <span class="n">OptimizationParams</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hashin_shtrikman_mp.core.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">OptimizationResultVisualizer</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">hashin_shtrikman_mp.core.match_finder</span><span class="w"> </span><span class="kn">import</span> <span class="n">MatchFinder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">from hashin_shtrikman_mp.core.user_input import Aggregate, MaterialProperty, Material, MixtureProperty, Mixture, UserInput
 from hashin_shtrikman_mp.core import GeneticAlgorithm
 from hashin_shtrikman_mp.core.genetic_algorithm import OptimizationParams
 from hashin_shtrikman_mp.core.visualization import OptimizationResultVisualizer
-from hashin_shtrikman_mp.core.match_finder import MatchFinder</div>
+from hashin_shtrikman_mp.core.match_finder import MatchFinder
+from IPython.display import Image</div>
 </div>
 </div>
 </div>
@@ -1159,6 +1207,17 @@ ga = GeneticAlgorithm()</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<img alt="convg" src="../../img/convg.png" width="500"/>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <p>Plot the contributions to the cost function for the best performer</p>
 <p><em>Note on how many contributions to expect:</em>
 Per property, there is</p>
@@ -1209,13 +1268,24 @@ Per property, there is</p>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Cost: 0.0469401434276232, Number effective properties: 5, Number of concentration factors: 24
+<pre>Cost: 0.04477574762468891, Number effective properties: 5, Number of concentration factors: 24
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<img alt="cost-func-contribs" src="../../img/cost-func-contribs.png" width="500"/>
 </div>
 </div>
 </div>
@@ -1324,7 +1394,7 @@ Per property, there is</p>
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [27]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [16]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-16">

@@ -18,7 +18,7 @@
         <link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" >
         <link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css" disabled>
         <link href="../../assets/_mkdocstrings.css" rel="stylesheet">
-        <link href="../../overrides/custom.css" rel="stylesheet">
+        <link href="../../stylesheets/extra.css" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/yaml.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/python.min.js"></script>
@@ -46,10 +46,6 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
-    <a href="../../getting_started/" class="dropdown-item">Getting Started</a>
-</li>
-                                    
-<li>
     <a href="../example_n%3D3/" class="dropdown-item">3-phase Composite Example</a>
 </li>
                                     
@@ -59,35 +55,85 @@
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
-                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Reference</a>
+                                <a href="#" class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown"  aria-expanded="false">Documentation</a>
                                 <ul class="dropdown-menu">
                                     
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Genetic Algorithm</a>
+    <ul class="dropdown-menu">
+            
 <li>
-    <a href="../../reference/core/optimizer.md" class="dropdown-item">Optimizer</a>
+    <a href="../../reference/core/genetic_algorithm/genetic_algorithm_parameters/" class="dropdown-item">GeneticAlgorithmParams</a>
 </li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/genetic_algorithm_result/" class="dropdown-item">GeneticAlgorithmResult</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/genetic_algorithm/" class="dropdown-item">GeneticAlgorithm</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/member/" class="dropdown-item">Member</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/optimization_params/" class="dropdown-item">OptimizationParams</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/genetic_algorithm/population/" class="dropdown-item">Population</a>
+</li>
+    </ul>
+  </li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">User Input</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../../reference/core/user_input/aggregate/" class="dropdown-item">Aggregate</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/material_property/" class="dropdown-item">MaterialProperty</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/material/" class="dropdown-item">Material</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/mixture_property/" class="dropdown-item">MixtureProperty</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/mixture/" class="dropdown-item">Mixture</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/user_input/user_input/" class="dropdown-item">UserInput</a>
+</li>
+    </ul>
+  </li>
+                                    
+  <li class="dropdown-submenu">
+    <a href="#" class="dropdown-item">Visualization</a>
+    <ul class="dropdown-menu">
+            
+<li>
+    <a href="../../reference/core/visualization/composite_property_plotter/" class="dropdown-item">CompositePropertyPlotter</a>
+</li>
+            
+<li>
+    <a href="../../reference/core/visualization/optimization_result_visualizer/" class="dropdown-item">OptimizationResultVisualizer</a>
+</li>
+    </ul>
+  </li>
                                     
 <li>
-    <a href="../../reference/core/genetic_algo.md" class="dropdown-item">GAParams</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/member.md" class="dropdown-item">Member</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/population.md" class="dropdown-item">Population</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/user_input.md" class="dropdown-item">UserInput</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/visualizer.md" class="dropdown-item">Visualizer</a>
-</li>
-                                    
-<li>
-    <a href="../../reference/core/match_finder.md" class="dropdown-item">MatchFinder</a>
+    <a href="../../reference/core/match_finder/" class="dropdown-item">MatchFinder</a>
 </li>
                                 </ul>
                             </li>
@@ -105,7 +151,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" class="nav-link disabled">
+                                <a rel="next" href="../../reference/core/genetic_algorithm/genetic_algorithm_parameters/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -163,15 +209,15 @@
             
             <li class="nav-item" data-bs-level="1"><a href="#example-visualizations-for-2-3-and-4-phase-composites" class="nav-link">Example Visualizations for 2-, 3-, and 4-phase Composites</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-bs-level="2"><a href="#example-visualizations-for-an-n2-phase-composite" class="nav-link">Example visualizations for an $n=2$ phase composite</a>
+            <li class="nav-item" data-bs-level="2"><a href="#2-phase-composite" class="nav-link">2-phase composite</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#example-visualizations-for-an-n3-phase-composite" class="nav-link">Example visualizations for an n=3 phase composite</a>
+            <li class="nav-item" data-bs-level="2"><a href="#3-phase-composite" class="nav-link">3-phase composite</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-bs-level="2"><a href="#example-visualizations-for-an-n4-phase-composite" class="nav-link">Example visualizations for an n=4 phase composite</a>
+            <li class="nav-item" data-bs-level="2"><a href="#4-phase-composite" class="nav-link">4-phase composite</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -628,8 +674,8 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -662,20 +708,6 @@ from hashin_shtrikman_mp.core.user_input import MaterialProperty, Material, Mixt
 from hashin_shtrikman_mp.core import GeneticAlgorithm
 from hashin_shtrikman_mp.core.genetic_algorithm import OptimizationParams
 from hashin_shtrikman_mp.core.visualization import CompositePropertyPlotter</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/Users/carlabecker/opt/anaconda3/envs/carla_mp_api/lib/python3.11/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
-  from .autonotebook import tqdm as notebook_tqdm
-</pre>
 </div>
 </div>
 </div>
@@ -730,7 +762,7 @@ with open("test_consolidated_dict") as f:
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="example-visualizations-for-an-n2-phase-composite">Example visualizations for an $n=2$ phase composite<a class="anchor-link" href="#example-visualizations-for-an-n2-phase-composite">¶</a></h2>
+<h2 id="2-phase-composite">2-phase composite<a class="anchor-link" href="#2-phase-composite">¶</a></h2>
 </div>
 </div>
 </div>
@@ -751,7 +783,7 @@ with open("test_consolidated_dict") as f:
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -861,12 +893,12 @@ material_combinations = list(itertools.product(*materials))</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<p>Create a mock user workflow (similar to the steps in [this example])</p>
+<p>Create a mock user workflow (similar to the steps in <a href="https://carlacupcake.github.io/examples/example_n%3D3/">this example</a>)</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -884,30 +916,29 @@ material_combinations = list(itertools.product(*materials))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Need user input to create an HS instance</span>
-<span class="n">properties_mat_1</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">properties_mat_1</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">upper_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
     <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">80</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">80</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">upper_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>      <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
 <span class="p">]</span>
 
 <span class="n">properties_mat_2</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">upper_bound</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>     <span class="n">lower_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
     <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.009</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1.3</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">upper_bound</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">upper_bound</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1.3</span><span class="p">),</span>
 <span class="p">]</span>
 
 <span class="c1"># Define properties for the mixture</span>
 <span class="n">properties_mixture</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">desired_prop</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span>
     <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mf">0.007</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mi">234</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mi">150</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">desired_prop</span><span class="o">=</span><span class="mi">234</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">desired_prop</span><span class="o">=</span><span class="mi">150</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">desired_prop</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
 <span class="p">]</span>
 
 <span class="c1"># Create Material &amp; Mixture instances</span>
@@ -917,32 +948,37 @@ material_combinations = list(itertools.product(*materials))</div>
 
 <span class="c1"># Initialize UserInput instance with materials and mixtures</span>
 <span class="n">user_input</span><span class="o">=</span> <span class="n">UserInput</span><span class="p">(</span><span class="n">materials</span><span class="o">=</span><span class="p">[</span><span class="n">mat_1</span><span class="p">,</span> <span class="n">mat_2</span><span class="p">],</span> <span class="n">mixtures</span><span class="o">=</span><span class="p">[</span><span class="n">mixture</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"User Input: "</span><span class="p">,</span> <span class="n">user_input</span><span class="p">)</span>
+
+<span class="c1"># Create an OptimizationParams instance for testing</span>
+<span class="n">optimization</span> <span class="o">=</span> <span class="n">OptimizationParams</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+
+<span class="c1"># Run optimization</span>
+<span class="n">ga</span> <span class="o">=</span> <span class="n">GeneticAlgorithm</span><span class="p">()</span>
+<span class="n">ga_result</span> <span class="o">=</span> <span class="n">ga</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">gen_counter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-6"># Need user input to create an HS instance
-properties_mat_1 = [
-    MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=20, lower_bound=1),
+<div class="clipboard-copy-txt" id="cell-6">properties_mat_1 = [
+    MaterialProperty(prop='elec_cond_300k_low_doping',  upper_bound=20,    lower_bound=1),
     MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.0001, lower_bound=1e-5),
-    MaterialProperty(prop='bulk_modulus', upper_bound=100, lower_bound=50),
-    MaterialProperty(prop='shear_modulus', upper_bound=100, lower_bound=80),
-    MaterialProperty(prop='universal_anisotropy', upper_bound=2, lower_bound=1),
+    MaterialProperty(prop='bulk_modulus',               upper_bound=100,    lower_bound=50),
+    MaterialProperty(prop='shear_modulus',              upper_bound=100,    lower_bound=80),
+    MaterialProperty(prop='universal_anisotropy',       upper_bound=2,      lower_bound=1),
 ]
 
 properties_mat_2 = [
-    MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=5, lower_bound=2),
+    MaterialProperty(prop='elec_cond_300k_low_doping',  upper_bound=5,     lower_bound=2),
     MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.009, lower_bound=1e-4),
-    MaterialProperty(prop='bulk_modulus', upper_bound=400, lower_bound=20),
-    MaterialProperty(prop='shear_modulus', upper_bound=200, lower_bound=100),
-    MaterialProperty(prop='universal_anisotropy', upper_bound=2.3, lower_bound=1.3),
+    MaterialProperty(prop='bulk_modulus',               upper_bound=400,   lower_bound=20),
+    MaterialProperty(prop='shear_modulus',              upper_bound=200,   lower_bound=100),
+    MaterialProperty(prop='universal_anisotropy',       upper_bound=2.3,   lower_bound=1.3),
 ]
 
 # Define properties for the mixture
 properties_mixture = [
-    MixtureProperty(prop='elec_cond_300k_low_doping', desired_prop=9),
+    MixtureProperty(prop='elec_cond_300k_low_doping',  desired_prop=9),
     MixtureProperty(prop='therm_cond_300k_low_doping', desired_prop=0.007),
-    MixtureProperty(prop='bulk_modulus', desired_prop=234),
-    MixtureProperty(prop='shear_modulus', desired_prop=150),
-    MixtureProperty(prop='universal_anisotropy', desired_prop=1.5),
+    MixtureProperty(prop='bulk_modulus',               desired_prop=234),
+    MixtureProperty(prop='shear_modulus',              desired_prop=150),
+    MixtureProperty(prop='universal_anisotropy',       desired_prop=1.5),
 ]
 
 # Create Material &amp; Mixture instances
@@ -952,22 +988,26 @@ mixture = Mixture(name='mixture', properties=properties_mixture)
 
 # Initialize UserInput instance with materials and mixtures
 user_input= UserInput(materials=[mat_1, mat_2], mixtures=[mixture])
-print("User Input: ", user_input)</div>
+
+# Create an OptimizationParams instance for testing
+optimization = OptimizationParams.from_user_input(user_input)
+
+# Run optimization
+ga = GeneticAlgorithm()
+ga_result = ga.run(user_input, gen_counter=False)</div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>User Input:  {'mat_1': {'elec_cond_300k_low_doping': {'upper_bound': 20.0, 'lower_bound': 1.0}, 'therm_cond_300k_low_doping': {'upper_bound': 0.0001, 'lower_bound': 1e-05}, 'bulk_modulus': {'upper_bound': 100.0, 'lower_bound': 50.0}, 'shear_modulus': {'upper_bound': 100.0, 'lower_bound': 80.0}, 'universal_anisotropy': {'upper_bound': 2.0, 'lower_bound': 1.0}}, 'mat_2': {'elec_cond_300k_low_doping': {'upper_bound': 5.0, 'lower_bound': 2.0}, 'therm_cond_300k_low_doping': {'upper_bound': 0.009, 'lower_bound': 0.0001}, 'bulk_modulus': {'upper_bound': 400.0, 'lower_bound': 20.0}, 'shear_modulus': {'upper_bound': 200.0, 'lower_bound': 100.0}, 'universal_anisotropy': {'upper_bound': 2.3, 'lower_bound': 1.3}}, 'mixture': {'elec_cond_300k_low_doping': {'desired_prop': 9.0}, 'therm_cond_300k_low_doping': {'desired_prop': 0.007}, 'bulk_modulus': {'desired_prop': 234.0}, 'shear_modulus': {'desired_prop': 150.0}, 'universal_anisotropy': {'desired_prop': 1.5}}}
-</pre>
 </div>
 </div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Now visualize! There are 5 properties of interest in the example user workflow, so there will be 5 plots.</p>
 </div>
 </div>
 </div>
@@ -990,67 +1030,10 @@ print("User Input: ", user_input)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Create an OptimizationParams instance for testing</span>
-<span class="n">optimization</span> <span class="o">=</span> <span class="n">OptimizationParams</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
-
-<span class="c1"># Run optimization</span>
-<span class="n">ga</span> <span class="o">=</span> <span class="n">GeneticAlgorithm</span><span class="p">()</span>
-<span class="n">ga_result</span> <span class="o">=</span> <span class="n">ga</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">gen_counter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-7"># Create an OptimizationParams instance for testing
-optimization = OptimizationParams.from_user_input(user_input)
-
-# Run optimization
-ga = GeneticAlgorithm()
-ga_result = ga.run(user_input, gen_counter=False)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>2025-03-29 14:57:41,364 - hashin_shtrikman_mp.log.custom_logger - INFO - Loading property categories from /Users/carlabecker/Library/Mobile Documents/com~apple~CloudDocs/Carla's Desktop/UC Berkeley/Research/Materials Project/hashin_shtrikman_mp/src/hashin_shtrikman_mp/io/inputs/data/mp_property_docs.yaml.
-2025-03-29 14:57:41,372 - hashin_shtrikman_mp.log.custom_logger - INFO - property_categories = ['carrier-transport', 'elastic']
-2025-03-29 14:57:41,372 - hashin_shtrikman_mp.log.custom_logger - INFO - mixture_props = {'elec_cond_300k_low_doping': {'desired_prop': 9.0}, 'therm_cond_300k_low_doping': {'desired_prop': 0.007}, 'bulk_modulus': {'desired_prop': 234.0}, 'shear_modulus': {'desired_prop': 150.0}, 'universal_anisotropy': {'desired_prop': 1.5}}
-2025-03-29 14:57:41,373 - hashin_shtrikman_mp.log.custom_logger - INFO - Loading property categories from /Users/carlabecker/Library/Mobile Documents/com~apple~CloudDocs/Carla's Desktop/UC Berkeley/Research/Materials Project/hashin_shtrikman_mp/src/hashin_shtrikman_mp/io/inputs/data/mp_property_docs.yaml.
-2025-03-29 14:57:41,378 - hashin_shtrikman_mp.log.custom_logger - INFO - property_categories = ['carrier-transport', 'elastic']
-2025-03-29 14:57:41,379 - hashin_shtrikman_mp.log.custom_logger - INFO - mixture_props = {'elec_cond_300k_low_doping': {'desired_prop': 9.0}, 'therm_cond_300k_low_doping': {'desired_prop': 0.007}, 'bulk_modulus': {'desired_prop': 234.0}, 'shear_modulus': {'desired_prop': 150.0}, 'universal_anisotropy': {'desired_prop': 1.5}}
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Visualize</span>
-<span class="n">visualizer</span> <span class="o">=</span> <span class="n">CompositePropertyPlotter</span><span class="p">(</span><span class="n">ga_result</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">visualizer</span> <span class="o">=</span> <span class="n">CompositePropertyPlotter</span><span class="p">(</span><span class="n">ga_result</span><span class="p">)</span>
 <span class="n">visualizer</span><span class="o">.</span><span class="n">visualize_composite_eff_props</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">consolidated_dict</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-8"># Visualize
-visualizer = CompositePropertyPlotter(ga_result)
+<div class="clipboard-copy-txt" id="cell-7">visualizer = CompositePropertyPlotter(ga_result)
 visualizer.visualize_composite_eff_props(match, consolidated_dict)</div>
 </div>
 </div>
@@ -1085,7 +1068,74 @@ visualizer.visualize_composite_eff_props(match, consolidated_dict)</div>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="example-visualizations-for-an-n3-phase-composite">Example visualizations for an n=3 phase composite<a class="anchor-link" href="#example-visualizations-for-an-n3-phase-composite">¶</a></h2>
+<p>But here we only include one example: <br/>
+<img alt="2-phase" src="../../img/elec-cond-2phase-clean.png" width="500"/></p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="3-phase-composite">3-phase composite<a class="anchor-link" href="#3-phase-composite">¶</a></h2>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Create example match lists for the two constituent materials</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [8]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-8">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mat_1_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-684591"</span><span class="p">]</span>
+<span class="n">mat_2_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-3098"</span><span class="p">]</span>
+<span class="n">mat_3_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-4391"</span><span class="p">]</span>
+<span class="n">matches_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'mat1'</span><span class="p">:</span> <span class="n">mat_1_ids</span><span class="p">,</span> <span class="s1">'mat2'</span><span class="p">:</span> <span class="n">mat_2_ids</span><span class="p">,</span> <span class="s1">'mat3'</span><span class="p">:</span> <span class="n">mat_3_ids</span><span class="p">}</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-8">mat_1_ids = ["mp-684591"]
+mat_2_ids = ["mp-3098"]
+mat_3_ids = ["mp-4391"]
+matches_dict = {'mat1': mat_1_ids, 'mat2': mat_2_ids, 'mat3': mat_3_ids}</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Identify all of the possible combinations of the material matches</p>
 </div>
 </div>
 </div>
@@ -1108,19 +1158,24 @@ visualizer.visualize_composite_eff_props(match, consolidated_dict)</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Example material matches for an n=3 phase compositie</span>
-<span class="n">mat_1_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-684591"</span><span class="p">]</span>
-<span class="n">mat_2_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-3098"</span><span class="p">]</span>
-<span class="n">mat_3_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-4391"</span><span class="p">]</span>
-<span class="n">matches_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'mat1'</span><span class="p">:</span> <span class="n">mat_1_ids</span><span class="p">,</span> <span class="s1">'mat2'</span><span class="p">:</span> <span class="n">mat_2_ids</span><span class="p">,</span> <span class="s1">'mat3'</span><span class="p">:</span> <span class="n">mat_3_ids</span><span class="p">}</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">materials</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">matches_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="n">material_combinations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">materials</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-9"># Example material matches for an n=3 phase compositie
-mat_1_ids = ["mp-684591"]
-mat_2_ids = ["mp-3098"]
-mat_3_ids = ["mp-4391"]
-matches_dict = {'mat1': mat_1_ids, 'mat2': mat_2_ids, 'mat3': mat_3_ids}</div>
+<div class="clipboard-copy-txt" id="cell-9">materials = list(matches_dict.values())
+material_combinations = list(itertools.product(*materials))</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Use the first combination to demonstrate plotting</p>
 </div>
 </div>
 </div>
@@ -1143,15 +1198,22 @@ matches_dict = {'mat1': mat_1_ids, 'mat2': mat_2_ids, 'mat3': mat_3_ids}</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Identify all of the possible combinations of the material matches</span>
-<span class="n">materials</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">matches_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-<span class="n">material_combinations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">materials</span><span class="p">))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">match</span> <span class="o">=</span> <span class="n">material_combinations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-10"># Identify all of the possible combinations of the material matches
-materials = list(matches_dict.values())
-material_combinations = list(itertools.product(*materials))</div>
+<div class="clipboard-copy-txt" id="cell-10">match = material_combinations[0]</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Create a mock user workflow (similar to the steps in <a href="https://carlacupcake.github.io/examples/example_n%3D3/">this example</a>)</p>
 </div>
 </div>
 </div>
@@ -1174,13 +1236,116 @@ material_combinations = list(itertools.product(*materials))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Use the first combination to demonstrate plotting</span>
-<span class="n">match</span> <span class="o">=</span> <span class="n">material_combinations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">properties_mat_1</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">upper_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">80</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">upper_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>      <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">properties_mat_2</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">upper_bound</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>     <span class="n">lower_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.009</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">upper_bound</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">upper_bound</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1.3</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">properties_mat_3</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">upper_bound</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">upper_bound</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">upper_bound</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.1</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># Define properties for the mixture</span>
+<span class="n">properties_mixture</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">desired_prop</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mf">0.007</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">desired_prop</span><span class="o">=</span><span class="mi">234</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">desired_prop</span><span class="o">=</span><span class="mi">150</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">desired_prop</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># Create Material &amp; Mixture instances</span>
+<span class="n">mat_1</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_1'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_1</span><span class="p">)</span>
+<span class="n">mat_2</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_2'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_2</span><span class="p">)</span>
+<span class="n">mat_3</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_3'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_3</span><span class="p">)</span>
+<span class="n">mixture</span> <span class="o">=</span> <span class="n">Mixture</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mixture'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mixture</span><span class="p">)</span>
+
+<span class="c1"># Initialize UserInput instance with materials and mixtures</span>
+<span class="n">user_input</span><span class="o">=</span> <span class="n">UserInput</span><span class="p">(</span><span class="n">materials</span><span class="o">=</span><span class="p">[</span><span class="n">mat_1</span><span class="p">,</span> <span class="n">mat_2</span><span class="p">,</span> <span class="n">mat_3</span><span class="p">],</span> <span class="n">mixtures</span><span class="o">=</span><span class="p">[</span><span class="n">mixture</span><span class="p">])</span>
+
+<span class="c1"># Create an OptimizationParams instance for testing</span>
+<span class="n">optimization</span> <span class="o">=</span> <span class="n">OptimizationParams</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+
+<span class="c1"># Run optimization</span>
+<span class="n">ga</span> <span class="o">=</span> <span class="n">GeneticAlgorithm</span><span class="p">()</span>
+<span class="n">ga_result</span> <span class="o">=</span> <span class="n">ga</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">gen_counter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-11"># Use the first combination to demonstrate plotting
-match = material_combinations[0]</div>
+<div class="clipboard-copy-txt" id="cell-11">properties_mat_1 = [
+    MaterialProperty(prop='elec_cond_300k_low_doping',  upper_bound=20,    lower_bound=1),
+    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.0001, lower_bound=1e-5),
+    MaterialProperty(prop='bulk_modulus',               upper_bound=100,    lower_bound=50),
+    MaterialProperty(prop='shear_modulus',              upper_bound=100,    lower_bound=80),
+    MaterialProperty(prop='universal_anisotropy',       upper_bound=2,      lower_bound=1),
+]
+
+properties_mat_2 = [
+    MaterialProperty(prop='elec_cond_300k_low_doping',  upper_bound=5,     lower_bound=2),
+    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.009, lower_bound=1e-4),
+    MaterialProperty(prop='bulk_modulus',               upper_bound=400,   lower_bound=20),
+    MaterialProperty(prop='shear_modulus',              upper_bound=200,   lower_bound=100),
+    MaterialProperty(prop='universal_anisotropy',       upper_bound=2.3,   lower_bound=1.3),
+]
+
+properties_mat_3 = [
+    MaterialProperty(prop='elec_cond_300k_low_doping',  upper_bound=10,    lower_bound=1),
+    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.005, lower_bound=1e-4),
+    MaterialProperty(prop='bulk_modulus',               upper_bound=300,   lower_bound=20),
+    MaterialProperty(prop='shear_modulus',              upper_bound=300,   lower_bound=100),
+    MaterialProperty(prop='universal_anisotropy',       upper_bound=2.1,   lower_bound=0.9),
+]
+
+# Define properties for the mixture
+properties_mixture = [
+    MixtureProperty(prop='elec_cond_300k_low_doping',  desired_prop=9),
+    MixtureProperty(prop='therm_cond_300k_low_doping', desired_prop=0.007),
+    MixtureProperty(prop='bulk_modulus',               desired_prop=234),
+    MixtureProperty(prop='shear_modulus',              desired_prop=150),
+    MixtureProperty(prop='universal_anisotropy',       desired_prop=1.5),
+]
+
+# Create Material &amp; Mixture instances
+mat_1 = Material(name='mat_1', properties=properties_mat_1)
+mat_2 = Material(name='mat_2', properties=properties_mat_2)
+mat_3 = Material(name='mat_3', properties=properties_mat_3)
+mixture = Mixture(name='mixture', properties=properties_mixture)
+
+# Initialize UserInput instance with materials and mixtures
+user_input= UserInput(materials=[mat_1, mat_2, mat_3], mixtures=[mixture])
+
+# Create an OptimizationParams instance for testing
+optimization = OptimizationParams.from_user_input(user_input)
+
+# Run optimization
+ga = GeneticAlgorithm()
+ga_result = ga.run(user_input, gen_counter=False)</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Now visualize! There are 5 properties of interest in the example user workflow, so there will be 5 plots.</p>
 </div>
 </div>
 </div>
@@ -1203,191 +1368,10 @@ match = material_combinations[0]</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Need user input to create an HS instance</span>
-<span class="n">properties_mat_1</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">80</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="n">properties_mat_2</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.009</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1.3</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="n">properties_mat_3</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.1</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="c1"># Define properties for the mixture</span>
-<span class="n">properties_mixture</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mf">0.007</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mi">234</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mi">150</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="c1"># Create Material &amp; Mixture instances</span>
-<span class="n">mat_1</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_1'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_1</span><span class="p">)</span>
-<span class="n">mat_2</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_2'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_2</span><span class="p">)</span>
-<span class="n">mat_3</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_3'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_3</span><span class="p">)</span>
-<span class="n">mixture</span> <span class="o">=</span> <span class="n">Mixture</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mixture'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mixture</span><span class="p">)</span>
-
-<span class="c1"># Initialize UserInput instance with materials and mixtures</span>
-<span class="n">user_input</span><span class="o">=</span> <span class="n">UserInput</span><span class="p">(</span><span class="n">materials</span><span class="o">=</span><span class="p">[</span><span class="n">mat_1</span><span class="p">,</span> <span class="n">mat_2</span><span class="p">,</span> <span class="n">mat_3</span><span class="p">],</span> <span class="n">mixtures</span><span class="o">=</span><span class="p">[</span><span class="n">mixture</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"User Input: "</span><span class="p">,</span> <span class="n">user_input</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-12"># Need user input to create an HS instance
-properties_mat_1 = [
-    MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=20, lower_bound=1),
-    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.0001, lower_bound=1e-5),
-    MaterialProperty(prop='bulk_modulus', upper_bound=100, lower_bound=50),
-    MaterialProperty(prop='shear_modulus', upper_bound=100, lower_bound=80),
-    MaterialProperty(prop='universal_anisotropy', upper_bound=2, lower_bound=1),
-]
-
-properties_mat_2 = [
-    MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=5, lower_bound=2),
-    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.009, lower_bound=1e-4),
-    MaterialProperty(prop='bulk_modulus', upper_bound=400, lower_bound=20),
-    MaterialProperty(prop='shear_modulus', upper_bound=200, lower_bound=100),
-    MaterialProperty(prop='universal_anisotropy', upper_bound=2.3, lower_bound=1.3),
-]
-
-properties_mat_3 = [
-    MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=10, lower_bound=1),
-    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.005, lower_bound=1e-4),
-    MaterialProperty(prop='bulk_modulus', upper_bound=300, lower_bound=20),
-    MaterialProperty(prop='shear_modulus', upper_bound=300, lower_bound=100),
-    MaterialProperty(prop='universal_anisotropy', upper_bound=2.1, lower_bound=0.9),
-]
-
-# Define properties for the mixture
-properties_mixture = [
-    MixtureProperty(prop='elec_cond_300k_low_doping', desired_prop=9),
-    MixtureProperty(prop='therm_cond_300k_low_doping', desired_prop=0.007),
-    MixtureProperty(prop='bulk_modulus', desired_prop=234),
-    MixtureProperty(prop='shear_modulus', desired_prop=150),
-    MixtureProperty(prop='universal_anisotropy', desired_prop=1.5),
-]
-
-# Create Material &amp; Mixture instances
-mat_1 = Material(name='mat_1', properties=properties_mat_1)
-mat_2 = Material(name='mat_2', properties=properties_mat_2)
-mat_3 = Material(name='mat_3', properties=properties_mat_3)
-mixture = Mixture(name='mixture', properties=properties_mixture)
-
-# Initialize UserInput instance with materials and mixtures
-user_input= UserInput(materials=[mat_1, mat_2, mat_3], mixtures=[mixture])
-print("User Input: ", user_input)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>User Input:  {'mat_1': {'elec_cond_300k_low_doping': {'upper_bound': 20.0, 'lower_bound': 1.0}, 'therm_cond_300k_low_doping': {'upper_bound': 0.0001, 'lower_bound': 1e-05}, 'bulk_modulus': {'upper_bound': 100.0, 'lower_bound': 50.0}, 'shear_modulus': {'upper_bound': 100.0, 'lower_bound': 80.0}, 'universal_anisotropy': {'upper_bound': 2.0, 'lower_bound': 1.0}}, 'mat_2': {'elec_cond_300k_low_doping': {'upper_bound': 5.0, 'lower_bound': 2.0}, 'therm_cond_300k_low_doping': {'upper_bound': 0.009, 'lower_bound': 0.0001}, 'bulk_modulus': {'upper_bound': 400.0, 'lower_bound': 20.0}, 'shear_modulus': {'upper_bound': 200.0, 'lower_bound': 100.0}, 'universal_anisotropy': {'upper_bound': 2.3, 'lower_bound': 1.3}}, 'mat_3': {'elec_cond_300k_low_doping': {'upper_bound': 10.0, 'lower_bound': 1.0}, 'therm_cond_300k_low_doping': {'upper_bound': 0.005, 'lower_bound': 0.0001}, 'bulk_modulus': {'upper_bound': 300.0, 'lower_bound': 20.0}, 'shear_modulus': {'upper_bound': 300.0, 'lower_bound': 100.0}, 'universal_anisotropy': {'upper_bound': 2.1, 'lower_bound': 0.9}}, 'mixture': {'elec_cond_300k_low_doping': {'desired_prop': 9.0}, 'therm_cond_300k_low_doping': {'desired_prop': 0.007}, 'bulk_modulus': {'desired_prop': 234.0}, 'shear_modulus': {'desired_prop': 150.0}, 'universal_anisotropy': {'desired_prop': 1.5}}}
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-13">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Create an OptimizationParams instance for testing</span>
-<span class="n">optimization</span> <span class="o">=</span> <span class="n">OptimizationParams</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
-
-<span class="c1"># Run optimization</span>
-<span class="n">ga</span> <span class="o">=</span> <span class="n">GeneticAlgorithm</span><span class="p">()</span>
-<span class="n">ga_result</span> <span class="o">=</span> <span class="n">ga</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">gen_counter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-13"># Create an OptimizationParams instance for testing
-optimization = OptimizationParams.from_user_input(user_input)
-
-# Run optimization
-ga = GeneticAlgorithm()
-ga_result = ga.run(user_input, gen_counter=False)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>2025-03-29 14:57:45,624 - hashin_shtrikman_mp.log.custom_logger - INFO - Loading property categories from /Users/carlabecker/Library/Mobile Documents/com~apple~CloudDocs/Carla's Desktop/UC Berkeley/Research/Materials Project/hashin_shtrikman_mp/src/hashin_shtrikman_mp/io/inputs/data/mp_property_docs.yaml.
-2025-03-29 14:57:45,630 - hashin_shtrikman_mp.log.custom_logger - INFO - property_categories = ['carrier-transport', 'elastic']
-2025-03-29 14:57:45,631 - hashin_shtrikman_mp.log.custom_logger - INFO - mixture_props = {'elec_cond_300k_low_doping': {'desired_prop': 9.0}, 'therm_cond_300k_low_doping': {'desired_prop': 0.007}, 'bulk_modulus': {'desired_prop': 234.0}, 'shear_modulus': {'desired_prop': 150.0}, 'universal_anisotropy': {'desired_prop': 1.5}}
-2025-03-29 14:57:45,632 - hashin_shtrikman_mp.log.custom_logger - INFO - Loading property categories from /Users/carlabecker/Library/Mobile Documents/com~apple~CloudDocs/Carla's Desktop/UC Berkeley/Research/Materials Project/hashin_shtrikman_mp/src/hashin_shtrikman_mp/io/inputs/data/mp_property_docs.yaml.
-2025-03-29 14:57:45,640 - hashin_shtrikman_mp.log.custom_logger - INFO - property_categories = ['carrier-transport', 'elastic']
-2025-03-29 14:57:45,641 - hashin_shtrikman_mp.log.custom_logger - INFO - mixture_props = {'elec_cond_300k_low_doping': {'desired_prop': 9.0}, 'therm_cond_300k_low_doping': {'desired_prop': 0.007}, 'bulk_modulus': {'desired_prop': 234.0}, 'shear_modulus': {'desired_prop': 150.0}, 'universal_anisotropy': {'desired_prop': 1.5}}
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-14">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Visualize</span>
-<span class="n">visualizer</span> <span class="o">=</span> <span class="n">CompositePropertyPlotter</span><span class="p">(</span><span class="n">ga_result</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">visualizer</span> <span class="o">=</span> <span class="n">CompositePropertyPlotter</span><span class="p">(</span><span class="n">ga_result</span><span class="p">)</span>
 <span class="n">visualizer</span><span class="o">.</span><span class="n">visualize_composite_eff_props</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">consolidated_dict</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-14"># Visualize
-visualizer = CompositePropertyPlotter(ga_result)
+<div class="clipboard-copy-txt" id="cell-12">visualizer = CompositePropertyPlotter(ga_result)
 visualizer.visualize_composite_eff_props(match, consolidated_dict)</div>
 </div>
 </div>
@@ -1397,16 +1381,6 @@ visualizer.visualize_composite_eff_props(match, consolidated_dict)</div>
 <div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
 <div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/Users/carlabecker/Library/Mobile Documents/com~apple~CloudDocs/Carla's Desktop/UC Berkeley/Research/Materials Project/hashin_shtrikman_mp/src/hashin_shtrikman_mp/core/genetic_algorithm/member.py:316: UserWarning:
-
-Warning: Cannot properly apply Hashin-Shtrikman bounds on effective                           properties when bulk_i &lt; bulk_j and shear_i &gt; shear_j, or vice versa.
-
-</pre>
-</div>
-</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 </div>
@@ -1432,7 +1406,116 @@ Warning: Cannot properly apply Hashin-Shtrikman bounds on effective             
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="example-visualizations-for-an-n4-phase-composite">Example visualizations for an n=4 phase composite<a class="anchor-link" href="#example-visualizations-for-an-n4-phase-composite">¶</a></h2>
+<p>But here we only include one example: <br/>
+<img alt="3-phase" src="../../img/elec-cond-3phase-clean.png" width="500"/></p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="4-phase-composite">4-phase composite<a class="anchor-link" href="#4-phase-composite">¶</a></h2>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Create example match lists for the two constituent materials</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [13]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-13">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">mat_1_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-684591"</span><span class="p">]</span>
+<span class="n">mat_2_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-3098"</span><span class="p">]</span>
+<span class="n">mat_3_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-4391"</span><span class="p">]</span>
+<span class="n">mat_4_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-3536"</span><span class="p">]</span>
+<span class="n">matches_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'mat1'</span><span class="p">:</span> <span class="n">mat_1_ids</span><span class="p">,</span> <span class="s1">'mat2'</span><span class="p">:</span> <span class="n">mat_2_ids</span><span class="p">,</span> <span class="s1">'mat3'</span><span class="p">:</span> <span class="n">mat_3_ids</span><span class="p">,</span> <span class="s1">'mat4'</span><span class="p">:</span> <span class="n">mat_4_ids</span><span class="p">}</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-13">mat_1_ids = ["mp-684591"]
+mat_2_ids = ["mp-3098"]
+mat_3_ids = ["mp-4391"]
+mat_4_ids = ["mp-3536"]
+matches_dict = {'mat1': mat_1_ids, 'mat2': mat_2_ids, 'mat3': mat_3_ids, 'mat4': mat_4_ids}</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Identify all of the possible combinations of the material matches</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [14]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-14">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">materials</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">matches_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<span class="n">material_combinations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">materials</span><span class="p">))</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-14">materials = list(matches_dict.values())
+material_combinations = list(itertools.product(*materials))</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Use the first combination to demonstrate plotting</p>
 </div>
 </div>
 </div>
@@ -1455,21 +1538,22 @@ Warning: Cannot properly apply Hashin-Shtrikman bounds on effective             
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Example material matches for an n=3 phase compositie</span>
-<span class="n">mat_1_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-684591"</span><span class="p">]</span>
-<span class="n">mat_2_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-3098"</span><span class="p">]</span>
-<span class="n">mat_3_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-4391"</span><span class="p">]</span>
-<span class="n">mat_4_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"mp-3536"</span><span class="p">]</span>
-<span class="n">matches_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'mat1'</span><span class="p">:</span> <span class="n">mat_1_ids</span><span class="p">,</span> <span class="s1">'mat2'</span><span class="p">:</span> <span class="n">mat_2_ids</span><span class="p">,</span> <span class="s1">'mat3'</span><span class="p">:</span> <span class="n">mat_3_ids</span><span class="p">,</span> <span class="s1">'mat4'</span><span class="p">:</span> <span class="n">mat_4_ids</span><span class="p">}</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">match</span> <span class="o">=</span> <span class="n">material_combinations</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-15"># Example material matches for an n=3 phase compositie
-mat_1_ids = ["mp-684591"]
-mat_2_ids = ["mp-3098"]
-mat_3_ids = ["mp-4391"]
-mat_4_ids = ["mp-3536"]
-matches_dict = {'mat1': mat_1_ids, 'mat2': mat_2_ids, 'mat3': mat_3_ids, 'mat4': mat_4_ids}</div>
+<div class="clipboard-copy-txt" id="cell-15">match = material_combinations[-1]</div>
 </div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Create a mock user workflow (similar to the steps in <a href="https://carlacupcake.github.io/examples/example_n%3D3/">this example</a>)</p>
 </div>
 </div>
 </div>
@@ -1492,20 +1576,139 @@ matches_dict = {'mat1': mat_1_ids, 'mat2': mat_2_ids, 'mat3': mat_3_ids, 'mat4':
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Identify all of the possible combinations of the material matches</span>
-<span class="n">materials</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">matches_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-<span class="n">material_combinations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="o">*</span><span class="n">materials</span><span class="p">))</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">properties_mat_1</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">upper_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">80</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">upper_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>      <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">properties_mat_2</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">upper_bound</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>     <span class="n">lower_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.009</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">upper_bound</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">upper_bound</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1.3</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">properties_mat_3</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">upper_bound</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">upper_bound</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">upper_bound</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.1</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="n">properties_mat_4</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">upper_bound</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">upper_bound</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">upper_bound</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>   <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
+    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">upper_bound</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>    <span class="n">lower_bound</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># Define properties for the mixture</span>
+<span class="n">properties_mixture</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span>  <span class="n">desired_prop</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mf">0.007</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span>               <span class="n">desired_prop</span><span class="o">=</span><span class="mi">234</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span>              <span class="n">desired_prop</span><span class="o">=</span><span class="mi">150</span><span class="p">),</span>
+    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span>       <span class="n">desired_prop</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># Create Material &amp; Mixture instances</span>
+<span class="n">mat_1</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_1'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_1</span><span class="p">)</span>
+<span class="n">mat_2</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_2'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_2</span><span class="p">)</span>
+<span class="n">mat_3</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_3'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_3</span><span class="p">)</span>
+<span class="n">mat_4</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_4'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_4</span><span class="p">)</span>
+<span class="n">mixture</span> <span class="o">=</span> <span class="n">Mixture</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mixture'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mixture</span><span class="p">)</span>
+
+<span class="c1"># Initialize UserInput instance with materials and mixtures</span>
+<span class="n">user_input</span><span class="o">=</span> <span class="n">UserInput</span><span class="p">(</span><span class="n">materials</span><span class="o">=</span><span class="p">[</span><span class="n">mat_1</span><span class="p">,</span> <span class="n">mat_2</span><span class="p">,</span> <span class="n">mat_3</span><span class="p">,</span> <span class="n">mat_4</span><span class="p">],</span> <span class="n">mixtures</span><span class="o">=</span><span class="p">[</span><span class="n">mixture</span><span class="p">])</span>
+
+<span class="c1"># Create an OptimizationParams instance for testing</span>
+<span class="n">optimization</span> <span class="o">=</span> <span class="n">OptimizationParams</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
+
+<span class="c1"># Run optimization</span>
+<span class="n">ga</span> <span class="o">=</span> <span class="n">GeneticAlgorithm</span><span class="p">()</span>
+<span class="n">ga_result</span> <span class="o">=</span> <span class="n">ga</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">gen_counter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-16"># Identify all of the possible combinations of the material matches
-materials = list(matches_dict.values())
-material_combinations = list(itertools.product(*materials))</div>
+<div class="clipboard-copy-txt" id="cell-16">properties_mat_1 = [
+    MaterialProperty(prop='elec_cond_300k_low_doping',  upper_bound=20,    lower_bound=1),
+    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.0001, lower_bound=1e-5),
+    MaterialProperty(prop='bulk_modulus',               upper_bound=100,    lower_bound=50),
+    MaterialProperty(prop='shear_modulus',              upper_bound=100,    lower_bound=80),
+    MaterialProperty(prop='universal_anisotropy',       upper_bound=2,      lower_bound=1),
+]
+
+properties_mat_2 = [
+    MaterialProperty(prop='elec_cond_300k_low_doping',  upper_bound=5,     lower_bound=2),
+    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.009, lower_bound=1e-4),
+    MaterialProperty(prop='bulk_modulus',               upper_bound=400,   lower_bound=20),
+    MaterialProperty(prop='shear_modulus',              upper_bound=200,   lower_bound=100),
+    MaterialProperty(prop='universal_anisotropy',       upper_bound=2.3,   lower_bound=1.3),
+]
+
+properties_mat_3 = [
+    MaterialProperty(prop='elec_cond_300k_low_doping',  upper_bound=10,    lower_bound=1),
+    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.005, lower_bound=1e-4),
+    MaterialProperty(prop='bulk_modulus',               upper_bound=300,   lower_bound=20),
+    MaterialProperty(prop='shear_modulus',              upper_bound=300,   lower_bound=100),
+    MaterialProperty(prop='universal_anisotropy',       upper_bound=2.1,   lower_bound=0.9),
+]
+
+properties_mat_4 = [
+    MaterialProperty(prop='elec_cond_300k_low_doping',  upper_bound=15,    lower_bound=1),
+    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.005, lower_bound=1e-4),
+    MaterialProperty(prop='bulk_modulus',               upper_bound=400,   lower_bound=20),
+    MaterialProperty(prop='shear_modulus',              upper_bound=500,   lower_bound=100),
+    MaterialProperty(prop='universal_anisotropy',       upper_bound=3,    lower_bound=0.1),
+]
+
+# Define properties for the mixture
+properties_mixture = [
+    MixtureProperty(prop='elec_cond_300k_low_doping',  desired_prop=9),
+    MixtureProperty(prop='therm_cond_300k_low_doping', desired_prop=0.007),
+    MixtureProperty(prop='bulk_modulus',               desired_prop=234),
+    MixtureProperty(prop='shear_modulus',              desired_prop=150),
+    MixtureProperty(prop='universal_anisotropy',       desired_prop=1.5),
+]
+
+# Create Material &amp; Mixture instances
+mat_1 = Material(name='mat_1', properties=properties_mat_1)
+mat_2 = Material(name='mat_2', properties=properties_mat_2)
+mat_3 = Material(name='mat_3', properties=properties_mat_3)
+mat_4 = Material(name='mat_4', properties=properties_mat_4)
+mixture = Mixture(name='mixture', properties=properties_mixture)
+
+# Initialize UserInput instance with materials and mixtures
+user_input= UserInput(materials=[mat_1, mat_2, mat_3, mat_4], mixtures=[mixture])
+
+# Create an OptimizationParams instance for testing
+optimization = OptimizationParams.from_user_input(user_input)
+
+# Run optimization
+ga = GeneticAlgorithm()
+ga_result = ga.run(user_input, gen_counter=False)</div>
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>Now visualize! There are 5 properties of interest in the example user workflow, so there will be 5 plots.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -1523,238 +1726,10 @@ material_combinations = list(itertools.product(*materials))</div>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Use the first combination to demonstrate plotting</span>
-<span class="n">match</span> <span class="o">=</span> <span class="n">material_combinations</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-17"># Use the first combination to demonstrate plotting
-match = material_combinations[-1]</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [18]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-18">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Need user input to create an HS instance</span>
-<span class="n">properties_mat_1</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">50</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">80</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="n">properties_mat_2</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.009</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1.3</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="n">properties_mat_3</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">2.1</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="n">properties_mat_4</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mi">100</span><span class="p">),</span>
-    <span class="n">MaterialProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">upper_bound</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">lower_bound</span><span class="o">=</span><span class="mf">0.1</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="c1"># Define properties for the mixture</span>
-<span class="n">properties_mixture</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'elec_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mi">9</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'therm_cond_300k_low_doping'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mf">0.007</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'bulk_modulus'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mi">234</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'shear_modulus'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mi">150</span><span class="p">),</span>
-    <span class="n">MixtureProperty</span><span class="p">(</span><span class="n">prop</span><span class="o">=</span><span class="s1">'universal_anisotropy'</span><span class="p">,</span> <span class="n">desired_prop</span><span class="o">=</span><span class="mf">1.5</span><span class="p">),</span>
-<span class="p">]</span>
-
-<span class="c1"># Create Material &amp; Mixture instances</span>
-<span class="n">mat_1</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_1'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_1</span><span class="p">)</span>
-<span class="n">mat_2</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_2'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_2</span><span class="p">)</span>
-<span class="n">mat_3</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_3'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_3</span><span class="p">)</span>
-<span class="n">mat_4</span> <span class="o">=</span> <span class="n">Material</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mat_4'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mat_4</span><span class="p">)</span>
-<span class="n">mixture</span> <span class="o">=</span> <span class="n">Mixture</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'mixture'</span><span class="p">,</span> <span class="n">properties</span><span class="o">=</span><span class="n">properties_mixture</span><span class="p">)</span>
-
-<span class="c1"># Initialize UserInput instance with materials and mixtures</span>
-<span class="n">user_input</span><span class="o">=</span> <span class="n">UserInput</span><span class="p">(</span><span class="n">materials</span><span class="o">=</span><span class="p">[</span><span class="n">mat_1</span><span class="p">,</span> <span class="n">mat_2</span><span class="p">,</span> <span class="n">mat_3</span><span class="p">,</span> <span class="n">mat_4</span><span class="p">],</span> <span class="n">mixtures</span><span class="o">=</span><span class="p">[</span><span class="n">mixture</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"User Input: "</span><span class="p">,</span> <span class="n">user_input</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-18"># Need user input to create an HS instance
-properties_mat_1 = [
-    MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=20, lower_bound=1),
-    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.0001, lower_bound=1e-5),
-    MaterialProperty(prop='bulk_modulus', upper_bound=100, lower_bound=50),
-    MaterialProperty(prop='shear_modulus', upper_bound=100, lower_bound=80),
-    MaterialProperty(prop='universal_anisotropy', upper_bound=2, lower_bound=1),
-]
-
-properties_mat_2 = [
-    MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=5, lower_bound=2),
-    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.009, lower_bound=1e-4),
-    MaterialProperty(prop='bulk_modulus', upper_bound=400, lower_bound=20),
-    MaterialProperty(prop='shear_modulus', upper_bound=200, lower_bound=100),
-    MaterialProperty(prop='universal_anisotropy', upper_bound=2.3, lower_bound=1.3),
-]
-
-properties_mat_3 = [
-    MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=10, lower_bound=1),
-    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.005, lower_bound=1e-4),
-    MaterialProperty(prop='bulk_modulus', upper_bound=300, lower_bound=20),
-    MaterialProperty(prop='shear_modulus', upper_bound=300, lower_bound=100),
-    MaterialProperty(prop='universal_anisotropy', upper_bound=2.1, lower_bound=0.9),
-]
-
-properties_mat_4 = [
-    MaterialProperty(prop='elec_cond_300k_low_doping', upper_bound=15, lower_bound=1),
-    MaterialProperty(prop='therm_cond_300k_low_doping', upper_bound=0.005, lower_bound=1e-4),
-    MaterialProperty(prop='bulk_modulus', upper_bound=400, lower_bound=20),
-    MaterialProperty(prop='shear_modulus', upper_bound=500, lower_bound=100),
-    MaterialProperty(prop='universal_anisotropy', upper_bound=3, lower_bound=0.1),
-]
-
-# Define properties for the mixture
-properties_mixture = [
-    MixtureProperty(prop='elec_cond_300k_low_doping', desired_prop=9),
-    MixtureProperty(prop='therm_cond_300k_low_doping', desired_prop=0.007),
-    MixtureProperty(prop='bulk_modulus', desired_prop=234),
-    MixtureProperty(prop='shear_modulus', desired_prop=150),
-    MixtureProperty(prop='universal_anisotropy', desired_prop=1.5),
-]
-
-# Create Material &amp; Mixture instances
-mat_1 = Material(name='mat_1', properties=properties_mat_1)
-mat_2 = Material(name='mat_2', properties=properties_mat_2)
-mat_3 = Material(name='mat_3', properties=properties_mat_3)
-mat_4 = Material(name='mat_4', properties=properties_mat_4)
-mixture = Mixture(name='mixture', properties=properties_mixture)
-
-# Initialize UserInput instance with materials and mixtures
-user_input= UserInput(materials=[mat_1, mat_2, mat_3, mat_4], mixtures=[mixture])
-print("User Input: ", user_input)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>User Input:  {'mat_1': {'elec_cond_300k_low_doping': {'upper_bound': 20.0, 'lower_bound': 1.0}, 'therm_cond_300k_low_doping': {'upper_bound': 0.0001, 'lower_bound': 1e-05}, 'bulk_modulus': {'upper_bound': 100.0, 'lower_bound': 50.0}, 'shear_modulus': {'upper_bound': 100.0, 'lower_bound': 80.0}, 'universal_anisotropy': {'upper_bound': 2.0, 'lower_bound': 1.0}}, 'mat_2': {'elec_cond_300k_low_doping': {'upper_bound': 5.0, 'lower_bound': 2.0}, 'therm_cond_300k_low_doping': {'upper_bound': 0.009, 'lower_bound': 0.0001}, 'bulk_modulus': {'upper_bound': 400.0, 'lower_bound': 20.0}, 'shear_modulus': {'upper_bound': 200.0, 'lower_bound': 100.0}, 'universal_anisotropy': {'upper_bound': 2.3, 'lower_bound': 1.3}}, 'mat_3': {'elec_cond_300k_low_doping': {'upper_bound': 10.0, 'lower_bound': 1.0}, 'therm_cond_300k_low_doping': {'upper_bound': 0.005, 'lower_bound': 0.0001}, 'bulk_modulus': {'upper_bound': 300.0, 'lower_bound': 20.0}, 'shear_modulus': {'upper_bound': 300.0, 'lower_bound': 100.0}, 'universal_anisotropy': {'upper_bound': 2.1, 'lower_bound': 0.9}}, 'mat_4': {'elec_cond_300k_low_doping': {'upper_bound': 15.0, 'lower_bound': 1.0}, 'therm_cond_300k_low_doping': {'upper_bound': 0.005, 'lower_bound': 0.0001}, 'bulk_modulus': {'upper_bound': 400.0, 'lower_bound': 20.0}, 'shear_modulus': {'upper_bound': 500.0, 'lower_bound': 100.0}, 'universal_anisotropy': {'upper_bound': 3.0, 'lower_bound': 0.1}}, 'mixture': {'elec_cond_300k_low_doping': {'desired_prop': 9.0}, 'therm_cond_300k_low_doping': {'desired_prop': 0.007}, 'bulk_modulus': {'desired_prop': 234.0}, 'shear_modulus': {'desired_prop': 150.0}, 'universal_anisotropy': {'desired_prop': 1.5}}}
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [19]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-19">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Create an OptimizationParams instance for testing</span>
-<span class="n">optimization</span> <span class="o">=</span> <span class="n">OptimizationParams</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">user_input</span><span class="p">)</span>
-
-<span class="c1"># Run optimization</span>
-<span class="n">ga</span> <span class="o">=</span> <span class="n">GeneticAlgorithm</span><span class="p">()</span>
-<span class="n">ga_result</span> <span class="o">=</span> <span class="n">ga</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">user_input</span><span class="p">,</span> <span class="n">gen_counter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-19"># Create an OptimizationParams instance for testing
-optimization = OptimizationParams.from_user_input(user_input)
-
-# Run optimization
-ga = GeneticAlgorithm()
-ga_result = ga.run(user_input, gen_counter=False)</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>2025-03-29 14:57:55,464 - hashin_shtrikman_mp.log.custom_logger - INFO - Loading property categories from /Users/carlabecker/Library/Mobile Documents/com~apple~CloudDocs/Carla's Desktop/UC Berkeley/Research/Materials Project/hashin_shtrikman_mp/src/hashin_shtrikman_mp/io/inputs/data/mp_property_docs.yaml.
-2025-03-29 14:57:55,471 - hashin_shtrikman_mp.log.custom_logger - INFO - property_categories = ['carrier-transport', 'elastic']
-2025-03-29 14:57:55,473 - hashin_shtrikman_mp.log.custom_logger - INFO - mixture_props = {'elec_cond_300k_low_doping': {'desired_prop': 9.0}, 'therm_cond_300k_low_doping': {'desired_prop': 0.007}, 'bulk_modulus': {'desired_prop': 234.0}, 'shear_modulus': {'desired_prop': 150.0}, 'universal_anisotropy': {'desired_prop': 1.5}}
-2025-03-29 14:57:55,474 - hashin_shtrikman_mp.log.custom_logger - INFO - Loading property categories from /Users/carlabecker/Library/Mobile Documents/com~apple~CloudDocs/Carla's Desktop/UC Berkeley/Research/Materials Project/hashin_shtrikman_mp/src/hashin_shtrikman_mp/io/inputs/data/mp_property_docs.yaml.
-2025-03-29 14:57:55,480 - hashin_shtrikman_mp.log.custom_logger - INFO - property_categories = ['carrier-transport', 'elastic']
-2025-03-29 14:57:55,482 - hashin_shtrikman_mp.log.custom_logger - INFO - mixture_props = {'elec_cond_300k_low_doping': {'desired_prop': 9.0}, 'therm_cond_300k_low_doping': {'desired_prop': 0.007}, 'bulk_modulus': {'desired_prop': 234.0}, 'shear_modulus': {'desired_prop': 150.0}, 'universal_anisotropy': {'desired_prop': 1.5}}
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [20]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-20">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="c1"># Visualize</span>
-<span class="n">visualizer</span> <span class="o">=</span> <span class="n">CompositePropertyPlotter</span><span class="p">(</span><span class="n">ga_result</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">visualizer</span> <span class="o">=</span> <span class="n">CompositePropertyPlotter</span><span class="p">(</span><span class="n">ga_result</span><span class="p">)</span>
 <span class="n">visualizer</span><span class="o">.</span><span class="n">visualize_composite_eff_props</span><span class="p">(</span><span class="n">match</span><span class="p">,</span> <span class="n">consolidated_dict</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-20"># Visualize
-visualizer = CompositePropertyPlotter(ga_result)
+<div class="clipboard-copy-txt" id="cell-17">visualizer = CompositePropertyPlotter(ga_result)
 visualizer.visualize_composite_eff_props(match, consolidated_dict)</div>
 </div>
 </div>
@@ -1779,6 +1754,28 @@ visualizer.visualize_composite_eff_props(match, consolidated_dict)</div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 </div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<p>But here we only include one example: <br/>
+<img alt="4-phase" src="../../img/elec-cond-4phase-clean.png" width="500"/></p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 </div>
 </div>
 </div>
