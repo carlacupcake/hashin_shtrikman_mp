@@ -313,9 +313,6 @@ class Member:
         shear_mods = self.values[idx+1:stop:step]
         sorted_shear = np.sort(shear_mods, axis=0)
         sorted_shear_indices = np.argsort(shear_mods, axis=0)
-        if not np.array_equal(sorted_bulk_indices, sorted_shear_indices):
-            warnings.warn("Warning: Cannot properly apply Hashin-Shtrikman bounds on effective \
-                          properties when bulk_i < bulk_j and shear_i > shear_j, or vice versa.")
 
         phase_1_bulk  = sorted_bulk[0]
         phase_n_bulk  = sorted_bulk[-1]
