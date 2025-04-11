@@ -374,9 +374,7 @@ is the number of properties in that property category, $n_{\text{cfs}}$
 is the number of concentration factors in that category (typically two
 $\times$ the number of properties), and $C_{i}$ is a general
 scalar-valued concentration factor from section
-[3](#sec:theory){reference-type="ref"
-reference="sec:theory"}[3.2](#subsec:conc-facs){reference-type="ref"
-reference="subsec:conc-facs"}. Note also that
+\autoref{subsec:conc-facs}. Note also that
 $w_{\text{eff}} = 1/n_{\text{props}}$ and
 
 $$\hat{w}_{\text{cf}}^{i} = 
@@ -477,15 +475,15 @@ diagrams are included in Figure \autoref{fig:phase-viz}.
 <figure id="fig:phase-viz">
 <figure id="fig:2phase">
 <img src="figures/elec-cond-2phase-clean.png" />
-<figcaption aria-hidden="true"></figcaption>
+<figcaption label="fig:phase-viz" aria-hidden="true"></figcaption>
 </figure>
 <figure id="fig:3phase">
 <img src="figures/elec-cond-3phase-clean.png" />
-<figcaption aria-hidden="true"></figcaption>
+<figcaption label="fig:3phase" aria-hidden="true"></figcaption>
 </figure>
 <figure id="fig:4phase">
 <img src="figures/elec-cond-4phase-clean.png" />
-<figcaption aria-hidden="true"></figcaption>
+<figcaption label="fig:4phase" aria-hidden="true"></figcaption>
 </figure>
 <figcaption>Example phase diagrams for 2-, 3-, and 4-phase mixtures of
 Al<sub>2</sub>O<sub>3</sub> (mp-684591), AlCuO<sub>2</sub> (mp-3098),
