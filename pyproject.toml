@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "hashin_shtrikman_mp"
 version = "0.1.0"
-description = "determine the material properties and volume fractions of two materials in a binary mixture to meet a set of desired material properties"
+description = "Determine the optimal material properties and volume fractions for each component of an n-phase mixture to meet a set of desired composite material properties."
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
