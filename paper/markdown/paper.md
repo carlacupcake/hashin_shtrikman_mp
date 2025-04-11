@@ -10,6 +10,7 @@ authors:
   - name: Carla J. Becker
     corresponding: true
     affiliation: 1
+    orcid: 0009-0004-0646-6386
   - name: Hrushikesh Sahasrabuddhe
     affiliation: "2, 3"
     orcid: 0000-0001-7346-4568
@@ -39,7 +40,7 @@ date: 31 March 2025
 bibliography: paper.bib
 
 ---
-# Summary {#sec:summary}
+# [Summary]{label="sec:summary"}
 
 `hashin_shtrikman_mp` is a tool for composites designers who have
 desired composite properties in mind, but who do not yet have an
@@ -57,7 +58,7 @@ machine-learning and iv) agnosticism to underlying microstructure, and
 ultimate engineering application, make it a tool with much broader
 applications than its predecessors.
 
-# Statement of Need {#sec:need}
+# [Statement of Need]{label="sec:need"}
 
 Composites are ubiquitous in engineering due to their tunability and
 enhanced material properties as compared to their individual
@@ -99,9 +100,9 @@ candidate theoretical materials, then searches for real materials in the
 Materials Project database with properties close to the recommended
 constituents.
 
-# Underlying Theory {#sec:theory}
+# [Underlying Theory]{label="sec:theory"}
 
-## Estimate effective composite properties with the Hashin-Shtrikman bounds {#subsec:HS-bounds}
+## [Estimate effective composite properties with the Hashin-Shtrikman bounds]{label="subsec:HS-bounds"}
 
 When designing composites, simple volume-weighted linear combinations of
 constituent material properties do not yield accurate approximations of
@@ -114,9 +115,8 @@ arithmetic mean [@commentaryHS]. For quasi-isotropic and
 quasi-homogeneous multi-phase composites with arbitrary phase geometry
 (a more general case), a better option is to use the Hashin-Shtrikman
 bounds, which provide even tighter ranges on the resulting effective
-properties [@hashin1962variational]. Equation
-[\[eqn:gen_ineq\]](#eqn:gen_ineq){reference-type="ref"
-reference="eqn:gen_ineq"} summarizes the Hashin-Shtrikman bounds on a
+properties [@hashin1962variational]. Equation \autoref{eqn:gen_ineq}
+summarizes the Hashin-Shtrikman bounds on a
 generalized effective material property $y^{*}$ of an $n$-phase
 composite. The generalized material properties for the $n$-phases are
 ordered from least to greatest where
@@ -140,13 +140,11 @@ A_{n} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{y_{i} - y_{n}} + \alpha_{n
 \label{eqn:gen_As}$$
 
 ![An example of a quasi-isotropic, quasi-homogeneous 3-phase
-composite.](figures/3phase_composite.png){#fig:cartoon-3phase
+composite.](figures/3phase_composite.png){label="fig:cartoon-3phase"
 width="2in"}
 
-Equations [\[eqn:bulk_ineq\]](#eqn:bulk_ineq){reference-type="ref"
-reference="eqn:bulk_ineq"} and
-[\[eqn:shear_ineq\]](#eqn:shear_ineq){reference-type="ref"
-reference="eqn:shear_ineq"} summarize the results of the
+Equations\autoref{eqn:bulk_ineq) and
+\autoref{eqn:shear_ineq} summarize the results of the
 Hashin-Shtrikman derivations on the bounds on effective bulk modulus
 $\kappa^{*}$ and effective shear modulus $\mu^{*}$, where we
 simultaneously require
@@ -202,14 +200,14 @@ range of volume fractions, but, in the absence of experimental data, we
 select $\gamma = 0.5$. For more information, the reader is referred to
 [@zohdi-course-reader].
 
-## Quantifying distributed loads with concentration tensors {#subsec:conc-facs}
+## [Quantifying distributed loads with concentration tensors]{label="subsec:conc-facs"}
 
 In addition to finding effective properties of potential composites,
 `hashin_shtrikman_mp` recommends composites that are less prone to
 failure under extreme loading. When loads are not efficiently shared
 between constituents of the composite, stress concentrations, hot spots,
 and electrical shorts can develop, eventually leading to material
-failure. By introducing the concept of "concentration tensors\", we can
+failure. By introducing the concept of "concentration tensors", we can
 quantify a constituent's contribution to load response and then use
 constitutive laws to determine how the composite will respond to loads.
 
@@ -316,9 +314,9 @@ $$C_{1,\mu} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} C_{i,\mu} \
 
 For more information, the reader is referred to [@zohdi-course-reader].
 
-# Package Overview {#sec:package-overview}
+# [Package Overview]{label="sec:package-overview"}
 
-## Implementation Notes {#subsec:implementation}
+## [Implementation Notes]{label="subsec:implementation"}
 
 The library has been designed to handle the design of 2- to 10-phase
 isotropic and homogeneous composites. All materials in the Materials
@@ -333,15 +331,14 @@ computationally and allows the same code to be used for all properties
 (aside from bulk and shear moduli, which cannot be decoupled). For
 material properties in the Materials Project database with full tensor
 values available, `hashin_shtrikman_mp` uses the largest eigenvalue.
-Figure [2](#fig:flow-chart){reference-type="ref"
-reference="fig:flow-chart"} is a flow chart demonstrating the most
+Figure \autoref{fig:flow-chart} is a flow chart demonstrating the most
 common usage of `hashin_shtrikman_mp`.
 
 ![A flow chart demonstrating the most common usage of
-$\texttt{hashin\_shtrikman\_mp}$.](figures/hashin_shtrikman_mp_flow_chart.png){#fig:flow-chart
+$\texttt{hashin\_shtrikman\_mp}$.](figures/hashin_shtrikman_mp_flow_chart.png){label="fig:flow-chart"
 height="9in"}
 
-## Cost function design and optimization with genetic algorithm {#subsec:GA}
+## [Cost function design and optimization with genetic algorithm]{label="subsec:GA"}
 
 To find optimal composite mixtures, `hashin_shtrikman_mp` simultaneously
 seeks composite compositions with effective properties close to the
@@ -420,22 +417,21 @@ design, the cost value can be thought of as the fractional error from
 the desired outcome, plus penalties for "bad\" load sharing (should
 contribute 0 in the case of "good\" load sharing). A user can monitor
 the results of the genetic algorithm with the convergence plot, included
-in Figure [3](#fig:convg){reference-type="ref" reference="fig:convg"}.
+in Figure \autoref{fig:convg}.
 
 The nature of genetic algorithms is to produce several offspring with
 the same properties and costs after many generations, thus
 `hashin_shtrikman_mp` presents the user with only the *unique* top
 performing designs in a table. For the singular lowest-cost performer,
 users are presented with a breakdown of the cost, as in Figure
-[4](#fig:cost-func-contribs){reference-type="ref"
-reference="fig:cost-func-contribs"}.
+\autoref{fig:cost-func-contribs}.
 
-## Visualization and analysis {#subsec:viz}
+## [Visualization and analysis]{label="subsec:viz"}
 
 `hashin_shtrikman_mp` provides visualization tools for the genetic
 algorithm results and for matches with 2-, 3-, or 4- phases.
 
-Figure [3](#fig:convg){reference-type="ref" reference="fig:convg"} is a
+Figure \autoref{fig:convg} is a
 convergence plot showing the value of the genetic algorithm cost
 function decreasing over generations. The monotonically decreasing,
 staircase nature is characteristic to genetic algorithm convergence,
@@ -445,8 +441,7 @@ average cost of top ten performers equals the best cost). As the cost
 function has been designed to represent absolute error from the desired
 properties, a cost of 1.0 represents 100% error.
 
-Figure [4](#fig:cost-func-contribs){reference-type="ref"
-reference="fig:cost-func-contribs"} contains a breakdown of the non-zero
+Figure \autoref{fig:cost-func-contribs} contains a breakdown of the non-zero
 cost at the end of optimization for a 3-phase material where the
 properties of interest were electrical conductivity, thermal
 conductivity, bulk modulus, shear modulus, and universal anisotropy. We
@@ -467,18 +462,17 @@ material instead of the expected four i.e.
   concentration factor for each of the 3 phases.
 
 ![An example of the convergence plot for the genetic
-algorithm.](figures/convg.png){#fig:convg width="60%"}
+algorithm.](figures/convg.png){label="fig:convg" width="60%"}
 
 ![A breakdown of the contributions to the non-zero cost at the end of
-optimization.](figures/cost-func-contribs.png){#fig:cost-func-contribs
+optimization.](figures/cost-func-contribs.png){label="fig:cost-func-contribs"
 width="90%"}
 
 Once matches have been identified for a desired composite, along with
 recommended volume fractions, a user can still explore how varying the
 volume fractions of the constituents affect the resulting effective
 properties through interactive phase diagrams. Examples of these phase
-diagrams are included in Figure [8](#fig:phase-viz){reference-type="ref"
-reference="fig:phase-viz"}.
+diagrams are included in Figure \autoref{fig:phase-viz}.
 
 <figure id="fig:phase-viz">
 <figure id="fig:2phase">
@@ -499,14 +493,14 @@ MgSiO<sub>3</sub> (mp-4391), and MgAl<sub>2</sub>O<sub>4</sub>
 (mp-3536).</figcaption>
 </figure>
 
-## Match-finding {#subsec:match-finding}
+## [Match-finding]{label="subsec:match-finding"}
 
 The genetic algorithm returns suggested material properties for each of
 the phases in the composite and then `hashin_shtrikman_mp` finds real
 materials in the Materials Project database which are similar, according
 to some percent error threshold, which the user can control.
 
-# Acknowledgments {#sec:ack}
+# [Acknowledgments]{label="sec:ack"}
 
 This work was primarily funded by the Materials Project, which is funded
 by the U.S. Department of Energy, Office of Science, Office of Basic
