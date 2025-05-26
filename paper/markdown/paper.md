@@ -35,12 +35,12 @@ affiliations:
  - name: Energy Technologies Area, Lawrence Berkeley National Laboratory, Berkeley, CA 94720, USA
    index: 3
  - name: Materials Sciences Division, Lawrence Berkeley National Laboratory, Berkeley, California, United States of America
-   index: 3
+   index: 4
 date: 31 March 2025
 bibliography: paper.bib
 
 ---
-# [Summary]{label="sec:summary"}
+# Summary
 
 `hashin_shtrikman_mp` is a tool for composites designers who have
 desired composite properties in mind, but who do not yet have an
@@ -58,7 +58,7 @@ machine-learning and iv) agnosticism to underlying microstructure, and
 ultimate engineering application, make it a tool with much broader
 applications than its predecessors.
 
-# [Statement of Need]{label="sec:need"}
+# Statement of need
 
 Composites are ubiquitous in engineering due to their tunability and
 enhanced material properties as compared to their individual
@@ -100,9 +100,9 @@ candidate theoretical materials, then searches for real materials in the
 Materials Project database with properties close to the recommended
 constituents.
 
-# [Underlying Theory]{label="sec:theory"}
+# Underlying theory
 
-## [Estimate effective composite properties with the Hashin-Shtrikman bounds]{label="subsec:HS-bounds"}
+## Estimate effective composite properties with the Hashin-Shtrikman bounds
 
 When designing composites, simple volume-weighted linear combinations of
 constituent material properties do not yield accurate approximations of
@@ -123,27 +123,30 @@ ordered from least to greatest where
 $y_{1} \leq y_{2} \leq \dotsb \leq y_{n}$ with corresponding volume
 fractions sum to unity $v_{1} + v_{2} + \dotsb + v_{n} = 1$:
 
-$$y_{1} + \frac{A_{1}}{1 - \alpha_{1}A_{1}}
+\begin{equation}\label{eqn:gen_ineq}
+y_{1} + \frac{A_{1}}{1 - \alpha_{1}A_{1}}
 = y^{*,-} \leq y^{*} \leq y^{*,+} = 
 y_{n} + \frac{A_{n}}{1 - \alpha_{n}A_{n}}
-\label{eqn:gen_ineq}$$
+\end{equation}
 
-where $$\alpha_{1} = \frac{1}{3y_{1}}
+where
+\begin{equation}\label{eqn:gen_alphas}
+\alpha_{1} = \frac{1}{3y_{1}}
 \quad \text{and} \quad
 \alpha_{n} = \frac{1}{3y_{n}},
-\label{eqn:gen_alphas}$$
+\end{equation}
 
 and
-$$A_{1} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{y_{i} - y_{1}} + \alpha_{1}}
+\begin{equation}\label{eqn:gen_As}
+A_{1} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{y_{i} - y_{1}} + \alpha_{1}}
 \quad \text{and} \quad
 A_{n} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{y_{i} - y_{n}} + \alpha_{n}}.
-\label{eqn:gen_As}$$
+\end{equation}
 
 ![An example of a quasi-isotropic, quasi-homogeneous 3-phase
-composite.](figures/3phase_composite.png){label="fig:cartoon-3phase"
-width="2in"}
+composite. \label{fig:cartoon-3phase}](figures/3phase_composite.png){width=2in}
 
-Equations\autoref{eqn:bulk_ineq) and
+Equations \autoref{eqn:bulk_ineq) and 
 \autoref{eqn:shear_ineq} summarize the results of the
 Hashin-Shtrikman derivations on the bounds on effective bulk modulus
 $\kappa^{*}$ and effective shear modulus $\mu^{*}$, where we
@@ -151,38 +154,45 @@ simultaneously require
 $\kappa_{1} \leq \kappa_{2} \leq \dotsb \leq \kappa_{n}$ and
 $\mu_{1} \leq \mu_{2} \leq \dotsb \leq \mu_{n}$:
 
-$$\kappa_{1} + \frac{A_{1}^{\kappa}}{1 - \alpha_{1}^{\kappa}A_{1}^{\kappa}}
+\begin{equation}\label{eqn:bulk_ineq}
+\kappa_{1} + \frac{A_{1}^{\kappa}}{1 - \alpha_{1}^{\kappa}A_{1}^{\kappa}}
 = \kappa^{*,-} \leq \kappa^{*} \leq \kappa^{*,-} = 
 \kappa_{n} + \frac{A_{n}^{\kappa}}{1 - \alpha_{n}^{\kappa}A_{n}^{\kappa}}
-\label{eqn:bulk_ineq}$$
+\end{equation}
 
-$$\mu_{1} + \frac{A_{1}^{\mu}}{1 - \alpha_{1}^{\mu}A_{1}^{\mu}}
+\begin{equation}\label{eqn:shear_ineq}
+\mu_{1} + \frac{A_{1}^{\mu}}{1 - \alpha_{1}^{\mu}A_{1}^{\mu}}
 = \mu^{*,-} \leq \mu^{*} \leq \mu^{*,-} = 
 \mu_{n} + \frac{A_{n}^{\mu}}{1 - \alpha_{n}^{\mu}A_{n}^{\mu}}
-\label{eqn:shear_ineq}$$
+\end{equation}
 
-with $$\alpha_{1}^{\kappa} = \frac{3}{3\kappa_{1} + 4\mu_{1}}
+with
+\begin{equation}\label{eqn:bulk_alphas}
+\alpha_{1}^{\kappa} = \frac{3}{3\kappa_{1} + 4\mu_{1}}
 \quad \text{and} \quad
 \alpha_{n}^{\kappa} = \frac{3}{3\kappa_{n} + 4\mu_{n}},
-\label{eqn:bulk_alphas}$$
+\end{equation}
 
 and
-$$\alpha_{1}^{\mu} = \frac{3(\kappa_{1} + \mu_{1})}{5\mu_{1}(3\kappa_{1} + 4\mu_{1})}
+\begin{equation}\label{eqn:shear_alphas}
+\alpha_{1}^{\mu} = \frac{3(\kappa_{1} + \mu_{1})}{5\mu_{1}(3\kappa_{1} + 4\mu_{1})}
 \quad \text{and} \quad
 \alpha_{n}^{\mu} = \frac{3(\kappa_{n} + \mu_{n})}{5\mu_{n}(3\kappa_{n} + 4\mu_{n})},
-\label{eqn:shear_alphas}$$
+\end{equation}
 
 and
-$$A_{1}^{\kappa} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{1}} + \alpha_{1}}
+\begin{equation}\label{eqn:bulk_As}
+A_{1}^{\kappa} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{1}} + \alpha_{1}}
 \quad \text{and} \quad
 A_{n}^{\kappa} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{n}} + \alpha_{n}}, 
-\label{eqn:bulk_As}$$
+\end{equation}
 
 and
-$$A_{1}^{\mu} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{1}} + \alpha_{1}}
+\begin{equation}\label{eqn:shear_As}
+A_{1}^{\mu} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{1}} + \alpha_{1}}
 \quad \text{and} \quad
 A_{n}^{\mu} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{\mu_{i} - \mu_{n}} + \alpha_{n}}.
-\label{eqn:shear_As}$$
+\end{equation}
 
 The elastic forms for $\{A_{i}^{\kappa}\}$ and $\{A_{i}^{\mu}\}$ differ
 from the general forms $\{A_{i}\}$ because of their coupling via the
@@ -192,15 +202,16 @@ Once upper and lower bounds on the effective composite properties have
 been obtained, what remains is to find a final estimate of the resulting
 material properties. By the definition of bounds, we can write an
 expression for the effective property as
-$$y^{*} = \gamma y^{*,-} + (1-\gamma) y^{*,+}.
-\label{eqn:mixing-param}$$
+\begin{equation}\label{eqn:mixing-param}
+y^{*} = \gamma y^{*,-} + (1-\gamma) y^{*,+}.
+\end{equation}
 
 Given experimental data we could fit $\gamma$ and extrapolate for a
 range of volume fractions, but, in the absence of experimental data, we
 select $\gamma = 0.5$. For more information, the reader is referred to
 [@zohdi-course-reader].
 
-## [Quantifying distributed loads with concentration tensors]{label="subsec:conc-facs"}
+## Quantifying distributed loads with concentration tensors
 
 In addition to finding effective properties of potential composites,
 `hashin_shtrikman_mp` recommends composites that are less prone to
@@ -212,17 +223,20 @@ quantify a constituent's contribution to load response and then use
 constitutive laws to determine how the composite will respond to loads.
 
 For the general case of a constitutive law of the form
-$$\verb|tensor-valued response| = \verb|proportionality tensor| \times \verb|tensor-valued load|,
-\label{eqn:gen-const-law}$$
+\begin{equation}\label{eqn:gen-const-law}
+\verb|tensor-valued response| = \verb|proportionality tensor| \times \verb|tensor-valued load|,
+\end{equation}
 
 over the domain $\Omega$, we note that, by the definition of volume
 fraction, the following holds:
-$$\langle \verb|tensor-valued load| \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \langle \verb|tensor-valued load| \rangle_{\Omega_{i}} \\[15pt]
-\label{eqn:by-vol-frac-load}$$
+\begin{equation}\label{eqn:by-vol-frac-load}
+\langle \verb|tensor-valued load| \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \langle \verb|tensor-valued load| \rangle_{\Omega_{i}}
+\end{equation}
 
 and
-$$\langle \verb|tensor-valued response| \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \langle \verb|tensor-valued response| \rangle_{\Omega_{i}},
-\label{eqn:by-vol-frac-resp}$$
+\begin{equation}\label{eqn:by-vol-frac-resp}
+\langle \verb|tensor-valued response| \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \langle \verb|tensor-valued response| \rangle_{\Omega_{i}},
+\end{equation}
 
 where
 $\langle \cdot \rangle_{\Omega} = \frac{1}{|\Omega|} \int_{\Omega} (\cdot) \,d\Omega$
@@ -230,57 +244,68 @@ is the average of $(\cdot)$ over the domain, $v_{i}$ is the volume
 fraction of phase $i$, and $n$ is the number of phases. From there, we
 define the concentration tensors for the applied loads and responses for
 phases $i\in[1,...,n]$, respectively, as
-$$\langle \verb|tensor-valued load| \rangle_{\Omega_{i}} \equiv C_{i, \text{load}} \langle \verb|tensor-valued load| \rangle_{\Omega} \\[15pt]
-\label{eqn:Cload-basic-def}$$
+\begin{equation}\label{eqn:Cload-basic-def}
+\langle \verb|tensor-valued load| \rangle_{\Omega_{i}} \equiv C_{i, \text{load}} \langle \verb|tensor-valued load| \rangle_{\Omega}
+\end{equation}
 
 and
-$$\langle \verb|tensor-valued response| \rangle_{\Omega_{i}} \equiv C_{i, \text{response}} \langle \verb|tensor-valued response| \rangle_{\Omega}.
-\label{eqn:Cresp-basic-def}$$
+\begin{equation}\label{eqn:Cresp-basic-def}
+\langle \verb|tensor-valued response| \rangle_{\Omega_{i}} \equiv C_{i, \text{response}} \langle \verb|tensor-valued response| \rangle_{\Omega}.
+\end{equation}
 
 It follows from these definitions, and the assumption that the composite
 is isotropic and homogeneous, that the concentration tensors can be
 written only in terms of proportionality tensors. The concentration
 tensors for the applied loads for phases $i\in[2,...,n]$ are
-subsequently given by $$\begin{array}{l}
+subsequently given by
+\begin{equation}\label{eqn:load-conc-fact}
+\begin{array}{l}
 \mbox{\boldmath $C$}_{i,\text{load}} = \displaystyle\frac{1}{n-1} \displaystyle\frac{1}{v_{i}} \times \\[10pt]
 \hspace{16mm} [(\text{effective } \texttt{proportionality tensor}) - (\text{phase $i$ }\texttt{proportionality tensor})]: \\[10pt]
 \hspace{20mm} [(\text{phase $i$ }\texttt{proportionality tensor}) - (\text{phase 1 }\texttt{proportionality tensor})]^{-1}
 \end{array}
-\label{eqn:load-conc-fact}$$
+\end{equation}
 
 and for phase 1 as
-$$\mbox{\boldmath $C$}_{1,\text{load}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \mbox{\boldmath $C$}_{i,\text{load}} \right),
-\label{eqn:C1load}$$
+\begin{equation}\label{eqn:C1load}
+\mbox{\boldmath $C$}_{1,\text{load}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \mbox{\boldmath $C$}_{i,\text{load}} \right),
+\end{equation}
 
 The concentration tensors for the responses for phases $i\in[2,...,n]$
 are given by
-$$\mbox{\boldmath $C$}_{i,\text{response}} = (\text{phase $i$ } \verb|proportionality tensor|)\mbox{\boldmath $C$}_{i,\text{load}}(\text{effective } \verb|proportionality tensor|)^{-1}
-\label{eqn:response-conc-fact}$$
+\begin{equation}\label{eqn:response-conc-fact}
+\mbox{\boldmath $C$}_{i,\text{response}} = (\text{phase $i$ } \verb|proportionality tensor|)\mbox{\boldmath $C$}_{i,\text{load}}(\text{effective } \verb|proportionality tensor|)^{-1}
+\end{equation}
 
 and for phase 1 as
-$$\mbox{\boldmath $C$}_{1,\text{response}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \mbox{\boldmath $C$}_{i,\text{response}} \right).
-\label{eqn:C1response}$$
+\begin{equation}\label{eqn:C1response}
+\mbox{\boldmath $C$}_{1,\text{response}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \mbox{\boldmath $C$}_{i,\text{response}} \right).
+\end{equation}
 
 As a concrete example, consider Ohm's law, which relates the applied
 electric field $\mbox{\boldmath $E$}$ (load) to the resulting current
 density $\mbox{\boldmath $J$}$ (response) via the electrical
 conductivity $\mbox{\boldmath $\sigma$}_{e}$ (proportionality tensor),
 governing a 3-phase composite. The concentration tensors for current
-density would be $$\begin{array}{l}
+density would be 
+\begin{equation}\label{eqn:J_cfs}
+\begin{array}{l}
 \mbox{\boldmath $C$}_{1,J} = \displaystyle\frac{1}{v_{1}} \left( 1 - v_{2} \mbox{\boldmath $C$}_{2,J} - v_{3} \mbox{\boldmath $C$}_{3,J} \right), \\[10pt]
 \mbox{\boldmath $C$}_{2,J} = \mbox{\boldmath $\sigma$}_{2,e}:\mbox{\boldmath $C$}_{2,E}:(\mbox{\boldmath $\sigma$}_{e}^{*})^{-1}, \\[10pt]
 \mbox{\boldmath $C$}_{3,J} = \mbox{\boldmath $\sigma$}_{3,e}:\mbox{\boldmath $C$}_{3,E}:(\mbox{\boldmath $\sigma$}_{e}^{*})^{-1},
 \end{array}
-\label{eqn:J_cfs}$$
+\end{equation}
 
 where $\mbox{\boldmath $\sigma$}_{e}^{*}$ would be found according to
 the previous section. The concentration tensors for electric field would
-be $$\begin{array}{l}
+be
+\begin{equation}\label{eqn:E_cfs}
+\begin{array}{l}
 \mbox{\boldmath $C$}_{1,E} = \displaystyle\frac{1}{v_{1}} \left( 1 - v_{2} \mbox{\boldmath $C$}_{2,E} - v_{3} \mbox{\boldmath $C$}_{3,E} \right), \\[10pt]
 \mbox{\boldmath $C$}_{2,E} = \displaystyle\frac{1}{2}\displaystyle\frac{1}{v_{2}} (\mbox{\boldmath $\sigma$}_{e}^{*} - \mbox{\boldmath $\sigma$}_{1,e}):(\mbox{\boldmath $\sigma$}_{2,e}^{*} - \mbox{\boldmath $\sigma$}_{1,e})^{-1}, \\[10pt]
 \mbox{\boldmath $C$}_{3,E} = \displaystyle\frac{1}{2}\displaystyle\frac{1}{v_{3}} (\mbox{\boldmath $\sigma$}_{e}^{*} - \mbox{\boldmath $\sigma$}_{1,e}):(\mbox{\boldmath $\sigma$}_{3,e}^{*} - \mbox{\boldmath $\sigma$}_{1,e})^{-1}.
 \end{array}
-\label{eqn:E_cfs}$$
+\end{equation}
 
 In the case where the constitutive law governing concentration tensors
 is the Kirchoff-St. Venant law, which relates the tensor-valued strain
@@ -289,34 +314,40 @@ additionally define scalar-valued concentration factors $C_{i,\kappa}$
 and $C_{i,\mu}$, which respectively are the concentration factors for
 hydrostatic and deviatoric stress. For phases $i\in[2,...,n]$ They are
 defined as
-$$C_{i,\kappa} = \frac{1}{v_{i}}\frac{\kappa_{i}}{\kappa^{*}}(\kappa^{*} - \kappa_{1})(\kappa_{i} - \kappa_{1})^{-1}
-\label{eqn:sph-conc-fact}$$
+\begin{equation}\label{eqn:sph-conc-fact}
+C_{i,\kappa} = \frac{1}{v_{i}}\frac{\kappa_{i}}{\kappa^{*}}(\kappa^{*} - \kappa_{1})(\kappa_{i} - \kappa_{1})^{-1}
+\end{equation}
 
 and
-$$C_{i,\mu} = \frac{1}{v_{i}}\frac{\mu_{i}}{\mu^{*}}(\mu^{*} - \mu_{1})(\mu_{i} - \mu_{1})^{-1},
-\label{eqn:dev-conc-fact}$$
+\begin{equation}\label{eqn:dev-conc-fact}
+C_{i,\mu} = \frac{1}{v_{i}}\frac{\mu_{i}}{\mu^{*}}(\mu^{*} - \mu_{1})(\mu_{i} - \mu_{1})^{-1},
+\end{equation}
 
 where
-$$\left\langle \frac{1}{3}\text{tr}\mbox{\boldmath $\sigma$}\right\rangle_{\Omega_{i}} \equiv C_{i,\kappa} \left\langle \frac{1}{3}\text{tr}\mbox{\boldmath $\sigma$}\right\rangle_{\Omega} 
-\label{eqn:sph-conc-fact-def}$$
+\begin{equation}\label{eqn:sph-conc-fact-def}
+\left\langle \frac{1}{3}\text{tr}\mbox{\boldmath $\sigma$}\right\rangle_{\Omega_{i}} \equiv C_{i,\kappa} \left\langle \frac{1}{3}\text{tr}\mbox{\boldmath $\sigma$}\right\rangle_{\Omega} 
+\end{equation}
 
 and
-$$\left\langle \mbox{\boldmath $\sigma$}' \right\rangle_{\Omega_{i}} \equiv C_{i,\kappa} \left\langle \mbox{\boldmath $\sigma$}' \right\rangle_{\Omega}.
-\label{eqn:dev-conc-fact-def}$$
+\begin{equation}\label{eqn:dev-conc-fact-def}
+\left\langle \mbox{\boldmath $\sigma$}' \right\rangle_{\Omega_{i}} \equiv C_{i,\kappa} \left\langle \mbox{\boldmath $\sigma$}' \right\rangle_{\Omega}.
+\end{equation}
 
 For phase 1, the concentration tensors are defined as
-$$C_{1,\kappa} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} C_{i,\kappa} \right)
-\label{eqn:sph-cf-1}$$
+\begin{equation}\label{eqn:sph-cf-1}
+C_{1,\kappa} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} C_{i,\kappa} \right)
+\end{equation}
 
 and
-$$C_{1,\mu} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} C_{i,\mu} \right).
-\label{eqn:dev-cf-1}$$
+\begin{equation}\label{eqn:dev-cf-1}
+C_{1,\mu} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} C_{i,\mu} \right).
+\end{equation}
 
 For more information, the reader is referred to [@zohdi-course-reader].
 
-# [Package Overview]{label="sec:package-overview"}
+# Package overview
 
-## [Implementation Notes]{label="subsec:implementation"}
+## Implementation notes
 
 The library has been designed to handle the design of 2- to 10-phase
 isotropic and homogeneous composites. All materials in the Materials
@@ -335,10 +366,9 @@ Figure \autoref{fig:flow-chart} is a flow chart demonstrating the most
 common usage of `hashin_shtrikman_mp`.
 
 ![A flow chart demonstrating the most common usage of
-$\texttt{hashin\_shtrikman\_mp}$.](figures/hashin_shtrikman_mp_flow_chart.png){label="fig:flow-chart"
-height="9in"}
+$\texttt{hashin\_shtrikman\_mp}$.\label{fig:flow-chart}](figures/hashin_shtrikman_mp_flow_chart.png){height=9in}
 
-## [Cost function design and optimization with genetic algorithm]{label="subsec:GA"}
+## Cost function design and optimization with genetic algorithm
 
 To find optimal composite mixtures, `hashin_shtrikman_mp` simultaneously
 seeks composite compositions with effective properties close to the
@@ -351,15 +381,18 @@ the total cost function. At the time of this writing, the possible
 property categories are elastic, dielectric, carrier-transport,
 magnetic, and piezoelectric. Combining the individual cost functions to
 optimize across all design goals simultaneously yields
-$$\Pi^{\text{total}} = W_{\text{domains}}\left[ \Pi^{\text{elastic}} + \Pi^{\text{dielectric}} + \Pi^{\text{carrier-transport}} + \Pi^{\text{magnetic}} + \Pi^{\text{piezoelectric}} \right]
-\label{eqn:pi}$$
+\begin{equation}\label{eqn:pi}
+\Pi^{\text{total}} = W_{\text{domains}}\left[ \Pi^{\text{elastic}} + \Pi^{\text{dielectric}} + \Pi^{\text{carrier-transport}} + \Pi^{\text{magnetic}} + \Pi^{\text{piezoelectric}} \right]
+\end{equation}
 
 where $W_{\text{domains}}$ normalizes for the number of active property
 categories. Each property category contribution is composed of two
 weighted sums: 1) one with terms for absolute error between the
 effective and desired properties and 2) another for the absolute error
 between the concentration factors and a tolerance `TOL` that quantifies
-"well-distributed\" load sharing. That is, $$\Pi^{\text{general}} =
+"well-distributed\" load sharing. That is, 
+\begin{equation}\label{eqn:pi-gen}
+\Pi^{\text{general}} =
 \begin{cases}
 \begin{array}{l}
 w_{\text{eff}} \sum\limits_{i=1}^{n_{\text{props}}} \biggl\vert\displaystyle\frac{y_{i}^{*,D} - y_{i}^{*}}{y^{*,D}}\biggr\vert 
@@ -367,7 +400,7 @@ w_{\text{eff}} \sum\limits_{i=1}^{n_{\text{props}}} \biggl\vert\displaystyle\fra
 \end{array} & \text{if property category active}, \\
 \hspace{3mm} 0, & \text{else},
 \end{cases}
-\label{eqn:pi-gen}$$
+\end{equation}
 
 where the superscript $D$ denotes the desired value, $n_{\text{props}}$
 is the number of properties in that property category, $n_{\text{cfs}}$
@@ -388,7 +421,9 @@ except in the elastic case where
 $w_{\text{cfs}} = 1/n_{\text{props}}n_{\text{materials}}$.
 
 As a concrete example, the dielectric contribution to the cost function
-would take the form $$\Pi^{\text{dielectric}} =
+would take the form 
+\begin{equation}\label{eqn:pi-elastic}
+\Pi^{\text{dielectric}} =
 \begin{cases}
 \begin{array}{l}
 w_{\text{eff}} \biggl\vert\displaystyle\frac{\epsilon^{*,D} - \epsilon^{*}}{\epsilon_{ij}^{*,D}}\biggr\vert \\[10pt]
@@ -397,7 +432,7 @@ w_{\text{eff}} \biggl\vert\displaystyle\frac{\epsilon^{*,D} - \epsilon^{*}}{\eps
 \end{array} & \text{if dielectric property category active}, \\
 \hspace{3mm} 0, & \text{else},
 \end{cases}
-\label{eqn:pi-elastic}$$
+\end{equation}
 
 where the constitutive law, in the scalar case, relates applied field
 $E_{0}$ to resulting field $E$ via the dielectric constant $\epsilon$
@@ -424,7 +459,7 @@ performing designs in a table. For the singular lowest-cost performer,
 users are presented with a breakdown of the cost, as in Figure
 \autoref{fig:cost-func-contribs}.
 
-## [Visualization and analysis]{label="subsec:viz"}
+## Visualization and analysis
 
 `hashin_shtrikman_mp` provides visualization tools for the genetic
 algorithm results and for matches with 2-, 3-, or 4- phases.
@@ -460,45 +495,37 @@ material instead of the expected four i.e.
   concentration factor for each of the 3 phases.
 
 ![An example of the convergence plot for the genetic
-algorithm.](figures/convg.png){label="fig:convg" width="60%"}
+algorithm. \label{fig:convg}](figures/convg.png){width=60%}
 
 ![A breakdown of the contributions to the non-zero cost at the end of
-optimization.](figures/cost-func-contribs.png){label="fig:cost-func-contribs"
-width="90%"}
+optimization. \label{fig:cost-func-contribs}](figures/cost-func-contribs.png){width=90%}
 
 Once matches have been identified for a desired composite, along with
 recommended volume fractions, a user can still explore how varying the
 volume fractions of the constituents affect the resulting effective
 properties through interactive phase diagrams. Examples of these phase
-diagrams are included in Figure \autoref{fig:phase-viz}.
+diagrams are included in Figures \autoref{fig:2phase}, \autoref{fig:3phase}, and \autoref{fig:4phase}.
 
-<figure id="fig:phase-viz">
-<figure id="fig:2phase">
-<img src="figures/elec-cond-2phase-clean.png" />
-<figcaption label="fig:phase-viz" aria-hidden="true"></figcaption>
-</figure>
-<figure id="fig:3phase">
-<img src="figures/elec-cond-3phase-clean.png" />
-<figcaption label="fig:3phase" aria-hidden="true"></figcaption>
-</figure>
-<figure id="fig:4phase">
-<img src="figures/elec-cond-4phase-clean.png" />
-<figcaption label="fig:4phase" aria-hidden="true"></figcaption>
-</figure>
-<figcaption>Example phase diagrams for 2-, 3-, and 4-phase mixtures of
+![Example phase diagram for a 2-phase mixture of
+Al<sub>2</sub>O<sub>3</sub> (mp-684591) and AlCuO<sub>2</sub> (mp-3098). \label{fig:2phase}](figures/elec-cond-2phase-clean.png)
+
+![Example phase diagram for a 2-phase mixture of
+Al<sub>2</sub>O<sub>3</sub> (mp-684591), AlCuO<sub>2</sub> (mp-3098), and
+MgSiO<sub>3</sub> (mp-4391). \label{fig:3phase}](figures/elec-cond-3phase-clean.png)
+
+![Example phase diagram for a 4-phase mixture of
 Al<sub>2</sub>O<sub>3</sub> (mp-684591), AlCuO<sub>2</sub> (mp-3098),
 MgSiO<sub>3</sub> (mp-4391), and MgAl<sub>2</sub>O<sub>4</sub>
-(mp-3536).</figcaption>
-</figure>
+(mp-3536). \label{fig:4phase}](figures/elec-cond-4phase-clean.png)
 
-## [Match-finding]{label="subsec:match-finding"}
+## Match-finding
 
 The genetic algorithm returns suggested material properties for each of
 the phases in the composite and then `hashin_shtrikman_mp` finds real
 materials in the Materials Project database which are similar, according
 to some percent error threshold, which the user can control.
 
-# [Acknowledgments]{label="sec:ack"}
+# Acknowledgments
 
 This work was primarily funded by the Materials Project, which is funded
 by the U.S. Department of Energy, Office of Science, Office of Basic
@@ -508,3 +535,5 @@ project has been intellectually led by Tarek Zohdi and Kristin Persson.
 We would also like to thank the software engineering team at the
 Materials Project -- Patrick Huck, Jason Munro, and Ruoxi Yang -- for
 their support.
+
+# References
