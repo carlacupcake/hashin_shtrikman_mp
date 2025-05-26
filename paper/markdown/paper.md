@@ -115,7 +115,7 @@ arithmetic mean [@commentaryHS]. For quasi-isotropic and
 quasi-homogeneous multi-phase composites with arbitrary phase geometry
 (a more general case), a better option is to use the Hashin-Shtrikman
 bounds, which provide even tighter ranges on the resulting effective
-properties [@hashin1962variational]. Equation \autoref{eqn:gen_ineq}
+properties [@hashin1962variational]. \autoref{eqn:gen_ineq}
 summarizes the Hashin-Shtrikman bounds on a
 generalized effective material property $y^{*}$ of an $n$-phase
 composite. The generalized material properties for the $n$-phases are
@@ -146,7 +146,7 @@ A_{n} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{y_{i} - y_{n}} + \alpha_{n
 ![An example of a quasi-isotropic, quasi-homogeneous 3-phase
 composite. \label{fig:cartoon-3phase}](figures/3phase_composite.png){width=2in}
 
-Equations \autoref{eqn:bulk_ineq) and 
+\autoref{eqn:bulk_ineq) and 
 \autoref{eqn:shear_ineq} summarize the results of the
 Hashin-Shtrikman derivations on the bounds on effective bulk modulus
 $\kappa^{*}$ and effective shear modulus $\mu^{*}$, where we
@@ -362,7 +362,7 @@ computationally and allows the same code to be used for all properties
 (aside from bulk and shear moduli, which cannot be decoupled). For
 material properties in the Materials Project database with full tensor
 values available, `hashin_shtrikman_mp` uses the largest eigenvalue.
-Figure \autoref{fig:flow-chart} is a flow chart demonstrating the most
+\autoref{fig:flow-chart} is a flow chart demonstrating the most
 common usage of `hashin_shtrikman_mp`.
 
 ![A flow chart demonstrating the most common usage of
@@ -407,7 +407,7 @@ is the number of properties in that property category, $n_{\text{cfs}}$
 is the number of concentration factors in that category (typically two
 $\times$ the number of properties), and $C_{i}$ is a general
 scalar-valued concentration factor from section
-\autoref{subsec:conc-facs}. Note also that
+"Quantifying distributed loads with concentration tensors". Note also that
 $w_{\text{eff}} = 1/n_{\text{props}}$ and
 
 $$\hat{w}_{\text{cf}}^{i} = 
@@ -450,7 +450,7 @@ design, the cost value can be thought of as the fractional error from
 the desired outcome, plus penalties for "bad\" load sharing (should
 contribute 0 in the case of "good\" load sharing). A user can monitor
 the results of the genetic algorithm with the convergence plot, included
-in Figure \autoref{fig:convg}.
+in \autoref{fig:convg}.
 
 The nature of genetic algorithms is to produce several offspring with
 the same properties and costs after many generations, thus
@@ -464,7 +464,7 @@ users are presented with a breakdown of the cost, as in Figure
 `hashin_shtrikman_mp` provides visualization tools for the genetic
 algorithm results and for matches with 2-, 3-, or 4- phases.
 
-Figure \autoref{fig:convg} is a
+\autoref{fig:convg} is a
 convergence plot showing the value of the genetic algorithm cost
 function decreasing over generations. The monotonically decreasing,
 staircase nature is characteristic to genetic algorithm convergence,
@@ -474,7 +474,7 @@ average cost of top ten performers equals the best cost). As the cost
 function has been designed to represent absolute error from the desired
 properties, a cost of 1.0 represents 100% error.
 
-Figure \autoref{fig:cost-func-contribs} contains a breakdown of the non-zero
+\autoref{fig:cost-func-contribs} contains a breakdown of the non-zero
 cost at the end of optimization for a 3-phase material where the
 properties of interest were electrical conductivity, thermal
 conductivity, bulk modulus, shear modulus, and universal anisotropy. We
@@ -507,16 +507,16 @@ properties through interactive phase diagrams. Examples of these phase
 diagrams are included in Figures \autoref{fig:2phase}, \autoref{fig:3phase}, and \autoref{fig:4phase}.
 
 ![Example phase diagram for a 2-phase mixture of
-Al<sub>2</sub>O<sub>3</sub> (mp-684591) and AlCuO<sub>2</sub> (mp-3098). \label{fig:2phase}](figures/elec-cond-2phase-clean.png)
+Al<sub>2</sub>O<sub>3</sub> (mp-684591) and AlCuO<sub>2</sub> (mp-3098). \label{fig:2phase}](figures/elec-cond-2phase-clean.png){width=4in}
 
 ![Example phase diagram for a 2-phase mixture of
 Al<sub>2</sub>O<sub>3</sub> (mp-684591), AlCuO<sub>2</sub> (mp-3098), and
-MgSiO<sub>3</sub> (mp-4391). \label{fig:3phase}](figures/elec-cond-3phase-clean.png)
+MgSiO<sub>3</sub> (mp-4391). \label{fig:3phase}](figures/elec-cond-3phase-clean.png){width=4in}
 
 ![Example phase diagram for a 4-phase mixture of
 Al<sub>2</sub>O<sub>3</sub> (mp-684591), AlCuO<sub>2</sub> (mp-3098),
 MgSiO<sub>3</sub> (mp-4391), and MgAl<sub>2</sub>O<sub>4</sub>
-(mp-3536). \label{fig:4phase}](figures/elec-cond-4phase-clean.png)
+(mp-3536). \label{fig:4phase}](figures/elec-cond-4phase-clean.png){width=4in}
 
 ## Match-finding
 
