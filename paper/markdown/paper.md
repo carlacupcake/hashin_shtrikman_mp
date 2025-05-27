@@ -55,7 +55,7 @@ Project](https://next-gen.materialsproject.org/) database, ii)
 integration with the [Materials Project
 API](https://next-gen.materialsproject.org/api), iii) use of genetic
 machine-learning and iv) agnosticism to underlying microstructure, and
-ultimate engineering application, make it a tool with much broader
+v) ultimate engineering application, make it a tool with much broader
 applications than its predecessors.
 
 # Statement of need
@@ -65,8 +65,8 @@ enhanced material properties as compared to their individual
 constituents. As such, composite design is an active field, but the
 pursuit of new materials through experimentation is expensive. Today,
 computational tools for materials design are integral to reducing the
-cost and increasing the pace of innovation in the energy, electronics,
-aviation sectors, and beyond.
+cost and increasing the pace of innovation in sectors like energy, electronics,
+aviation and beyond.
 
 Several Python packages already exist for specific areas in composites
 modeling, such as
@@ -121,7 +121,7 @@ generalized effective material property $y^{*}$ of an $n$-phase
 composite. The generalized material properties for the $n$-phases are
 ordered from least to greatest where
 $y_{1} \leq y_{2} \leq \dotsb \leq y_{n}$ with corresponding volume
-fractions sum to unity $v_{1} + v_{2} + \dotsb + v_{n} = 1$:
+fractions that sum to unity $v_{1} + v_{2} + \dotsb + v_{n} = 1$, and are given by
 
 \begin{equation}\label{eqn:gen_ineq}
 y_{1} + \frac{A_{1}}{1 - \alpha_{1}A_{1}}
@@ -146,11 +146,11 @@ A_{n} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{y_{i} - y_{n}} + \alpha_{n
 ![An example of a quasi-isotropic, quasi-homogeneous 3-phase
 composite. \label{fig:cartoon-3phase}](figures/3phase_composite.png){width=2in}
 
-\autoref{eqn:bulk_ineq) and 
+\autoref{eqn:bulk_ineq} and 
 \autoref{eqn:shear_ineq} summarize the results of the
 Hashin-Shtrikman derivations on the bounds on effective bulk modulus
-$\kappa^{*}$ and effective shear modulus $\mu^{*}$, where we
-simultaneously require
+$\kappa^{*}$ and effective shear modulus $\mu^{*}$, where it is
+simultaneously required that
 $\kappa_{1} \leq \kappa_{2} \leq \dotsb \leq \kappa_{n}$ and
 $\mu_{1} \leq \mu_{2} \leq \dotsb \leq \mu_{n}$:
 
@@ -206,8 +206,8 @@ expression for the effective property as
 y^{*} = \gamma y^{*,-} + (1-\gamma) y^{*,+}.
 \end{equation}
 
-Given experimental data we could fit $\gamma$ and extrapolate for a
-range of volume fractions, but, in the absence of experimental data, we
+Given experimental data, one could fit $\gamma$ and extrapolate for a
+range of volume fractions, but, in the absence of experimental data, the authors
 select $\gamma = 0.5$. For more information, the reader is referred to
 [@zohdi-course-reader].
 
@@ -268,7 +268,7 @@ subsequently given by
 
 and for phase 1 as
 \begin{equation}\label{eqn:C1load}
-\mbox{\boldmath $C$}_{1,\text{load}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \mbox{\boldmath $C$}_{i,\text{load}} \right),
+\mbox{\boldmath $C$}_{1,\text{load}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \mbox{\boldmath $C$}_{i,\text{load}} \right).
 \end{equation}
 
 The concentration tensors for the responses for phases $i\in[2,...,n]$
@@ -283,9 +283,9 @@ and for phase 1 as
 \end{equation}
 
 As a concrete example, consider Ohm's law, which relates the applied
-electric field $\mbox{\boldmath $E$}$ (load) to the resulting current
-density $\mbox{\boldmath $J$}$ (response) via the electrical
-conductivity $\mbox{\boldmath $\sigma$}_{e}$ (proportionality tensor),
+electric field $\boldsymbol{E}$ (load) to the resulting current
+density $\boldsymbol{J}$ (response) via the electrical
+conductivity $\boldsymbol{\sigma}_{e}$ (proportionality tensor),
 governing a 3-phase composite. The concentration tensors for current
 density would be 
 \begin{equation}\label{eqn:J_cfs}
@@ -296,7 +296,7 @@ density would be
 \end{array}
 \end{equation}
 
-where $\mbox{\boldmath $\sigma$}_{e}^{*}$ would be found according to
+where $\boldsymbol{\sigma}_{e}^{*}$ would be found according to
 the previous section. The concentration tensors for electric field would
 be
 \begin{equation}\label{eqn:E_cfs}
@@ -449,14 +449,14 @@ parameters are 10 parents, 10 children, 200 members per population, and
 design, the cost value can be thought of as the fractional error from
 the desired outcome, plus penalties for "bad\" load sharing (should
 contribute 0 in the case of "good\" load sharing). A user can monitor
-the results of the genetic algorithm with the convergence plot, included
+the results of the genetic algorithm with the convergence plot, an example of which is included
 in \autoref{fig:convg}.
 
 The nature of genetic algorithms is to produce several offspring with
-the same properties and costs after many generations, thus
+the same properties and costs after many generations. Thus,
 `hashin_shtrikman_mp` presents the user with only the *unique* top
 performing designs in a table. For the singular lowest-cost performer,
-users are presented with a breakdown of the cost, as in Figure
+users are presented with a breakdown of the cost, as in
 \autoref{fig:cost-func-contribs}.
 
 ## Visualization and analysis
@@ -466,10 +466,10 @@ algorithm results and for matches with 2-, 3-, or 4- phases.
 
 \autoref{fig:convg} is a
 convergence plot showing the value of the genetic algorithm cost
-function decreasing over generations. The monotonically decreasing,
-staircase nature is characteristic to genetic algorithm convergence,
+function decreasing over generations. The monotonically decreasing
+staircase nature is characteristic of genetic algorithm convergence,
 where the best performer may remain the best for several generations and
-where several genetic strings may converge to the same value (e.g. when
+where several genetic strings may converge to the same value (e.g. when the
 average cost of top ten performers equals the best cost). As the cost
 function has been designed to represent absolute error from the desired
 properties, a cost of 1.0 represents 100% error.
@@ -498,25 +498,24 @@ material instead of the expected four i.e.
 algorithm. \label{fig:convg}](figures/convg.png){width=60%}
 
 ![A breakdown of the contributions to the non-zero cost at the end of
-optimization. \label{fig:cost-func-contribs}](figures/cost-func-contribs.png){width=90%}
+optimization. Due to the scrollable nature of the legend, only a subset of the 31 entries is visible.\label{fig:cost-func-contribs}](figures/cost-func-contribs.png){width=90%}
 
 Once matches have been identified for a desired composite, along with
 recommended volume fractions, a user can still explore how varying the
 volume fractions of the constituents affect the resulting effective
 properties through interactive phase diagrams. Examples of these phase
-diagrams are included in Figures \autoref{fig:2phase}, \autoref{fig:3phase}, and \autoref{fig:4phase}.
+diagrams are included in \autoref{fig:2phase}, \autoref{fig:3phase}, and \autoref{fig:4phase}.
 
 ![Example phase diagram for a 2-phase mixture of
-Al<sub>2</sub>O<sub>3</sub> (mp-684591) and AlCuO<sub>2</sub> (mp-3098). \label{fig:2phase}](figures/elec-cond-2phase-clean.png){width=4in}
+$\mathrm{Al_2O_3}$ and $\mathrm{AlCuO_2}$. The "mp" numbers are the Materials Project IDs for the materials. \label{fig:2phase}](figures/elec-cond-2phase-clean.png){width=4in}
 
-![Example phase diagram for a 2-phase mixture of
-Al<sub>2</sub>O<sub>3</sub> (mp-684591), AlCuO<sub>2</sub> (mp-3098), and
-MgSiO<sub>3</sub> (mp-4391). \label{fig:3phase}](figures/elec-cond-3phase-clean.png){width=4in}
+![Example phase diagram for a 3-phase mixture of
+$\mathrm{Al_2O_3}$, $\mathrm{AlCuO_2}$, and
+$\mathrm{MgSiO_3}$. \label{fig:3phase}](figures/elec-cond-3phase-clean.png){width=4in}
 
 ![Example phase diagram for a 4-phase mixture of
-Al<sub>2</sub>O<sub>3</sub> (mp-684591), AlCuO<sub>2</sub> (mp-3098),
-MgSiO<sub>3</sub> (mp-4391), and MgAl<sub>2</sub>O<sub>4</sub>
-(mp-3536). \label{fig:4phase}](figures/elec-cond-4phase-clean.png){width=4in}
+$\mathrm{Al_2O_3}$, $\mathrm{AlCuO_2}$,
+$\mathrm{MgSiO_3}$ and $\mathrm{MgAl_2O_4}$. \label{fig:4phase}](figures/elec-cond-4phase-clean.png){width=4in}
 
 ## Match-finding
 
