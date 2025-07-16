@@ -28,8 +28,8 @@ pip install .
 ### Examples
 Getting familiar with any codebase can be difficult and learning by example is often the most efficient. Toward this end, we have provided two example Jupyter notebooks: <br>
 
-* [3-phase Composite Example](/examples/example_n=3/): an example which explores searching for an optimal 3-phase composite with user-specified desired properties <br>
-* [Phase Diagrams for 2-, 3-, and 4-phase Composites](/examples/example_plotting/): an example demonstrating the different phase diagram visualizations for 2-, 3-, and 4-phase composites
+* [3-phase Composite Example](/examples/example_n=3.ipynb): an example which explores searching for an optimal 3-phase composite with user-specified desired properties <br>
+* [Phase Diagrams for 2-, 3-, and 4-phase Composites](/examples/example_plotting.ipynb): an example demonstrating the different phase diagram visualizations for 2-, 3-, and 4-phase composites
 
 ### Implementation Notes
 - Ensure you have valid credentials for the Materials Project API, which you can find by registering yourself with Materials Project – [https://next-gen.materialsproject.org/](https://next-gen.materialsproject.org/).
