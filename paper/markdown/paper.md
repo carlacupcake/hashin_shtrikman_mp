@@ -372,6 +372,7 @@ common usage of `hashin_shtrikman_mp`.
 ![A flow chart demonstrating the most common usage of
 $\texttt{hashin\_shtrikman\_mp}$.\label{fig:flow-chart}](figures/hashin_shtrikman_mp_flow_chart.png){width=77% fig-pos=H}
 
+\newpage
 ## Cost function design and optimization with genetic algorithm
 
 To find optimal composite mixtures, `hashin_shtrikman_mp` simultaneously
@@ -501,10 +502,10 @@ material instead of the expected four i.e.
   concentration factor for each of the 3 phases.
 
 ![An example of the convergence plot for the genetic
-algorithm. \label{fig:convg}](figures/convg.png){width=2in fig-pos=H}
+algorithm. \label{fig:convg}](figures/convg.png){width=60% fig-pos=H}
 
 ![A breakdown of the contributions to the non-zero cost at the end of
-optimization. Due to the scrollable nature of the legend, only a subset of the 31 entries is visible.\label{fig:cost-func-contribs}](figures/cost-func-contribs.png){width=2in fig-pos=H}
+optimization. Due to the scrollable nature of the legend, only a subset of the 31 entries is visible.\label{fig:cost-func-contribs}](figures/cost-func-contribs.png){width=60% fig-pos=H}
 
 Once matches have been identified for a desired composite, along with
 recommended volume fractions, a user can still explore how varying the
@@ -513,16 +514,17 @@ properties through interactive phase diagrams. Examples of these phase
 diagrams are included in \autoref{fig:2phase}, \autoref{fig:3phase}, and \autoref{fig:4phase}.
 
 ![Example phase diagram for a 2-phase mixture of
-$\mathrm{Al_2O_3}$ and $\mathrm{AlCuO_2}$. The "mp" numbers are the Materials Project IDs for the materials. \label{fig:2phase}](figures/elec-cond-2phase-clean.png){width=2in fig-pos=H}
+$\mathrm{Al_2O_3}$ and $\mathrm{AlCuO_2}$. The "mp" numbers are the Materials Project IDs for the materials. \label{fig:2phase}](figures/elec-cond-2phase-clean.png){width=3in fig-pos=H}
 
 ![Example phase diagram for a 3-phase mixture of
 $\mathrm{Al_2O_3}$, $\mathrm{AlCuO_2}$, and
-$\mathrm{MgSiO_3}$. \label{fig:3phase}](figures/elec-cond-3phase-clean.png){width=2in fig-pos=H}
+$\mathrm{MgSiO_3}$. \label{fig:3phase}](figures/elec-cond-3phase-clean.png){width=3in fig-pos=H}
 
 ![Example phase diagram for a 4-phase mixture of
 $\mathrm{Al_2O_3}$, $\mathrm{AlCuO_2}$,
-$\mathrm{MgSiO_3}$ and $\mathrm{MgAl_2O_4}$. \label{fig:4phase}](figures/elec-cond-4phase-clean.png){width=2in fig-pos=H}
+$\mathrm{MgSiO_3}$ and $\mathrm{MgAl_2O_4}$. \label{fig:4phase}](figures/elec-cond-4phase-clean.png){width=3in fig-pos=H}
 
+\newpage
 ## Match-finding
 
 The genetic algorithm returns suggested material properties for each of
