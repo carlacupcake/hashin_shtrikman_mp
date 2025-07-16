@@ -386,11 +386,9 @@ the total cost function. At the time of this writing, the possible
 property categories are elastic, dielectric, carrier-transport,
 magnetic, and piezoelectric. Combining the individual cost functions to
 optimize across all design goals simultaneously yields
-{\small
 \begin{equation}\label{eqn:pi}
 \Pi^{\text{total}} = W_{\text{domains}}\left[ \Pi^{\text{elastic}} + \Pi^{\text{dielectric}} + \Pi^{\text{carrier-transport}} + \Pi^{\text{magnetic}} + \Pi^{\text{piezoelectric}} \right]
 \end{equation}
-}
 
 where $W_{\text{domains}}$ normalizes for the number of active property
 categories. Each property category contribution is composed of two
