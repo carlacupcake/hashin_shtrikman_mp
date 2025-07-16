@@ -28,14 +28,17 @@ pip install .
 ### Examples
 Getting familiar with any codebase can be difficult and learning by example is often the most efficient. Toward this end, we have provided two example Jupyter notebooks: <br>
 
-* [3-phase Composite Example](/examples/example_n=3.ipynb): an example which explores searching for an optimal 3-phase composite with user-specified desired properties <br>
-* [Phase Diagrams for 2-, 3-, and 4-phase Composites](/examples/example_plotting.ipynb): an example demonstrating the different phase diagram visualizations for 2-, 3-, and 4-phase composites
+* [3-phase Composite Example](examples/example_n=3.ipynb): an example which explores searching for an optimal 3-phase composite with user-specified desired properties <br>
+* [Phase Diagrams for 2-, 3-, and 4-phase Composites](examples/example_plotting.ipynb): an example demonstrating the different phase diagram visualizations for 2-, 3-, and 4-phase composites
 
 ### Implementation Notes
 - Ensure you have valid credentials for the Materials Project API, which you can find by registering yourself with Materials Project – [https://next-gen.materialsproject.org/](https://next-gen.materialsproject.org/).
 - Optimization parameters (number of parents, children, etc.) should be chosen based on the complexity of the desired material properties and computational resources.
 - The genetic algorithm's efficiency and effectiveness can vary greatly based on the optimization parameters and the definition of the cost function. Using defaults is recommended.
 - Visualization of cost versus generation can provide insights into the convergence behavior of the genetic algorithm. Expect that the exact shape of the convergence plot will change every time the algorithm is run, due to the stochastic nature of the algorithm.
+- The library has been designed to handle the design of 2- to 10-phase **isotropic** and **homogeneous** composites.
+- It is recommended that users restrict the search bounds for universal anisotropy to be between 0.5 and 1.5 for results closer to
+theory.
 
 ### Miscellaneous features
 **mpi4py support is added to append final_dict**

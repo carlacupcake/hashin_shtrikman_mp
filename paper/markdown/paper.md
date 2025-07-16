@@ -70,6 +70,7 @@ aviation and beyond.
 
 Several Python packages already exist for specific areas in composites
 modeling, such as
+[HomoPy](https://github.com/Extraweich/homopy),
 [CompositesLib](https://github.com/rafaelcidade/compositeslib),
 [Compysite](https://github.com/echaffey/Compysite),
 [FeCLAP](https://github.com/azzeddinetiba/FeCLAP), and
@@ -82,7 +83,9 @@ Hashin-Shtrikman bounds on effective composite properties, such as
 of composite rocks/assemblages,
 [rockphypy](https://rockphypy.readthedocs.io/en/latest/getting_started/08_Shaly_sand_modelling.html)
 for mechanical modeling of sand-shale systems, [@ZARE2017176]'s modeling
-of clay nanocomposites, and [@ZERHOUNI2019344]'s modeling of 3D printed
+of clay nanocomposites, 
+[mechmean](https://github.com/JulianKarlBauer/mechmean/tree/main?tab=readme-ov-file), 
+and [@ZERHOUNI2019344]'s modeling of 3D printed
 microstructures. All of these tools, however, are highly specific to
 composite microstructure, macro-geometry, and composition. More notably,
 they focus on analysis of already well-defined composites, rather than
@@ -182,16 +185,16 @@ and
 
 and
 \begin{equation}\label{eqn:bulk_As}
-A_{1}^{\kappa} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{1}} + \alpha_{1}}
+A_{1}^{\kappa} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{1}} + \alpha_{1}^{\kappa}}
 \quad \text{and} \quad
-A_{n}^{\kappa} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{n}} + \alpha_{n}}, 
+A_{n}^{\kappa} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{n}} + \alpha_{n}^{\kappa}}, 
 \end{equation}
 
 and
 \begin{equation}\label{eqn:shear_As}
-A_{1}^{\mu} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{1}} + \alpha_{1}}
+A_{1}^{\mu} = \sum\limits_{i=2}^{n} \frac{v_{i}}{\frac{1}{\kappa_{i} - \kappa_{1}} + \alpha_{1}^{\mu}}
 \quad \text{and} \quad
-A_{n}^{\mu} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{\mu_{i} - \mu_{n}} + \alpha_{n}}.
+A_{n}^{\mu} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{\mu_{i} - \mu_{n}} + \alpha_{n}^{\mu}}.
 \end{equation}
 
 The elastic forms for $\{A_{i}^{\kappa}\}$ and $\{A_{i}^{\mu}\}$ differ
