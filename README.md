@@ -31,6 +31,9 @@ Detailed documentation and example usages for this library can be found [here](h
 - Optimization parameters (number of parents, children, etc.) should be chosen based on the complexity of the desired material properties and computational resources.
 - The genetic algorithm's efficiency and effectiveness can vary greatly based on the optimization parameters and the definition of the cost function. Using defaults is recommended.
 - Visualization of cost versus generation can provide insights into the convergence behavior of the genetic algorithm. Expect that the exact shape of the convergence plot will change every time the algorithm is run, due to the stochastic nature of the algorithm.
+- The library has been designed to handle the design of 2- to 10-phase **isotropic** and **homogeneous** composites.
+- It is recommended that users restrict the search bounds for universal anisotropy to be between 0.5 and 1.5 for results closer to
+theory.
 
 ### Miscellaneous features
 **mpi4py support is added to append final_dict**

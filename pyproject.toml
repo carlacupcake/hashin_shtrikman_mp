@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hashin_shtrikman_mp"
-version = "0.1.0"
+version = "0.1.1"
 description = "Determine the optimal material properties and volume fractions for each component of an n-phase mixture to meet a set of desired composite material properties."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -101,3 +101,9 @@ isort.split-on-trailing-comma = false
 "**/schemas.py" = ["FA", "TCH", "UP007"]
 "**/settings.py" = ["FA", "TCH", "UP007"]
 "docs/*" = ["INP001"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"hashin_shtrikman_mp.io.inputs.data" = ["*.yaml"]
