@@ -147,7 +147,7 @@ A_{n} = \sum\limits_{i=1}^{n-1} \frac{v_{i}}{\frac{1}{y_{i} - y_{n}} + \alpha_{n
 \end{equation}
 
 ![An example of a quasi-isotropic, quasi-homogeneous 3-phase
-composite. \label{fig:cartoon-3phase}](figures/3phase_composite.png){width=2in}
+composite. \label{fig:cartoon-3phase}](figures/3phase_composite.png){width=2in fig-pos=H}
 
 \autoref{eqn:bulk_ineq} and 
 \autoref{eqn:shear_ineq} summarize the results of the
@@ -365,11 +365,12 @@ computationally and allows the same code to be used for all properties
 (aside from bulk and shear moduli, which cannot be decoupled). For
 material properties in the Materials Project database with full tensor
 values available, `hashin_shtrikman_mp` uses the largest eigenvalue.
-\autoref{fig:flow-chart} is a flow chart demonstrating the most
+<!--\autoref{fig:flow-chart}--> is a flow chart demonstrating the most
 common usage of `hashin_shtrikman_mp`.
 
+\newpage
 ![A flow chart demonstrating the most common usage of
-$\texttt{hashin\_shtrikman\_mp}$.\label{fig:flow-chart}](figures/hashin_shtrikman_mp_flow_chart.png){height=9in}
+$\texttt{hashin\_shtrikman\_mp}$.\label{fig:flow-chart}](figures/hashin_shtrikman_mp_flow_chart.png){width=77% fig-pos=H}
 
 ## Cost function design and optimization with genetic algorithm
 
@@ -384,9 +385,11 @@ the total cost function. At the time of this writing, the possible
 property categories are elastic, dielectric, carrier-transport,
 magnetic, and piezoelectric. Combining the individual cost functions to
 optimize across all design goals simultaneously yields
+{\small
 \begin{equation}\label{eqn:pi}
 \Pi^{\text{total}} = W_{\text{domains}}\left[ \Pi^{\text{elastic}} + \Pi^{\text{dielectric}} + \Pi^{\text{carrier-transport}} + \Pi^{\text{magnetic}} + \Pi^{\text{piezoelectric}} \right]
 \end{equation}
+}
 
 where $W_{\text{domains}}$ normalizes for the number of active property
 categories. Each property category contribution is composed of two
@@ -498,10 +501,10 @@ material instead of the expected four i.e.
   concentration factor for each of the 3 phases.
 
 ![An example of the convergence plot for the genetic
-algorithm. \label{fig:convg}](figures/convg.png){width=60%}
+algorithm. \label{fig:convg}](figures/convg.png){width=2in fig-pos=H}
 
 ![A breakdown of the contributions to the non-zero cost at the end of
-optimization. Due to the scrollable nature of the legend, only a subset of the 31 entries is visible.\label{fig:cost-func-contribs}](figures/cost-func-contribs.png){width=90%}
+optimization. Due to the scrollable nature of the legend, only a subset of the 31 entries is visible.\label{fig:cost-func-contribs}](figures/cost-func-contribs.png){width=2in fig-pos=H}
 
 Once matches have been identified for a desired composite, along with
 recommended volume fractions, a user can still explore how varying the
@@ -510,15 +513,15 @@ properties through interactive phase diagrams. Examples of these phase
 diagrams are included in \autoref{fig:2phase}, \autoref{fig:3phase}, and \autoref{fig:4phase}.
 
 ![Example phase diagram for a 2-phase mixture of
-$\mathrm{Al_2O_3}$ and $\mathrm{AlCuO_2}$. The "mp" numbers are the Materials Project IDs for the materials. \label{fig:2phase}](figures/elec-cond-2phase-clean.png){width=4in}
+$\mathrm{Al_2O_3}$ and $\mathrm{AlCuO_2}$. The "mp" numbers are the Materials Project IDs for the materials. \label{fig:2phase}](figures/elec-cond-2phase-clean.png){width=2in fig-pos=H}
 
 ![Example phase diagram for a 3-phase mixture of
 $\mathrm{Al_2O_3}$, $\mathrm{AlCuO_2}$, and
-$\mathrm{MgSiO_3}$. \label{fig:3phase}](figures/elec-cond-3phase-clean.png){width=4in}
+$\mathrm{MgSiO_3}$. \label{fig:3phase}](figures/elec-cond-3phase-clean.png){width=2in fig-pos=H}
 
 ![Example phase diagram for a 4-phase mixture of
 $\mathrm{Al_2O_3}$, $\mathrm{AlCuO_2}$,
-$\mathrm{MgSiO_3}$ and $\mathrm{MgAl_2O_4}$. \label{fig:4phase}](figures/elec-cond-4phase-clean.png){width=4in}
+$\mathrm{MgSiO_3}$ and $\mathrm{MgAl_2O_4}$. \label{fig:4phase}](figures/elec-cond-4phase-clean.png){width=2in fig-pos=H}
 
 ## Match-finding
 
