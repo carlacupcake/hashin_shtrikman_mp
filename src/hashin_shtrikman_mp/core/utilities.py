@@ -54,6 +54,12 @@ def get_headers(num_materials: int,
             for m in range(1, num_materials + 1):
                 headers.append(f"Phase {m} Volume Fraction")
 
+            # Add headers for effective properties
+            for category, properties in data["Per Material"].items():
+                if category in property_categories:
+                    for prop in sorted(properties.values()):
+                        headers.append(f"Effective" + prop)
+
             # Add headers for "Common" properties if present
             if "Common" in data:
                 for common_key in data["Common"]:

@@ -15,10 +15,11 @@ class Population:
     """
 
     def __init__(self,
-                 optimization_params: OptimizationParams,
-                 ga_params:           GeneticAlgorithmParams,
-                 values:              np.ndarray = None,
-                 costs:               np.ndarray = None) -> None:
+                 optimization_params:  OptimizationParams,
+                 ga_params:            GeneticAlgorithmParams,
+                 values:               np.ndarray = None,
+                 effective_properties: np.ndarray = None,
+                 costs:                np.ndarray = None) -> None:
 
         self.opt_params = optimization_params
         self.ga_params = ga_params
@@ -31,6 +32,10 @@ class Population:
         if self.values is None:
             self.values = np.zeros((num_members, num_properties * num_materials))
 
+        self.eff_props = effective_properties
+        if self.eff_props is None:
+            self.eff_props = np.zeros((num_members, num_properties - 1)) # do not include volume fraction
+
         self.costs = costs
         if self.costs is None:
             self.costs = np.zeros((num_members, num_properties * num_materials))
@@ -41,9 +46,10 @@ class Population:
         Retrieves the unique designs from the population based on their costs.
 
         Returns:
-            list: A list containing two elements:
-            - unique_members (ndarray), unique population members corresponding to unique_costs.
-            - uniqie_costs (ndarray)
+            list: A list containing three elements:
+            - unique_values (ndarray), unique population members corresponding to unique_costs.
+            - unique_eff_props (ndarray), effective properties corresponding to unique_costs.
+            - unique_costs (ndarray)
         """
         self.set_costs()
         final_costs = self.costs
@@ -51,8 +57,9 @@ class Population:
 
         # Obtain unique members and costs
         [unique_costs, unique_indices] = np.unique(rounded_costs, return_index=True)
-        unique_members = self.values[unique_indices]
-        return [unique_members, unique_costs]
+        unique_values = self.values[unique_indices]
+        unique_eff_props = self.eff_props[unique_indices]
+        return [unique_values, unique_eff_props, unique_costs]
 
 
     def get_effective_properties(self) -> np.ndarray:
@@ -197,6 +204,7 @@ class Population:
         """
 
         population_values = self.values
+        self.eff_props = self.get_effective_properties()
         num_members = self.ga_params.num_members
         costs = np.zeros(num_members)
         for i in range(num_members):

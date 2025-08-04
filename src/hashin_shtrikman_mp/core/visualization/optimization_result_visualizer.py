@@ -29,8 +29,9 @@ class OptimizationResultVisualizer():
             table_of_best_designs (ndarray)
         """
 
-        [unique_members, unique_costs] = self.ga_result.final_population.get_unique_designs()
-        table_of_best_designs = np.hstack((unique_members[0:rows, :],
+        [unique_values, unique_eff_props, unique_costs] = self.ga_result.final_population.get_unique_designs()
+        table_of_best_designs = np.hstack((unique_values[0:rows, :],
+                                           unique_eff_props[0:rows, :],
                                            unique_costs[0:rows].reshape(-1, 1)))
         return table_of_best_designs
 

@@ -58,7 +58,7 @@ class MatchFinder:
                 for prop in self.optimization_params.property_docs[category]:
                     best_designs_dict[mat][category][prop] = []
 
-        [unique_members, unique_costs] = self.optimized_population.get_unique_designs()
+        [unique_values, unique_eff_props, unique_costs] = self.optimized_population.get_unique_designs()
 
         # Populate the dictionary with unique design values
         # The last num_materials entries are volume fractions, not material properties
@@ -71,7 +71,7 @@ class MatchFinder:
             idx = 0
             for category in self.optimization_params.property_categories:
                 for prop in self.optimization_params.property_docs[category]:
-                    all_phase_props = unique_members[i][idx:stop:step]
+                    all_phase_props = unique_values[i][idx:stop:step]
                     for m, mat in enumerate(best_designs_dict.keys()):
                         best_designs_dict[mat][category][prop].append(all_phase_props[m])
                     idx += 1
