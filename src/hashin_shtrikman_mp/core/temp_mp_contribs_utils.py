@@ -7,11 +7,13 @@ from pydantic import BaseModel, Field
 from hashin_shtrikman_mp.log.custom_logger import logger
 
 # Optimizer class defaults
-DEFAULT_FIELDS: dict = {"material_id": [],
-                        "is_stable": [],
-                        "band_gap": [],
-                        "is_metal": [],
-                        "formula_pretty": []}
+DEFAULT_FIELDS: dict = {
+    "material_id": [],
+    "is_stable": [],
+    "band_gap": [],
+    "is_metal": [],
+    "formula_pretty": []
+}
 
 class Optimizer(BaseModel):
     """

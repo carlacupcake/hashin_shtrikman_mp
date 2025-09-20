@@ -29,9 +29,9 @@ class CompositePropertyPlotter():
     """
 
     def __init__(self, ga_result: GeneticAlgorithmResult) -> None:
-        self.ga_params = ga_result.algo_parameters
+        self.ga_params  = ga_result.algo_parameters
         self.opt_params = ga_result.optimization_params
-        self.ga_result = ga_result
+        self.ga_result  = ga_result
 
 
     @classmethod
@@ -64,10 +64,11 @@ class CompositePropertyPlotter():
         return all_vol_frac_combos
 
 
-    def visualize_composite_eff_props(self,
-                                      match,
-                                      consolidated_dict: dict,
-                                      num_fractions: int = 49):
+    def visualize_composite_eff_props(
+            self,
+            match,
+            consolidated_dict: dict,
+            num_fractions:     int = 49):
         """
         Generates visualizations of effective properties for composite materials.
 
@@ -187,12 +188,13 @@ class CompositePropertyPlotter():
         return
 
 
-    def visualize_composite_eff_props_2_phase(self,
-                                              match,
-                                              prop,
-                                              units,
-                                              volume_fractions,
-                                              effective_properties):
+    def visualize_composite_eff_props_2_phase(
+            self,
+            match,
+            prop,
+            units,
+            volume_fractions,
+            effective_properties):
         """
         Generates a 2D line plot to visualize the effective properties of a two-phase composite. 
 
@@ -232,12 +234,13 @@ class CompositePropertyPlotter():
         return fig
 
 
-    def visualize_composite_eff_props_3_phase(self,
-                                              match,
-                                              prop,
-                                              units,
-                                              volume_fractions,
-                                              effective_properties):
+    def visualize_composite_eff_props_3_phase(
+            self,
+            match,
+            prop,
+            units,
+            volume_fractions,
+            effective_properties):
         """
         Generates a 3D surface plot to visualize the effective properties
         of a three-phase composite. 
@@ -275,12 +278,13 @@ class CompositePropertyPlotter():
         return fig
 
 
-    def visualize_composite_eff_props_4_phase(self,
-                                              match,
-                                              prop,
-                                              units,
-                                              volume_fractions,
-                                              effective_properties):
+    def visualize_composite_eff_props_4_phase(
+            self,
+            match,
+            prop,
+            units,
+            volume_fractions,
+            effective_properties):
         """
         Generates a 3D scatter plot to visualize the effective properties of a four-phase composite. 
 

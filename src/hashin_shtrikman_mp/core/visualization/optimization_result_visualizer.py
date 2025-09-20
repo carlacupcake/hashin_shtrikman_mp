@@ -48,8 +48,10 @@ class OptimizationResultVisualizer():
         """
 
         table_data = self.get_table_of_best_designs(rows)
-        headers = get_headers(self.opt_params.num_materials,
-                              self.opt_params.property_categories)
+        headers = get_headers(
+            self.opt_params.num_materials,
+            self.opt_params.property_categories
+        )
 
         header_color   = "lavender"
         odd_row_color  = "white"

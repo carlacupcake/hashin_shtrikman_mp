@@ -4,7 +4,7 @@ import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Tuple
 
 import numpy as np
 import plotly.graph_objects as go
@@ -30,11 +30,10 @@ class MatchFinder:
     """
 
 
-    def __init__(self,
-                 ga_result: GeneticAlgorithmResult) -> None:
-        self.optimization_params = ga_result.optimization_params
+    def __init__(self, ga_result: GeneticAlgorithmResult) -> None:
+        self.optimization_params  = ga_result.optimization_params
         self.optimized_population = ga_result.final_population
-        self.ga_params = ga_result.algo_parameters
+        self.ga_params            = ga_result.algo_parameters
 
 
     def get_dict_of_best_designs(self) -> dict:
@@ -79,10 +78,11 @@ class MatchFinder:
         return best_designs_dict
 
 
-    def get_material_matches(self,
-                             overall_bounds_dict: dict = None,
-                             consolidated_dict: dict = None,
-                             threshold: float = 1) -> dict:
+    def get_material_matches(
+            self,
+            overall_bounds_dict: Optional[dict] = None,
+            consolidated_dict:   Optional[dict] = None,
+            threshold:           float = 1) -> Tuple[dict, str]:
         """
         Identifies materials in the MP database which match those recommended by the optimization.
 
@@ -97,6 +97,8 @@ class MatchFinder:
             final_matching_materials (dict)
             - Keys are fake materials recommended by the genetic algorithm
             - Values are mp-ids of real materials
+            consolidated_dict_filename (str)
+            - Name of the JSON file where the consolidated_dict is saved
         """
         # Make sure overall_bounds_dict is defined
         if overall_bounds_dict is None:
@@ -104,7 +106,7 @@ class MatchFinder:
 
         # Generate the consolidated dict based on overall bounds
         if consolidated_dict is None:
-            consolidated_dict = self.generate_consolidated_dict(overall_bounds_dict)
+            consolidated_dict, consolidated_dict_filename = self.generate_consolidated_dict(overall_bounds_dict)
 
         # Generate a dictionary of the best designs - same format as consolidated_dict
         best_designs_dict = self.get_dict_of_best_designs()
@@ -117,10 +119,10 @@ class MatchFinder:
 
             # Extract the property data from best_designs_dict
             best_design_props = {
-                "elec_cond": mat_data["carrier-transport"]["elec_cond_300k_low_doping"],
-                "therm_cond": mat_data["carrier-transport"]["therm_cond_300k_low_doping"],
-                "bulk_modulus": mat_data["elastic"]["bulk_modulus"],
-                "shear_modulus": mat_data["elastic"]["shear_modulus"],
+                "elec_cond":            mat_data["carrier-transport"]["elec_cond_300k_low_doping"],
+                "therm_cond":           mat_data["carrier-transport"]["therm_cond_300k_low_doping"],
+                "bulk_modulus":         mat_data["elastic"]["bulk_modulus"],
+                "shear_modulus":        mat_data["elastic"]["shear_modulus"],
                 "universal_anisotropy": mat_data["elastic"]["universal_anisotropy"]
             }
 
@@ -160,7 +162,7 @@ class MatchFinder:
             if matching_materials_for_current_mat:
                 final_matching_materials[mat_key] = matching_materials_for_current_mat
 
-        return final_matching_materials
+        return final_matching_materials, consolidated_dict_filename
 
     def get_all_possible_vol_frac_combos(self, num_fractions: int = 30) -> list:
         """
@@ -188,7 +190,7 @@ class MatchFinder:
 
         return all_vol_frac_combos
 
-    def generate_consolidated_dict(self, overall_bounds_dict: dict = None) -> dict:
+    def generate_consolidated_dict(self, overall_bounds_dict: Optional[dict] = None) -> Tuple[dict, str]:
         """
         MAIN FUNCTION USED TO GENERATE MATERIAL PROPERTY DICTIONARY DEPENDING ON USER REQUEST.
         
@@ -201,6 +203,8 @@ class MatchFinder:
         -------
             consolidated_dict (dict)
             - mp-ids with properties which match the bounds criteria
+            my_file_name (str)
+            - Name of the JSON file where the consolidated_dict is saved
         """
 
         # Base query initialization
@@ -252,7 +256,7 @@ class MatchFinder:
 
         # Initialize dictionary to hold the desired data format
         result_dict: dict[str, list[Any]] = {
-            "material_id": [],
+            "material_id":    [],
             "formula_pretty": []
         }
 
@@ -280,32 +284,56 @@ class MatchFinder:
             # Define a mapping between query keys and result_dict keys
             # and their corresponding material attributes
             property_map = {
-                "k_vrh": ("bulk_modulus_vrh",
-                          "bulk_modulus",
-                          "vrh"),
-                "g_vrh": ("shear_modulus_vrh",
-                          "shear_modulus",
-                          "vrh"),
-                "elastic_anisotropy": ("universal_anisotropy",
-                                       "universal_anisotropy"),
-                "elec_cond_300k_low_doping": ("elec_cond_300k_low_doping",
-                                              "elec_cond_300k_low_doping"),
-                "therm_cond_300k_low_doping": ("therm_cond_300k_low_doping",
-                                               "therm_cond_300k_low_doping"),
-                "e_electronic": ("e_electronic",
-                                 "e_electronic"),
-                "e_ionic": ("e_ionic",
-                            "e_ionic"),
-                "e_total": ("e_total",
-                            "e_total"),
-                "n": ("n",
-                      "n"),
-                "total_magnetization": ("total_magnetization",
-                                        "total_magnetization"),
-                "total_magnetization_normalized_vol": ("total_magnetization_normalized_vol",
-                                                       "total_magnetization_normalized_vol"),
-                "e_ij_max": ("e_ij_max",
-                             "e_ij_max")
+                "k_vrh": (
+                    "bulk_modulus_vrh",
+                    "bulk_modulus",
+                    "vrh"
+                ),
+                "g_vrh": (
+                    "shear_modulus_vrh",
+                    "shear_modulus",
+                    "vrh"
+                ),
+                "elastic_anisotropy": (
+                    "universal_anisotropy",
+                    "universal_anisotropy"
+                ),
+                "elec_cond_300k_low_doping": (
+                    "elec_cond_300k_low_doping",
+                    "elec_cond_300k_low_doping"
+                ),
+                "therm_cond_300k_low_doping": (
+                    "therm_cond_300k_low_doping",
+                    "therm_cond_300k_low_doping"
+                ),
+                "e_electronic": (
+                    "e_electronic",
+                    "e_electronic"
+                ),
+                "e_ionic": (
+                    "e_ionic",
+                    "e_ionic"
+                ),
+                "e_total": (
+                    "e_total",
+                    "e_total"
+                ),
+                "n": (
+                    "n",
+                    "n"
+                ),
+                "total_magnetization": (
+                    "total_magnetization",
+                    "total_magnetization"
+                ),
+                "total_magnetization_normalized_vol": (
+                    "total_magnetization_normalized_vol",
+                    "total_magnetization_normalized_vol"
+                ),
+                "e_ij_max": (
+                    "e_ij_max",
+                    "e_ij_max"
+                )
             }
 
             # Iterate over the properties in the query and append values to result_dict dynamically
@@ -411,11 +439,12 @@ class MatchFinder:
         with open(my_file_name, "w") as my_file:
             json.dump(result_dict, my_file)
 
-        return result_dict
+        return result_dict, my_file_name
 
-    def get_material_match_costs(self,
-                                 matches_dict: dict,
-                                 consolidated_dict: dict = None) -> go.Figure:
+    def get_material_match_costs(
+            self,
+            matches_dict: dict,
+            consolidated_dict: Optional[dict] = None) -> go.Figure:
         """
         Evaluates the 'real' candidate composites with
         the same cost function used for optimization.

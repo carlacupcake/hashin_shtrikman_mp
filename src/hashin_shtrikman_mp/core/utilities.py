@@ -1,6 +1,6 @@
 """utilities.py."""
 from importlib import resources as impresources
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 from monty.serialization import loadfn
@@ -10,14 +10,15 @@ import hashin_shtrikman_mp.io.inputs.data as io_data
 from ..log import logger
 
 
-HEADERS_PATH = str(impresources.files(io_data) / "display_table_headers.yaml")
+HEADERS_PATH        = str(impresources.files(io_data) / "display_table_headers.yaml")
 PROPERTY_CATEGORIES = str(impresources.files(io_data) / "mp_property_docs.yaml")
-COST_FORMULAS_PATH = str(impresources.files(io_data) / "cost_calculation_formulas.yaml")
+COST_FORMULAS_PATH  = str(impresources.files(io_data) / "cost_calculation_formulas.yaml")
 
 
-def get_headers(num_materials: int,
-                property_categories: list[str],
-                include_mpids: bool = False) -> list:
+def get_headers(
+        num_materials:       int,
+        property_categories: list[str],
+        include_mpids:       bool = False) -> list:
     """
     Generates headers for a data table based on the number of materials
     and selected property categories.
@@ -83,7 +84,7 @@ def load_property_docs() -> dict:
     return loadfn(PROPERTY_CATEGORIES)
 
 
-def load_property_categories(user_input: dict[Any, Any] | None = None) -> tuple[list[str], dict]:
+def load_property_categories(user_input: Optional[dict[Any, Any]] = None) -> tuple[list[str], dict]:
     """
     Identifies property categories present in the user input by comparing them
     with predefined property documentation.
@@ -122,7 +123,7 @@ def load_property_categories(user_input: dict[Any, Any] | None = None) -> tuple[
     return property_categories, property_docs
 
 
-def compile_formulas(formulas_dict: dict[Any, Any] | None = None) -> dict:
+def compile_formulas(formulas_dict: Optional[dict[Any, Any]] = None) -> dict:
     """
     Compiles mathematical formulas defined as strings in a dictionary into executable Python code.
 

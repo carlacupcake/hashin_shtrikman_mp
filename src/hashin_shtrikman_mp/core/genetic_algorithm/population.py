@@ -1,5 +1,6 @@
 """population.py."""
 import numpy as np
+from typing import Optional
 
 from .genetic_algorithm_parameters import GeneticAlgorithmParams
 from .member import Member
@@ -14,12 +15,13 @@ class Population:
     and sort the members based on their costs.
     """
 
-    def __init__(self,
-                 optimization_params:  OptimizationParams,
-                 ga_params:            GeneticAlgorithmParams,
-                 values:               np.ndarray = None,
-                 effective_properties: np.ndarray = None,
-                 costs:                np.ndarray = None) -> None:
+    def __init__(
+        self,
+        optimization_params:  OptimizationParams,
+        ga_params:            GeneticAlgorithmParams,
+        values:               Optional[np.ndarray] = None,
+        effective_properties: Optional[np.ndarray] = None,
+        costs:                Optional[np.ndarray] = None) -> None:
 
         self.opt_params = optimization_params
         self.ga_params = ga_params
@@ -85,11 +87,12 @@ class Population:
         return all_effective_properties
 
 
-    def set_random_values(self,
-                          lower_bounds:           np.ndarray = None,
-                          upper_bounds:           np.ndarray = None,
-                          start_member:           int = 0,
-                          indices_elastic_moduli: list = None) -> "Population":
+    def set_random_values(
+        self,
+        lower_bounds:           np.ndarray = None,
+        upper_bounds:           np.ndarray = None,
+        start_member:           int = 0,
+        indices_elastic_moduli: list = None) -> "Population":
         """
         Sets random values for the properties of each member in the population.
 

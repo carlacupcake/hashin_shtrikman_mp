@@ -1,6 +1,6 @@
 """member.py."""
 import numpy as np
-import warnings
+from typing import Optional
 
 from ..utilities import COMPILED_CALC_GUIDE
 from .genetic_algorithm_parameters import GeneticAlgorithmParams
@@ -13,10 +13,11 @@ class Member:
     Stores the functions for cost function calculation.
     """
 
-    def __init__(self,
-                 ga_params:           GeneticAlgorithmParams,
-                 optimization_params: OptimizationParams,
-                 values:              np.ndarray = None,
+    def __init__(
+        self,
+        ga_params:           GeneticAlgorithmParams,
+        optimization_params: OptimizationParams,
+        values:              Optional[np.ndarray] = None,
     ):
         self.values = values
         if self.values is None or (isinstance(values, np.ndarray) and values.size == 0):

@@ -1,5 +1,6 @@
 """genetic_algorithm.py."""
 import numpy as np
+from typing import Optional
 
 from ..user_input import UserInput
 from .genetic_algorithm_parameters import GeneticAlgorithmParams
@@ -10,10 +11,11 @@ from .population import Population
 
 class GeneticAlgorithm:
 
-    def run(self,
-            user_inputs:    UserInput,
-            ga_algo_params: GeneticAlgorithmParams = None,
-            gen_counter:    bool = False):
+    def run(
+        self,
+        user_inputs:    UserInput,
+        ga_algo_params: Optional[GeneticAlgorithmParams] = None,
+        gen_counter:    bool = False):
         """
         Executes the Genetic Algorithm (GA) optimization process.
 
