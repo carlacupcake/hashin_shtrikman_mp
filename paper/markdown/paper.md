@@ -365,7 +365,7 @@ computationally and allows the same code to be used for all properties
 (aside from bulk and shear moduli, which cannot be decoupled). For
 material properties in the Materials Project database with full tensor
 values available, `hashin_shtrikman_mp` uses the largest eigenvalue.
-<!--\autoref{fig:flow-chart}--> is a flow chart demonstrating the most
+\autoref{fig:flow-chart} is a flow chart demonstrating the most
 common usage of `hashin_shtrikman_mp`.
 
 \newpage
