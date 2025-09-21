@@ -111,14 +111,14 @@ governed by linear, self-adjoint, elliptic partial differential equations
 of the form
 
 \begin{equation}\label{eqn:elliptic}
--\nabla\cdot(\boldsymbol{A}:(\boldsymbol{x})\nabla u(\boldsymbol{x})) = f(\boldsymbol{x}),
+-\nabla\cdot(\boldsymbol{A}(\boldsymbol{x}):\nabla u(\boldsymbol{x})) = f(\boldsymbol{x}),
 \end{equation}
 
 where $\boldsymbol{A}(\boldsymbol{x})$ is a symmetric positive-definite local property tensor. 
 This general formulation covers a wide class of physical phenomena including 
 steady-state heat conduction ($\boldsymbol{A} = \boldsymbol{k}(x)$, thermal conductivity), electrostatics 
 ($\boldsymbol{A} = \boldsymbol{\sigma}_{e}(\boldsymbol{x})$, electrical conductivity), and linear elasticity ($\boldsymbol{A} 
-= \mathbb{E}(\boldsymbol{x})$, stiffness). Under these assumptions, the effective "proportionality" 
+= \mathbb{E}(\boldsymbol{x})$, stiffness). Under these assumptions, the effective local property 
 tensor $\boldsymbol{A}^{*}$ of the composite is uniquely defined, and the Hashin–Shtrikman bounds 
 give the tightest possible estimates on $\boldsymbol{A}^{*}$ given only the phase properties and volume fractions.
 
@@ -247,7 +247,7 @@ The general constitutive law given in \autoref{eqn:elliptic} can also be written
 \boldsymbol{\xi}(\boldsymbol{x}) = \boldsymbol{A}(\boldsymbol{x}):\nabla u(\boldsymbol{x}),
 \end{equation}
 
-where $\nabla u(\boldsymbol{x})$ is a tensor-valued load (a field gradient like strain, electric field, or temperature gradient), $\boldsymbol{\xi}(\boldsymbol{x})$ is a tensor-valued response (a flux like stress, current, or heat flux), and $\boldsymbol{A}(\boldsymbol{x})$ is a proportionality tensor (stiffness, conductivity).
+where $\nabla u(\boldsymbol{x})$ is a tensor-valued load (a field gradient like strain, electric field, or temperature gradient), $\boldsymbol{\xi}(\boldsymbol{x})$ is a tensor-valued response (a flux like stress, current, or heat flux), and $\boldsymbol{A}(\boldsymbol{x})$ is a local property tensor (stiffness, conductivity).
 
 Over the domain $\Omega$, we note that, by the definition of volume
 fraction, the tensor-valued load will abide by:
@@ -277,11 +277,11 @@ and
 
 It follows from these definitions, and *the assumption that the composite
 is isotropic and homogeneous*, that the concentration tensors can be
-written only in terms of proportionality tensors $\boldsymbol{A}(\boldsymbol{x})$. The concentration
+written only in terms of local property tensors $\boldsymbol{A}(\boldsymbol{x})$. The concentration
 tensors for the applied loads for phases $i\in[2,...,n]$ are
 subsequently given by
 \begin{equation}\label{eqn:load-conc-fact}
-\boldsymbol{C}_{i,\text{load}} = \displaystyle\frac{1}{n-1} \displaystyle\frac{1}{v_{i}}[\boldsymbol{A}^{*} - \boldsymbol{A}_{i}]:\boldsymbol{A}_{i} - \boldsymbol{A}_{1}]^{-1}
+\boldsymbol{C}_{i,\text{load}} = \displaystyle\frac{1}{n-1} \displaystyle\frac{1}{v_{i}}[\boldsymbol{A}^{*} - \boldsymbol{A}_{i}]:[\boldsymbol{A}_{i} - \boldsymbol{A}_{1}]^{-1}
 \end{equation}
 
 and for phase 1 as
@@ -476,7 +476,7 @@ contribute 0 in the case of "good\" load sharing). A user can monitor
 the results of the genetic algorithm with the convergence plot, an example of which is included
 in \autoref{fig:convg}.
 
-*Notes on genetic algorithms* Genetic algorithms are great for exploring 
+*Notes on genetic algorithms:* Genetic algorithms are great for exploring 
 promising parts of the design space, and since the end goal is to choose 
 composite constituents from a set of discrete choices (materials in the MP database), 
 no further refinement with a gradient-based optimization method is needed.
