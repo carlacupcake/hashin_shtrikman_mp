@@ -105,7 +105,24 @@ constituents.
 
 # Underlying theory
 
-## Estimate effective composite properties with the Hashin-Shtrikman bounds
+## Governing equations and applicability of the Hashin-Shtrikman bounds
+The Hashin–Shtrikman variational bounds apply to homogenization problems 
+governed by linear, self-adjoint, elliptic partial differential equations 
+of the form
+
+\begin{equation}\label{eqn:ellipstic}
+-\nabla\cdot(\boldsymbol{A}:(\boldsymbol{x})\nabla u(\boldsymbol{x})) = f(\boldsymbol{x}),
+\end{equation}
+
+where $\boldsymbol{A}(\boldsymbol{x})$ is a symmetric positive-definite local property tensor. 
+This general formulation covers a wide class of physical phenomena including 
+steady-state heat conduction ($\boldsymbol{A} = \boldsymbol{k}(x)$, thermal conductivity), electrostatics 
+($\boldsymbol{A} = \boldsymbol{\sigma}_{e}(\boldsymbol{x})$, electrical conductivity), and linear elasticity ($\boldsymbol{A} 
+= \mathbb{E}(\boldsymbol{x})$, stiffness). Under these assumptions, the effective "proportionality" 
+tensor $\boldsymbol{A}^{*}$ of the composite is uniquely defined, and the Hashin–Shtrikman bounds 
+give the tightest possible estimates on given only the phase properties and volume fractions.
+
+## Estimate effective composite properties with the HS bounds
 
 When designing composites, simple volume-weighted linear combinations of
 constituent material properties do not yield accurate approximations of
@@ -116,10 +133,10 @@ Hill-Reuss-Voight-Weiner bounds, where the lower bound is the harmonic
 mean of the constituent material properties and the upper bound is the
 arithmetic mean [@commentaryHS]. For quasi-isotropic and
 quasi-homogeneous multi-phase composites with arbitrary phase geometry
-(a more general case), a better option is to use the Hashin-Shtrikman
+(a more general case), a better option is to use the HS
 bounds, which provide even tighter ranges on the resulting effective
 properties [@hashin1962variational]. \autoref{eqn:gen_ineq}
-summarizes the Hashin-Shtrikman bounds on a
+summarizes the HS bounds on a
 generalized effective material property $y^{*}$ of an $n$-phase
 composite. The generalized material properties for the $n$-phases are
 ordered from least to greatest where
@@ -151,7 +168,7 @@ composite. \label{fig:cartoon-3phase}](figures/3phase_composite.png){width=2in f
 
 \autoref{eqn:bulk_ineq} and 
 \autoref{eqn:shear_ineq} summarize the results of the
-Hashin-Shtrikman derivations on the bounds on effective bulk modulus
+HS derivations on the bounds on effective bulk modulus
 $\kappa^{*}$ and effective shear modulus $\mu^{*}$, where it is
 simultaneously required that
 $\kappa_{1} \leq \kappa_{2} \leq \dotsb \leq \kappa_{n}$ and
@@ -225,47 +242,47 @@ failure. By introducing the concept of "concentration tensors", we can
 quantify a constituent's contribution to load response and then use
 constitutive laws to determine how the composite will respond to loads.
 
-For the general case of a constitutive law of the form
-\begin{equation}\label{eqn:gen-const-law}
-\verb|tensor-valued response| = \verb|proportionality tensor| \times \verb|tensor-valued load|,
+For the general case of a constitutive law of the form \autoref{eqn:elliptic}, which can also be written more conveniently as
+\begin{equation}\label{eqn:easy-elliptic}
+\boldsymbol{\xi}(\boldsymbol{x}) = \boldsymbol{A}(\boldsymbol{x}):\nabla u(\boldsymbol{x}),
 \end{equation}
 
 over the domain $\Omega$, we note that, by the definition of volume
-fraction, the following holds:
+fraction, the tensor-valued load will abide by:
 \begin{equation}\label{eqn:by-vol-frac-load}
-\langle \verb|tensor-valued load| \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \langle \verb|tensor-valued load| \rangle_{\Omega_{i}}
+\langle \nabla u(\boldsymbol{x}) \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \nabla u(\boldsymbol{x}) \rangle_{\Omega_{i}}
 \end{equation}
 
-and
+and the tensor-valued response will abide by
 \begin{equation}\label{eqn:by-vol-frac-resp}
-\langle \verb|tensor-valued response| \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \langle \verb|tensor-valued response| \rangle_{\Omega_{i}},
+\langle \boldsymbol{\xi}(\boldsymbol{x}) \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \langle \boldsymbol{\xi}(\boldsymbol{x}) \rangle_{\Omega_{i}},
 \end{equation}
 
 where
 $\langle \cdot \rangle_{\Omega} = \frac{1}{|\Omega|} \int_{\Omega} (\cdot) \,d\Omega$
 is the average of $(\cdot)$ over the domain, $v_{i}$ is the volume
 fraction of phase $i$, and $n$ is the number of phases. From there, we
-define the concentration tensors for the applied loads and responses for
+define the concentration tensors for the applied loads $\nabla u(\boldsymbol{x})$ and responses $\boldsymbol{\xi}(\boldsymbol{x})$ for
 phases $i\in[1,...,n]$, respectively, as
 \begin{equation}\label{eqn:Cload-basic-def}
-\langle \verb|tensor-valued load| \rangle_{\Omega_{i}} \equiv C_{i, \text{load}} \langle \verb|tensor-valued load| \rangle_{\Omega}
+\langle \nabla u(\boldsymbol{x}) \rangle_{\Omega_{i}} \equiv C_{i, \text{load}} \langle \nabla u(\boldsymbol{x}) \rangle_{\Omega}
 \end{equation}
 
 and
 \begin{equation}\label{eqn:Cresp-basic-def}
-\langle \verb|tensor-valued response| \rangle_{\Omega_{i}} \equiv C_{i, \text{response}} \langle \verb|tensor-valued response| \rangle_{\Omega}.
+\langle \boldsymbol{\xi}(\boldsymbol{x}) \rangle_{\Omega_{i}} \equiv C_{i, \text{response}} \langle \boldsymbol{\xi}(\boldsymbol{x}) \rangle_{\Omega}.
 \end{equation}
 
-It follows from these definitions, and the assumption that the composite
-is isotropic and homogeneous, that the concentration tensors can be
-written only in terms of proportionality tensors. The concentration
+It follows from these definitions, and *the assumption that the composite
+is isotropic and homogeneous*, that the concentration tensors can be
+written only in terms of proportionality tensors $\boldsymbol{A}(\boldsymbol{x})$. The concentration
 tensors for the applied loads for phases $i\in[2,...,n]$ are
 subsequently given by
 \begin{equation}\label{eqn:load-conc-fact}
 \begin{array}{l}
 \mbox{\boldmath $C$}_{i,\text{load}} = \displaystyle\frac{1}{n-1} \displaystyle\frac{1}{v_{i}} \times \\[10pt]
-\hspace{16mm} [(\text{effective } \texttt{proportionality tensor}) - (\text{phase $i$ }\texttt{proportionality tensor})]: \\[10pt]
-\hspace{20mm} [(\text{phase $i$ }\texttt{proportionality tensor}) - (\text{phase 1 }\texttt{proportionality tensor})]^{-1}
+\hspace{16mm} [\boldsymbol{A}^{*} - \boldsymbol{A}_{i}]: \\[10pt]
+\hspace{20mm} [\boldsymbol{A}_{i} - \boldsymbol{A}_{1}]^{-1}
 \end{array}
 \end{equation}
 
@@ -285,9 +302,13 @@ and for phase 1 as
 \mbox{\boldmath $C$}_{1,\text{response}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \mbox{\boldmath $C$}_{i,\text{response}} \right).
 \end{equation}
 
-As a concrete example, consider Ohm's law, which relates the applied
-electric field $\boldsymbol{E}$ (load) to the resulting current
-density $\boldsymbol{J}$ (response) via the electrical
+As a concrete example, consider Ohm's law
+\begin{equation}\label{eqn:ohms-law}
+\boldsymbol{J}(\boldsymbol{x}) = \boldsymbol{\sigma}_{e}(\boldsymbol{x}):\nabla\phi(\boldsymbol{x}),
+\end{equation}
+
+which relates the applied electric field (gradient of the electric potential $\boldsymbol{E} = \nabla\phi(\boldsymbol{x})$) to the resulting current
+density $\boldsymbol{J}$ via the electrical
 conductivity $\boldsymbol{\sigma}_{e}$ (proportionality tensor),
 governing a 3-phase composite. The concentration tensors for current
 density would be 
@@ -457,6 +478,10 @@ contribute 0 in the case of "good\" load sharing). A user can monitor
 the results of the genetic algorithm with the convergence plot, an example of which is included
 in \autoref{fig:convg}.
 
+*Notes on genetic algorithms* Genetic algorithms are great for exploring 
+promising parts of the design space, and since the end goal is to choose 
+composite constituents from a set of discrete choices (materials in the MP database), 
+no further refinement with a gradient-based optimization method is needed.
 The nature of genetic algorithms is to produce several offspring with
 the same properties and costs after many generations. Thus,
 `hashin_shtrikman_mp` presents the user with only the *unique* top
