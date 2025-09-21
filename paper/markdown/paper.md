@@ -292,7 +292,7 @@ and for phase 1 as
 The concentration tensors for the responses for phases $i\in[2,...,n]$
 are given by
 \begin{equation}\label{eqn:response-conc-fact}
-\boldsymbol{C}_{i,\text{response}} = \boldsymbol{A}_{i}:\boldsymbol{C}_{i,\text{load}}:\boldsymbol{A}^{*}^{-1}
+\boldsymbol{C}_{i,\text{response}} = \boldsymbol{A}_{i}:\boldsymbol{C}_{i,\text{load}}:(\boldsymbol{A}^{*}^){-1}
 \end{equation}
 
 and for phase 1 as
