@@ -106,11 +106,11 @@ constituents.
 # Underlying theory
 
 ## Governing equations and applicability of the Hashin-Shtrikman bounds
-The Hashin–Shtrikman variational bounds apply to homogenization problems 
+The Hashin–Shtrikman (HS) variational bounds apply to homogenization problems 
 governed by linear, self-adjoint, elliptic partial differential equations 
 of the form
 
-\begin{equation}\label{eqn:ellipstic}
+\begin{equation}\label{eqn:elliptic}
 -\nabla\cdot(\boldsymbol{A}:(\boldsymbol{x})\nabla u(\boldsymbol{x})) = f(\boldsymbol{x}),
 \end{equation}
 
@@ -120,7 +120,7 @@ steady-state heat conduction ($\boldsymbol{A} = \boldsymbol{k}(x)$, thermal cond
 ($\boldsymbol{A} = \boldsymbol{\sigma}_{e}(\boldsymbol{x})$, electrical conductivity), and linear elasticity ($\boldsymbol{A} 
 = \mathbb{E}(\boldsymbol{x})$, stiffness). Under these assumptions, the effective "proportionality" 
 tensor $\boldsymbol{A}^{*}$ of the composite is uniquely defined, and the Hashin–Shtrikman bounds 
-give the tightest possible estimates on given only the phase properties and volume fractions.
+give the tightest possible estimates on $\boldsymbol{A}^{*}$ given only the phase properties and volume fractions.
 
 ## Estimate effective composite properties with the HS bounds
 
@@ -242,15 +242,17 @@ failure. By introducing the concept of "concentration tensors", we can
 quantify a constituent's contribution to load response and then use
 constitutive laws to determine how the composite will respond to loads.
 
-For the general case of a constitutive law of the form \autoref{eqn:elliptic}, which can also be written more conveniently as
+The general constitutive law given in \autoref{eqn:elliptic} can also be written more conveniently as
 \begin{equation}\label{eqn:easy-elliptic}
 \boldsymbol{\xi}(\boldsymbol{x}) = \boldsymbol{A}(\boldsymbol{x}):\nabla u(\boldsymbol{x}),
 \end{equation}
 
-over the domain $\Omega$, we note that, by the definition of volume
+where $\nabla u(\boldsymbol{x})$ is a tensor-valued load (a field gradient like strain, electric field, or temperature gradient), $\boldsymbol{\xi}(\boldsymbol{x})$ is a tensor-valued response (a flux like stress, current, or heat flux), and $\boldsymbol{A}(\boldsymbol{x})$ is a proportionality tensor (stiffness, conductivity).
+
+Over the domain $\Omega$, we note that, by the definition of volume
 fraction, the tensor-valued load will abide by:
 \begin{equation}\label{eqn:by-vol-frac-load}
-\langle \nabla u(\boldsymbol{x}) \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \nabla u(\boldsymbol{x}) \rangle_{\Omega_{i}}
+\langle \nabla u(\boldsymbol{x}) \rangle_{\Omega} = \sum\limits_{i=1}^{n} v_{i} \langle \nabla u(\boldsymbol{x}) \rangle_{\Omega_{i}}
 \end{equation}
 
 and the tensor-valued response will abide by
@@ -279,27 +281,23 @@ written only in terms of proportionality tensors $\boldsymbol{A}(\boldsymbol{x})
 tensors for the applied loads for phases $i\in[2,...,n]$ are
 subsequently given by
 \begin{equation}\label{eqn:load-conc-fact}
-\begin{array}{l}
-\mbox{\boldmath $C$}_{i,\text{load}} = \displaystyle\frac{1}{n-1} \displaystyle\frac{1}{v_{i}} \times \\[10pt]
-\hspace{16mm} [\boldsymbol{A}^{*} - \boldsymbol{A}_{i}]: \\[10pt]
-\hspace{20mm} [\boldsymbol{A}_{i} - \boldsymbol{A}_{1}]^{-1}
-\end{array}
+\boldsymbol{C}_{i,\text{load}} = \displaystyle\frac{1}{n-1} \displaystyle\frac{1}{v_{i}}[\boldsymbol{A}^{*} - \boldsymbol{A}_{i}]:\boldsymbol{A}_{i} - \boldsymbol{A}_{1}]^{-1}
 \end{equation}
 
 and for phase 1 as
 \begin{equation}\label{eqn:C1load}
-\mbox{\boldmath $C$}_{1,\text{load}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \mbox{\boldmath $C$}_{i,\text{load}} \right).
+\boldsymbol{C}_{1,\text{load}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \boldsymbol{C}_{i,\text{load}} \right).
 \end{equation}
 
 The concentration tensors for the responses for phases $i\in[2,...,n]$
 are given by
 \begin{equation}\label{eqn:response-conc-fact}
-\mbox{\boldmath $C$}_{i,\text{response}} = (\text{phase $i$ } \verb|proportionality tensor|)\mbox{\boldmath $C$}_{i,\text{load}}(\text{effective } \verb|proportionality tensor|)^{-1}
+\boldsymbol{C}_{i,\text{response}} = \boldsymbol{A}_{i}:\boldsymbol{C}_{i,\text{load}}:\boldsymbol{A}^{*}^{-1}
 \end{equation}
 
 and for phase 1 as
 \begin{equation}\label{eqn:C1response}
-\mbox{\boldmath $C$}_{1,\text{response}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \mbox{\boldmath $C$}_{i,\text{response}} \right).
+\boldsymbol{C}_{1,\text{response}} = \frac{1}{v_{1}} \left( 1 - \sum\limits_{i=2}^{n} v_{i} \boldsymbol{C}_{i,\text{response}} \right).
 \end{equation}
 
 As a concrete example, consider Ohm's law
@@ -309,14 +307,14 @@ As a concrete example, consider Ohm's law
 
 which relates the applied electric field (gradient of the electric potential $\boldsymbol{E} = \nabla\phi(\boldsymbol{x})$) to the resulting current
 density $\boldsymbol{J}$ via the electrical
-conductivity $\boldsymbol{\sigma}_{e}$ (proportionality tensor),
+conductivity $\boldsymbol{\sigma}_{e}$,
 governing a 3-phase composite. The concentration tensors for current
 density would be 
 \begin{equation}\label{eqn:J_cfs}
 \begin{array}{l}
-\mbox{\boldmath $C$}_{1,J} = \displaystyle\frac{1}{v_{1}} \left( 1 - v_{2} \mbox{\boldmath $C$}_{2,J} - v_{3} \mbox{\boldmath $C$}_{3,J} \right), \\[10pt]
-\mbox{\boldmath $C$}_{2,J} = \mbox{\boldmath $\sigma$}_{2,e}:\mbox{\boldmath $C$}_{2,E}:(\mbox{\boldmath $\sigma$}_{e}^{*})^{-1}, \\[10pt]
-\mbox{\boldmath $C$}_{3,J} = \mbox{\boldmath $\sigma$}_{3,e}:\mbox{\boldmath $C$}_{3,E}:(\mbox{\boldmath $\sigma$}_{e}^{*})^{-1},
+\boldsymbol{C}_{1,J} = \displaystyle\frac{1}{v_{1}} \left( 1 - v_{2} \boldsymbol{C}_{2,J} - v_{3} \boldsymbol{C}_{3,J} \right), \\[10pt]
+\boldsymbol{C}_{2,J} = \mbox{\boldmath $\sigma$}_{2,e}:\boldsymbol{C}_{2,E}:(\mbox{\boldmath $\sigma$}_{e}^{*})^{-1}, \\[10pt]
+\boldsymbol{C}_{3,J} = \mbox{\boldmath $\sigma$}_{3,e}:\boldsymbol{C}_{3,E}:(\mbox{\boldmath $\sigma$}_{e}^{*})^{-1},
 \end{array}
 \end{equation}
 
@@ -325,9 +323,9 @@ the previous section. The concentration tensors for electric field would
 be
 \begin{equation}\label{eqn:E_cfs}
 \begin{array}{l}
-\mbox{\boldmath $C$}_{1,E} = \displaystyle\frac{1}{v_{1}} \left( 1 - v_{2} \mbox{\boldmath $C$}_{2,E} - v_{3} \mbox{\boldmath $C$}_{3,E} \right), \\[10pt]
-\mbox{\boldmath $C$}_{2,E} = \displaystyle\frac{1}{2}\displaystyle\frac{1}{v_{2}} (\mbox{\boldmath $\sigma$}_{e}^{*} - \mbox{\boldmath $\sigma$}_{1,e}):(\mbox{\boldmath $\sigma$}_{2,e}^{*} - \mbox{\boldmath $\sigma$}_{1,e})^{-1}, \\[10pt]
-\mbox{\boldmath $C$}_{3,E} = \displaystyle\frac{1}{2}\displaystyle\frac{1}{v_{3}} (\mbox{\boldmath $\sigma$}_{e}^{*} - \mbox{\boldmath $\sigma$}_{1,e}):(\mbox{\boldmath $\sigma$}_{3,e}^{*} - \mbox{\boldmath $\sigma$}_{1,e})^{-1}.
+\boldsymbol{C}_{1,E} = \displaystyle\frac{1}{v_{1}} \left( 1 - v_{2} \boldsymbol{C}_{2,E} - v_{3} \boldsymbol{C}_{3,E} \right), \\[10pt]
+\boldsymbol{C}_{2,E} = \displaystyle\frac{1}{2}\displaystyle\frac{1}{v_{2}} (\mbox{\boldmath $\sigma$}_{e}^{*} - \mbox{\boldmath $\sigma$}_{1,e}):(\mbox{\boldmath $\sigma$}_{2,e}^{*} - \mbox{\boldmath $\sigma$}_{1,e})^{-1}, \\[10pt]
+\boldsymbol{C}_{3,E} = \displaystyle\frac{1}{2}\displaystyle\frac{1}{v_{3}} (\mbox{\boldmath $\sigma$}_{e}^{*} - \mbox{\boldmath $\sigma$}_{1,e}):(\mbox{\boldmath $\sigma$}_{3,e}^{*} - \mbox{\boldmath $\sigma$}_{1,e})^{-1}.
 \end{array}
 \end{equation}
 
