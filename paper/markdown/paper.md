@@ -49,13 +49,13 @@ bounds on the effective properties of composite materials with
 unspecified microstructure -- the Hashin-Shtrikman bounds -- to identify
 candidate theoretical materials, find real materials that are close to
 the candidates, and determine the optimal volume fractions for each of
-the constituents in the resulting composite. Its i) leveraging of
+the constituents in the resulting composite. Its features include (i) leveraging of
 materials in the [Materials
-Project](https://next-gen.materialsproject.org/) database, ii)
+Project](https://next-gen.materialsproject.org/) database, (ii)
 integration with the [Materials Project
-API](https://next-gen.materialsproject.org/api), iii) use of genetic
-machine-learning and iv) agnosticism to underlying microstructure, and
-v) ultimate engineering application, make it a tool with much broader
+API](https://next-gen.materialsproject.org/api), (iii) use of genetic
+machine-learning, (iv) agnosticism to underlying microstructure, and
+(v) ultimate engineering application, make it a tool with much broader
 applications than its predecessors.
 
 # Statement of need
@@ -176,13 +176,13 @@ $\mu_{1} \leq \mu_{2} \leq \dotsb \leq \mu_{n}$:
 
 \begin{equation}\label{eqn:bulk_ineq}
 \kappa_{1} + \frac{A_{1}^{\kappa}}{1 - \alpha_{1}^{\kappa}A_{1}^{\kappa}}
-= \kappa^{*,-} \leq \kappa^{*} \leq \kappa^{*,-} = 
+= \kappa^{*,-} \leq \kappa^{*} \leq \kappa^{*,+} = 
 \kappa_{n} + \frac{A_{n}^{\kappa}}{1 - \alpha_{n}^{\kappa}A_{n}^{\kappa}}
 \end{equation}
 
 \begin{equation}\label{eqn:shear_ineq}
 \mu_{1} + \frac{A_{1}^{\mu}}{1 - \alpha_{1}^{\mu}A_{1}^{\mu}}
-= \mu^{*,-} \leq \mu^{*} \leq \mu^{*,-} = 
+= \mu^{*,-} \leq \mu^{*} \leq \mu^{*,+} = 
 \mu_{n} + \frac{A_{n}^{\mu}}{1 - \alpha_{n}^{\mu}A_{n}^{\mu}}
 \end{equation}
 
