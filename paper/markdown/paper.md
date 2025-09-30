@@ -472,7 +472,7 @@ parameters are 10 parents, 10 children, 200 members per population, and
 100 generations, but a user can change them. Given the cost function
 design, the cost value can be thought of as the fractional error from
 the desired outcome, plus penalties for "bad\" load sharing (should
-contribute 0 in the case of "good\" load sharing). A user can monitor
+contribute 0 in the case of  "good\" load sharing). A user can monitor
 the results of the genetic algorithm with the convergence plot, an example of which is included
 in \autoref{fig:convg}.
 
