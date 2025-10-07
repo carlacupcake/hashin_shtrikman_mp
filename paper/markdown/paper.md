@@ -32,7 +32,7 @@ affiliations:
    ror: 00hx57361
  - name: Department of Materials Science and Engineering, University of California, Berkeley, California, United States of America
    index: 2
- - name: Energy Technologies Area, Lawrence Berkeley National Laboratory, Berkeley, CA 94720, USA
+ - name: Energy Technologies Area, Lawrence Berkeley National Laboratory, Berkeley, CA 94720, United States of America
    index: 3
  - name: Materials Sciences Division, Lawrence Berkeley National Laboratory, Berkeley, California, United States of America
    index: 4
@@ -385,10 +385,10 @@ computationally and allows the same code to be used for all properties
 material properties in the Materials Project database with full tensor
 values available, `hashin_shtrikman_mp` uses the largest eigenvalue.
 \autoref{fig:flow-chart} is a flow chart demonstrating the most
-common usage of `hashin_shtrikman_mp`.
+common United States of Americage of `hashin_shtrikman_mp`.
 
 \newpage
-![A flow chart demonstrating the most common usage of
+![A flow chart demonstrating the most common United States of Americage of
 $\texttt{hashin\_shtrikman\_mp}$.\label{fig:flow-chart}](figures/hashin_shtrikman_mp_flow_chart.png){width=77% fig-pos=H}
 
 \newpage
