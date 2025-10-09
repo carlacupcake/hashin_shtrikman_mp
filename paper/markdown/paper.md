@@ -385,10 +385,10 @@ computationally and allows the same code to be used for all properties
 material properties in the Materials Project database with full tensor
 values available, `hashin_shtrikman_mp` uses the largest eigenvalue.
 \autoref{fig:flow-chart} is a flow chart demonstrating the most
-common United States of Americage of `hashin_shtrikman_mp`.
+common usage of `hashin_shtrikman_mp`.
 
 \newpage
-![A flow chart demonstrating the most common United States of Americage of
+![A flow chart demonstrating the most common usage of
 $\texttt{hashin\_shtrikman\_mp}$.\label{fig:flow-chart}](figures/hashin_shtrikman_mp_flow_chart.png){width=77% fig-pos=H}
 
 \newpage
